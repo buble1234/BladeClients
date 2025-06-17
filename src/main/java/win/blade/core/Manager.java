@@ -7,7 +7,6 @@ import win.blade.common.hud.impl.TimeHudElement;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.controllers.IEventBus;
-import win.blade.core.event.impl.InputEvents;
 import win.blade.core.event.impl.input.InputEvents;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleManager;
@@ -86,7 +85,7 @@ public class Manager {
                 .forEach(Module::toggle);
     }
 
-    public static ModuleManager getModuleManagment() {
+    public static ModuleManager getModuleManagement() {
         return moduleManager;
     }
 }
