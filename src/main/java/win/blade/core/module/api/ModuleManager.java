@@ -1,7 +1,12 @@
 package win.blade.core.module.api;
 
+import org.apache.logging.log4j.spi.LoggerRegistry;
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
+import win.blade.common.utils.minecraft.ChatUtility;
 import win.blade.core.module.storage.move.AutoSprintModule;
 
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,7 +31,30 @@ public final class ModuleManager {
     }
 
     public void initialize() {
-        register(new AutoSprintModule());
+        Reflections reflections = new Reflections("win.blade.core.module.storage", Scanners.SubTypes);
+        Set<Class<? extends Module>> foundClasses = reflections.getSubTypesOf(Module.class);
+
+        for (Class<? extends Module> moduleClass : foundClasses) {
+            if (Modifier.isAbstract(moduleClass.getModifiers()) || moduleClass.isInterface()) {
+                continue;
+            }
+
+            if (!moduleClass.isAnnotationPresent(ModuleInfo.class)) {
+                ChatUtility.print("В классе", moduleClass.getName(), "отсутствует аннотация ModuleInfo. Модуль не был зарегистрирован.");
+                continue;
+            }
+
+            try {
+                Module moduleInstance = moduleClass.getConstructor().newInstance();
+
+                if(!(moduleInstance instanceof NonRegistrable))
+                    register(moduleInstance);
+                else
+                    System.out.println("skipped non registrable module %S".formatted(moduleInstance.name()));
+            } catch (Exception e) {
+                System.err.println("Ошибка при регистрации модуля!");
+            }
+        }
     }
 
     private void registerSingle(Module module) {
@@ -37,16 +65,11 @@ public final class ModuleManager {
         return Optional.ofNullable(modules.get(name.toLowerCase()));
     }
 
-    @SuppressWarnings("unchecked")
     public <T extends Module> Optional<T> find(Class<T> clazz) {
         return modules.values().stream()
                 .filter(clazz::isInstance)
                 .map(clazz::cast)
                 .findFirst();
-    }
-
-    public CopyOnWriteArrayList<Module> getModules() {
-        return (CopyOnWriteArrayList<Module>) modules;
     }
 
     public Stream<Module> stream() {
@@ -89,7 +112,7 @@ public final class ModuleManager {
         return byCategory(category).anyMatch(Module::isEnabled);
     }
 
-    public Collection<Module> all() {
+    public List<Module> all() {
         return List.copyOf(modules.values());
     }
 }

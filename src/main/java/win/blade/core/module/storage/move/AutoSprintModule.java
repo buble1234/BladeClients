@@ -18,6 +18,7 @@ import win.blade.core.module.api.ModuleInfo;
 )
 public class AutoSprintModule extends Module {
 
+
     @EventHandler
     public void onTick(UpdateEvent event) {
         if (mc.player == null) return;

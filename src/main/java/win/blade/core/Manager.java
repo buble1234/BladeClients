@@ -4,6 +4,7 @@ import org.lwjgl.glfw.GLFW;
 import win.blade.common.hud.ControlHudElement;
 import win.blade.common.hud.impl.RectangleHudElement;
 import win.blade.common.hud.impl.TimeHudElement;
+import win.blade.common.utils.minecraft.ChatUtility;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.controllers.IEventBus;
@@ -67,6 +68,7 @@ public class Manager {
 
             moduleManager.handleKey(key);
         }
+
     }
 
     @EventHandler
