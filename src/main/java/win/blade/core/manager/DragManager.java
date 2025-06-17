@@ -2,7 +2,7 @@ package win.blade.core.manager;
 
 import net.minecraft.client.MinecraftClient;
 import win.blade.common.utils.math.MathUtility;
-import win.blade.core.event.impl.InputEvents;
+import win.blade.core.event.impl.input.InputEvents;
 
 public class DragManager {
     private final String id;

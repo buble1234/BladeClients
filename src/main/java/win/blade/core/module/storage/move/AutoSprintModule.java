@@ -4,8 +4,8 @@ import org.lwjgl.glfw.GLFW;
 
 import win.blade.common.utils.player.SprintUtility;
 import win.blade.core.event.controllers.EventHandler;
-import win.blade.core.event.impl.PlayerActionEvents;
-import win.blade.core.event.impl.UpdateEvent;
+import win.blade.core.event.impl.player.PlayerActionEvents;
+import win.blade.core.event.impl.minecraft.UpdateEvent;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;

@@ -1,36 +1,19 @@
 package win.blade.core;
 
-import com.google.common.base.Suppliers;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.util.Identifier;
-import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import win.blade.common.hud.ControlHudElement;
 import win.blade.common.hud.impl.RectangleHudElement;
 import win.blade.common.hud.impl.TimeHudElement;
-import win.blade.common.utils.render.builders.Builder;
-import win.blade.common.utils.render.builders.states.QuadColorState;
-import win.blade.common.utils.render.builders.states.QuadRadiusState;
-import win.blade.common.utils.render.builders.states.SizeState;
-import win.blade.common.utils.render.msdf.MsdfFont;
-import win.blade.common.utils.render.renderers.impl.BuiltText;
-import win.blade.common.utils.render.renderers.impl.BuiltTexture;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.controllers.IEventBus;
-import win.blade.core.event.impl.InputEvents;
-import win.blade.core.event.impl.RenderEvents;
+import win.blade.core.event.impl.input.InputEvents;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleManager;
 
-import java.awt.*;
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Supplier;
-
-import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
 /**
  * Автор: NoCap

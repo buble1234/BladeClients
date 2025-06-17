@@ -1,4 +1,4 @@
-package win.blade.core.event.impl;
+package win.blade.core.event.impl.render;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.Camera;

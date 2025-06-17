@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import win.blade.core.event.controllers.EventHolder;
-import win.blade.core.event.impl.InputEvents;
+import win.blade.core.event.impl.input.InputEvents;
 
 import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 

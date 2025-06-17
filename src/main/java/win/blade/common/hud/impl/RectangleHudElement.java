@@ -7,7 +7,7 @@ import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
 import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.renderers.impl.BuiltBlur;
-import win.blade.core.event.impl.RenderEvents;
+import win.blade.core.event.impl.render.RenderEvents;
 
 import java.awt.*;
 
