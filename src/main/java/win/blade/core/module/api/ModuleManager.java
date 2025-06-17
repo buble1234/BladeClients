@@ -1,0 +1,95 @@
+package win.blade.core.module.api;
+
+import win.blade.core.module.storage.move.AutoSprintModule;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+public final class ModuleManager {
+
+    private static final ModuleManager INSTANCE = new ModuleManager();
+    private final Map<String, Module> modules = new ConcurrentHashMap<>();
+
+    public ModuleManager() {
+    }
+
+    public static ModuleManager getInstance() {
+        return INSTANCE;
+    }
+
+    public ModuleManager register(Module... modules) {
+        Stream.of(modules).forEach(this::registerSingle);
+        return this;
+    }
+
+    public void initialize() {
+        register(new AutoSprintModule());
+    }
+
+    private void registerSingle(Module module) {
+        modules.put(module.name().toLowerCase(), module);
+    }
+
+    public Optional<Module> find(String name) {
+        return Optional.ofNullable(modules.get(name.toLowerCase()));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Module> Optional<T> find(Class<T> clazz) {
+        return modules.values().stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .findFirst();
+    }
+
+    public CopyOnWriteArrayList<Module> getModules() {
+        return (CopyOnWriteArrayList<Module>) modules;
+    }
+
+    public Stream<Module> stream() {
+        return modules.values().stream();
+    }
+
+    public Stream<Module> enabled() {
+        return stream().filter(Module::isEnabled);
+    }
+
+    public Stream<Module> byCategory(Category category) {
+        return stream().filter(m -> m.category() == category);
+    }
+
+    public Stream<Module> filter(Predicate<Module> predicate) {
+        return stream().filter(predicate);
+    }
+
+    public ModuleManager enableAll(Predicate<Module> filter) {
+        stream().filter(filter).forEach(m -> m.setEnabled(true));
+        return this;
+    }
+
+    public ModuleManager disableAll() {
+        stream().forEach(m -> m.setEnabled(false));
+        return this;
+    }
+
+    public void handleKey(int key) {
+        stream()
+                .filter(m -> m.keybind() == key)
+                .forEach(Module::toggle);
+    }
+
+    public long enabledCount() {
+        return enabled().count();
+    }
+
+    public boolean hasEnabled(Category category) {
+        return byCategory(category).anyMatch(Module::isEnabled);
+    }
+
+    public Collection<Module> all() {
+        return List.copyOf(modules.values());
+    }
+}

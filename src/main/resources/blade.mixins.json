@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "win.blade.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+  ],
+  "client": [
+    "MixinMinecraftClient",
+    "minecraft.gui.MixinTitleScreen",
+    "minecraft.input.MixinKeyboard",
+    "minecraft.input.MixinMouse",
+    "minecraft.render.MixinGameRenderer",
+    "minecraft.entity.MixinPlayerEntity",
+    "minecraft.render.MixinInGameHud"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
