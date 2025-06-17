@@ -17,10 +17,9 @@ public abstract class Module implements MinecraftInstance {
 
     protected Module() {
         var info = Optional.ofNullable(getClass().getAnnotation(ModuleInfo.class)).orElseThrow(() -> new IllegalStateException("Module %s must have @ModuleInfo annotation".formatted(getClass().getSimpleName())));
-
-        this.data = new ModuleData(info.name(), info.category(), info.desc(),
-                info.descKey(), info.bind());
+        this.data = new ModuleData(info.name(), info.category(), info.desc(), info.descKey(), info.bind());
         this.keybind = info.bind();
+
     }
 
     public final Module toggle() {
