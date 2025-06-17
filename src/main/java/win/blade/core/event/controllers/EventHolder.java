@@ -5,10 +5,10 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import win.blade.core.event.impl.InputEvents;
-import win.blade.core.event.impl.PlayerActionEvents;
-import win.blade.core.event.impl.RenderEvents;
-import win.blade.core.event.impl.UpdateEvent;
+import win.blade.core.event.impl.input.InputEvents;
+import win.blade.core.event.impl.player.PlayerActionEvents;
+import win.blade.core.event.impl.render.RenderEvents;
+import win.blade.core.event.impl.minecraft.UpdateEvent;
 
 /**
  * Автор: NoCap

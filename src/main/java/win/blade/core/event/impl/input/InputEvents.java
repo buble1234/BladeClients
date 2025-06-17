@@ -1,4 +1,4 @@
-package win.blade.core.event.impl;
+package win.blade.core.event.impl.input;
 
 
 import win.blade.core.Manager;

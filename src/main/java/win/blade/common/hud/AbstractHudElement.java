@@ -3,8 +3,8 @@ package win.blade.common.hud;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
 import win.blade.core.event.controllers.EventHandler;
-import win.blade.core.event.impl.InputEvents;
-import win.blade.core.event.impl.RenderEvents;
+import win.blade.core.event.impl.input.InputEvents;
+import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.manager.DragManager;
 
 public abstract class AbstractHudElement {
