@@ -7,11 +7,12 @@
   ],
   "client": [
     "MixinMinecraftClient",
+    "accessor.MinecraftClientAccessor",
+    "minecraft.entity.MixinPlayerEntity",
     "minecraft.gui.MixinTitleScreen",
     "minecraft.input.MixinKeyboard",
     "minecraft.input.MixinMouse",
     "minecraft.render.MixinGameRenderer",
-    "minecraft.entity.MixinPlayerEntity",
     "minecraft.render.MixinInGameHud"
   ],
   "injectors": {

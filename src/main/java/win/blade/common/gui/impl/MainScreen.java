@@ -22,6 +22,7 @@ import java.awt.*;
 public class MainScreen extends Screen implements MinecraftInstance {
     private Button singleplayerButton;
     private Button multiplayerButton;
+    private Button accountManagerButton;
     private Button optionsButton;
     private Button quitButton;
 
@@ -36,6 +37,7 @@ public class MainScreen extends Screen implements MinecraftInstance {
 
         singleplayerButton = new Button(centerX - 100, centerY - 48, 200, 20, Text.of("Singleplayer"), () -> mc.setScreen(new SelectWorldScreen(this)), FontType.biko.get(), 15);
         multiplayerButton = new Button(centerX - 100, centerY - 23, 200, 20, Text.of("Multiplayer"), () -> mc.setScreen(new MultiplayerScreen(this)), FontType.biko.get(), 15);
+        accountManagerButton = new Button(centerX - 100, centerY + 2, 200, 20, Text.of("Accounts"), () -> mc.setScreen(new AccountScreen()), FontType.biko.get(), 15);
         optionsButton = new Button(centerX - 100, centerY + 27, 98, 20, Text.of("Options"), () -> mc.setScreen(new OptionsScreen(this, mc.options)), FontType.biko.get(), 15);
         quitButton = new Button(centerX + 2, centerY + 27, 98, 20, Text.of("Quit"), () -> MinecraftClient.getInstance().scheduleStop(), FontType.biko.get(), 15);
     }
@@ -53,6 +55,7 @@ public class MainScreen extends Screen implements MinecraftInstance {
 
         singleplayerButton.render(context, mouseX, mouseY);
         multiplayerButton.render(context, mouseX, mouseY);
+        accountManagerButton.render(context, mouseX, mouseY);
         optionsButton.render(context, mouseX, mouseY);
         quitButton.render(context, mouseX, mouseY);
     }
@@ -66,6 +69,11 @@ public class MainScreen extends Screen implements MinecraftInstance {
             }
             if (multiplayerButton.isMouseOver((int) mouseX, (int) mouseY)) {
                 multiplayerButton.onClick();
+                return true;
+            }
+
+            if (accountManagerButton.isMouseOver((int) mouseX, (int) mouseY)) {
+                accountManagerButton.onClick();
                 return true;
             }
             if (optionsButton.isMouseOver((int) mouseX, (int) mouseY)) {
