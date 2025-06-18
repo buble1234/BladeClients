@@ -174,7 +174,6 @@ public class ServerUtility {
             Field field = BossBarHud.class.getDeclaredField("bossBars");
             field.setAccessible(true);
 
-            @SuppressWarnings("unchecked")
             Map<UUID, ClientBossBar> bossBars = (Map<UUID, ClientBossBar>) field.get(hud);
 
             return bossBars.values().stream()

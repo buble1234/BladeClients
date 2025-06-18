@@ -1,6 +1,7 @@
 package win.blade.core;
 
 import org.lwjgl.glfw.GLFW;
+import win.blade.common.gui.impl.menu.MenuScreen;
 import win.blade.common.hud.ControlHudElement;
 import win.blade.common.hud.impl.RectangleHudElement;
 import win.blade.common.hud.impl.TimeHudElement;
@@ -38,6 +39,7 @@ public class Manager {
     public static final TimeHudElement timeElement = new TimeHudElement();
     public static final RectangleHudElement rectangleElement = new RectangleHudElement();
     public static final ModuleManager moduleManager = new ModuleManager();
+    public static MenuScreen menuScreen;
 
     private static final Set<Integer> pressedKeys = new HashSet<>();
 
@@ -52,7 +54,9 @@ public class Manager {
         EVENT_BUS.subscribe(moduleManager);
 
         moduleManager.initialize();
+        menuScreen = new MenuScreen();
     }
+
 
     @EventHandler
     public void onRender(RenderEvents.Screen e) {

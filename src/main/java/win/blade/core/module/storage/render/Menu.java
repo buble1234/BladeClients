@@ -12,12 +12,13 @@ import win.blade.core.module.api.ModuleInfo;
         desc = "Интерфейс клиента",
         bind = GLFW.GLFW_KEY_RIGHT_SHIFT
 )
-public class MenuModule extends Module {
+public class Menu extends Module {
+
 
 
     @Override
     public void onEnable() {
-        mc.setScreen(new MenuScreen());
+        mc.setScreen();
         this.setEnabled(false);
     }
 }

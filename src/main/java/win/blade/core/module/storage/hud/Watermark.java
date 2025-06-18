@@ -25,7 +25,7 @@ import java.awt.*;
         desc = "Отображает водяной знак клиента",
         bind = GLFW.GLFW_KEY_Y
 )
-public class WatermarkModule extends Module implements MinecraftInstance {
+public class Watermark extends Module implements MinecraftInstance {
 
     private final int x = 10;
     private final int y = 10;

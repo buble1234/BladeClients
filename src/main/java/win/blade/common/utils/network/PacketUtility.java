@@ -36,17 +36,17 @@ public class PacketUtility {
     
     private static final ConcurrentLinkedQueue<PacketData> packetQueue = new ConcurrentLinkedQueue<>();
     
-    private static final List<Consumer<Object>> packetListeners = new ArrayList<>();
+    private static final List<Consumer<Packet<?>>> packetListeners = new ArrayList<>();
     
 
     /**
      * Отправляет пакет на сервер
      */
-    public static void sendPacket(Object packet) {
+    public static void sendPacket(Packet<?> packet) {
         if (mc.getNetworkHandler() == null) return;
         
         try {
-            mc.getNetworkHandler().sendPacket((Packet<?>) packet);
+            mc.getNetworkHandler().sendPacket(packet);
             sentPackets.incrementAndGet();
             lastPacketTime.set(System.currentTimeMillis());
         } catch (Exception e) {
@@ -57,7 +57,7 @@ public class PacketUtility {
     /**
      * Отправляет пакет с задержкой
      */
-    public static void sendPacketDelayed(Object packet, long delayMs) {
+    public static void sendPacketDelayed(Packet<?> packet, long delayMs) {
         CompletableFuture.delayedExecutor(delayMs, java.util.concurrent.TimeUnit.MILLISECONDS)
                 .execute(() -> sendPacket(packet));
     }
@@ -65,7 +65,7 @@ public class PacketUtility {
     /**
      * Отправляет пакет в очередь
      */
-    public static void queuePacket(Object packet, int priority) {
+    public static void queuePacket(Packet<?> packet, int priority) {
         packetQueue.offer(new PacketData(packet, priority, System.currentTimeMillis()));
     }
     
@@ -332,25 +332,25 @@ public class PacketUtility {
     /**
      * Добавляет слушатель пакетов
      */
-    public static void addPacketListener(Consumer<Object> listener) {
+    public static void addPacketListener(Consumer<Packet<?>> listener) {
         packetListeners.add(listener);
     }
     
     /**
      * Удаляет слушатель пакетов
      */
-    public static void removePacketListener(Consumer<Object> listener) {
+    public static void removePacketListener(Consumer<Packet<?>> listener) {
         packetListeners.remove(listener);
     }
     
     /**
      * Вызывается при получении пакета
      */
-    public static void onPacketReceived(Object packet) {
+    public static void onPacketReceived(Packet<?> packet) {
         receivedPackets.incrementAndGet();
         lastPacketTime.set(System.currentTimeMillis());
         
-        for (Consumer<Object> listener : packetListeners) {
+        for (Consumer<Packet<?>> listener : packetListeners) {
             try {
                 listener.accept(packet);
             } catch (Exception e) {
@@ -360,11 +360,11 @@ public class PacketUtility {
     }
 
     public static class PacketData {
-        public final Object packet;
+        public final Packet<?> packet;
         public final int priority;
         public final long timestamp;
         
-        public PacketData(Object packet, int priority, long timestamp) {
+        public PacketData(Packet<?> packet, int priority, long timestamp) {
             this.packet = packet;
             this.priority = priority;
             this.timestamp = timestamp;

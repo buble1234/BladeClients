@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
         desc = "Позволяет передвигаться с открытым инвентарём",
         bind = GLFW.GLFW_KEY_G
 )
-public class InvWalkModule extends Module {
+public class InvWalk extends Module {
     private final List<Packet<?>> packets = new ArrayList<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final TimerUtil wait = new TimerUtil();
