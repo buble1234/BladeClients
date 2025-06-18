@@ -4,9 +4,9 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import win.blade.common.gui.impl.menu.panel.Panel;
-import win.blade.common.utils.math.anmation.Animation;
-import win.blade.common.utils.math.anmation.AnimationHelp;
-import win.blade.common.utils.math.anmation.Easing;
+import win.blade.common.utils.math.animation.Animation;
+import win.blade.common.utils.math.animation.AnimationHelp;
+import win.blade.common.utils.math.animation.Easing;
 
 
 public class MenuScreen extends Screen implements AnimationHelp {

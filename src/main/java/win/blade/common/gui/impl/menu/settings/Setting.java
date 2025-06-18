@@ -1,6 +1,6 @@
 package win.blade.common.gui.impl.menu.settings;
 
-import win.blade.common.utils.math.anmation.Animation;
+import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.module.api.Module;
 

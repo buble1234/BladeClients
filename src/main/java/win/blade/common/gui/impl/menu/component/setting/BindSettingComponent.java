@@ -7,7 +7,7 @@ import win.blade.common.gui.impl.menu.MenuScreen;
 import win.blade.common.gui.impl.menu.component.SettingComponent;
 import win.blade.common.gui.impl.menu.settings.impl.BindSetting;
 import win.blade.common.utils.color.ColorUtility;
-import win.blade.common.utils.math.anmation.Easing;
+import win.blade.common.utils.math.animation.Easing;
 import win.blade.common.utils.other.IMouse;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;

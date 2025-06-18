@@ -1,4 +1,4 @@
-package win.blade.common.utils.math.anmation;
+package win.blade.common.utils.math.animation;
 
 
 import win.blade.common.utils.math.TimerUtil;
