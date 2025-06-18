@@ -1,4 +1,4 @@
-package win.blade.common.utils.math;
+package win.blade.common.utils.math.anmation;
 
 import java.util.function.Function;
 

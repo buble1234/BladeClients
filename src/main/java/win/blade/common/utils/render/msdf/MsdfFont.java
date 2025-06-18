@@ -78,6 +78,13 @@ public final class MsdfFont {
 		
 		return width;
 	}
+
+	public  float getFontHeight(MsdfFont font, float size) {
+		if (font == null) {
+			return 0.0f;
+		}
+		return font.getMetrics().lineHeight() * size;
+	}
 	
 	public String getName() {
 		return this.name;
