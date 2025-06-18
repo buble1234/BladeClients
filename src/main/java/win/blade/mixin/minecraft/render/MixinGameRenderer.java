@@ -30,4 +30,21 @@ public abstract class MixinGameRenderer {
 
         Manager.EVENT_BUS.post(EventHolder.getWorldRenderEvent(newMatStack, this.camera, tickCounter.getTickDelta(false)));
     }
+
+//    @Redirect(
+//            method = "findCrosshairTarget",
+//            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getRotationVec(F)Lnet/minecraft/util/math/Vec3d;")
+//    )
+//    private Vec3d interceptCrosshairRotation(Entity entity, float tickDelta) {
+//        if (entity instanceof ClientPlayerEntity) {
+//            AimManager manager = AimManager.INSTANCE;
+//            ViewDirection direction = manager.getCurrentDirection();
+//
+//            if (direction != null && manager.isEnabled()) {
+//                return direction.asVector();
+//            }
+//        }
+//
+//        return entity.getRotationVec(tickDelta);
+//    }
 }

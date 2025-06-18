@@ -58,8 +58,9 @@ public class Manager {
     public void onRender(RenderEvents.Screen e) {
         BuiltBlur rectangle = Builder.blur()
                 .size(new SizeState(80, 40))
-                .color(new QuadColorState(new Color(150, 50, 50)))
+                .color(new QuadColorState(new Color(50, 50, 50)))
                 .radius(new QuadRadiusState(5f, 5f, 5f, 5f))
+                .blurRadius(6)
                 .build();
         rectangle.render(DEFAULT_MATRIX, 100f, 100f);
     }
