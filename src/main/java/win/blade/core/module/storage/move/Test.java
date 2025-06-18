@@ -10,5 +10,5 @@ import win.blade.core.module.api.NonRegistrable;
  * Дата создания: 17.06.2025, в 20:04:59
  */
 @ModuleInfo(name = "Test", category = Category.MOVE)
-public class TestModule extends Module implements NonRegistrable {
+public class Test extends Module implements NonRegistrable {
 }

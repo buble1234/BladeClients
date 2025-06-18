@@ -21,14 +21,14 @@ import win.blade.core.module.api.ModuleInfo;
         desc = "Показывает статус игры в Discord",
         bind = GLFW.GLFW_KEY_R
 )
-public class DiscordRPCModule extends Module {
+public class DiscordRPC extends Module {
 
     private IPCClient client;
     private final long timeStamp = System.currentTimeMillis();
 
     private static final long APPLICATION_ID = 1384850624776245399L;
 
-    public DiscordRPCModule() {
+    public DiscordRPC() {
         setEnabled(true);
     }
 

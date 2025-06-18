@@ -11,15 +11,13 @@ import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
-import java.awt.*;
-
 @ModuleInfo(
         name = "AutoSprint",
         category = Category.MOVE,
         desc = "Автоматически включает спринт",
         bind = GLFW.GLFW_KEY_V
 )
-public class AutoSprintModule extends Module {
+public class AutoSprint extends Module {
 
     private final BooleanSetting ra = new BooleanSetting(this, "Enable Glow", false);
     private final SliderSetting ra1 = new SliderSetting(this, "Enable Glow", 1,1,50,0.1f);

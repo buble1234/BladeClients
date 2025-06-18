@@ -12,10 +12,7 @@ import win.blade.common.utils.rotation.manager.AimManager;
 @Mixin(Item.class)
 public class MixinItem {
 
-    @Redirect(
-            method = "raycast",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getYaw()F")
-    )
+    @Redirect(method = "raycast", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getYaw()F"))
     private static float interceptRaycastYaw(PlayerEntity player) {
         if (player != MinecraftClient.getInstance().player) {
             return player.getYaw();
@@ -25,10 +22,7 @@ public class MixinItem {
         return direction != null ? direction.yaw() : player.getYaw();
     }
 
-    @Redirect(
-            method = "raycast",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getPitch()F")
-    )
+    @Redirect(method = "raycast", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getPitch()F"))
     private static float interceptRaycastPitch(PlayerEntity player) {
         if (player != MinecraftClient.getInstance().player) {
             return player.getPitch();

@@ -1,30 +1,9 @@
 package win.blade.core.module.storage.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.ShaderProgramKeys;
-import net.minecraft.client.render.*;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
-import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
-import win.blade.common.utils.math.AnimationUtility;
-import win.blade.common.utils.render.builders.Builder;
-import win.blade.common.utils.render.builders.impl.BlurBuilder;
-import win.blade.common.utils.render.builders.states.QuadColorState;
-import win.blade.common.utils.render.builders.states.QuadRadiusState;
-import win.blade.common.utils.render.builders.states.SizeState;
-import win.blade.core.event.controllers.EventHandler;
-import win.blade.core.event.impl.player.PlayerActionEvents;
-import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
-
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
 
 @ModuleInfo(
         name = "HitMarkers",
@@ -32,7 +11,7 @@ import java.util.List;
         desc = "Спавнит торусы при ударе",
         bind = GLFW.GLFW_KEY_V
 )
-public class TorusModule extends Module {
+public class Torus extends Module {
 
 
 //
