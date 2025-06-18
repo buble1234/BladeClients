@@ -14,7 +14,7 @@ import win.blade.core.module.api.Module;
 import java.awt.Color;
 
 public class ModuleComponent extends WindowComponent {
-    private final Module module;
+    public final Module module;
     public final ModuleSettingComponent settingComponent;
     private float lastHeight = 50;
 
@@ -30,7 +30,9 @@ public class ModuleComponent extends WindowComponent {
         settingComponent.width = width - 8 * scale;
         settingComponent.scale = scale;
 
+        context.enableScissor((int) x, (int) y, (int) (x + width), (int) (y + height));
         settingComponent.render(context, mouseX, mouseY, 0, alpha);
+        context.disableScissor();
 
         lastHeight = settingComponent.height + 8 * scale;
 
@@ -39,7 +41,6 @@ public class ModuleComponent extends WindowComponent {
                 .radius(new QuadRadiusState(8f))
                 .thickness(0.01f)
                 .color(new QuadColorState(new Color(15, 15, 15, 50)))
-//                .color(new QuadColorState(new Color(19, 21, 27, 1)))
                 .build()
                 .render(x, y);
     }

@@ -38,16 +38,15 @@ public class Panel extends WindowComponent {
                 .build()
                 .render(x, y);
 
-        AbstractTexture logoTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/logo.png"));
-        if (logoTexture != null) {
-            Builder.texture()
-                    .size(new SizeState(13f, 14f))
-                    .color(new QuadColorState(Color.WHITE))
-                    .texture(0f, 0f, 1f, 1f, logoTexture)
-                    .radius(new QuadRadiusState(0f))
-                    .build()
-                    .render(x + 15, y + 27);
-        }
+
+
+        Builder.text()
+                .font(FontType.icon2.get())
+                .text("a")
+                .color(new Color(-1, true))
+                .size(12)
+                .build()
+                .render(x + 15 * scale, y + 27* scale);
 
         Builder.text()
                 .font(FontType.sf_regular.get())

@@ -50,17 +50,17 @@ public class WatermarkModule extends Module implements MinecraftInstance {
 
         BuiltRectangle background = Builder.rectangle()
                 .size(new SizeState(width, height))
-                .color(new QuadColorState(backgroundColor, backgroundColor, backgroundColor, backgroundColor))
+                .color(new QuadColorState(new Color(30, 30, 30, 200)))
                 .radius(new QuadRadiusState(5f, 5f, 5f, 5f))
                 .smoothness(1.0f)
                 .build();
         background.render(matrix, x, y);
 
         float textX = x + (width - textWidth) / 2.0f - 3;
-        float textY = y + height / 2.0f - 5;
+        float textY = y + height / 2.0f - 7;
 
         BuiltText text = Builder.text()
-                .font(FontType.biko.get())
+                .font(FontType.sf_regular.get())
                 .text(watermarkText)
                 .color(textColor)
                 .size(12f)

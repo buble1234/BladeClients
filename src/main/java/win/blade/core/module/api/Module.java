@@ -1,6 +1,5 @@
 package win.blade.core.module.api;
 
-import net.minecraft.client.util.InputUtil;
 import win.blade.common.gui.impl.menu.settings.Setting;
 import win.blade.common.utils.minecraft.ChatUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
@@ -17,6 +16,7 @@ public abstract class Module implements MinecraftInstance {
     private final ModuleData data;
     private boolean enabled = false;
     private int keybind;
+    private BindMode bindMode = BindMode.TOGGLE;
 
     private List<Setting<?>> settings;
 
@@ -32,8 +32,6 @@ public abstract class Module implements MinecraftInstance {
         this.keybind = info.bind();
         this.settings = new ArrayList<>();
     }
-
-
 
     public final Module toggle() {
         return setEnabled(!enabled);
@@ -62,6 +60,14 @@ public abstract class Module implements MinecraftInstance {
         return this;
     }
 
+    public BindMode getBindMode() {
+        return bindMode;
+    }
+
+    public void setBindMode(BindMode bindMode) {
+        this.bindMode = bindMode;
+    }
+
     private void notifyStatusChange(boolean enabled) {
         String status = enabled ? "§aвключен" : "§cвыключен";
         ChatUtility.print("§7Модуль §f" + data.name() + " §7" + status);
@@ -69,10 +75,6 @@ public abstract class Module implements MinecraftInstance {
 
     protected void onEnable() {}
     protected void onDisable() {}
-
-    public final boolean isKeyPressed() {
-        return keybind > 0 && mc.currentScreen == null && InputUtil.isKeyPressed(mc.getWindow().getHandle(), keybind);
-    }
 
     public final String name() { return data.name(); }
     public final Category category() { return data.category(); }

@@ -1,4 +1,4 @@
-package ru.blade.common.GuiRender.melon.keyboard;
+package win.blade.common.utils.keyboard;
 
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
@@ -115,7 +115,7 @@ public enum Keyboard implements MinecraftInstance {
     KEY_MENU("MENU", GLFW.GLFW_KEY_MENU),
     MOUSE_LEFT("MOUSE1", 0),
     MOUSE_RIGHT("MOUSE2", 1),
-    MOUSE_MIDDLE("MOUSE3", 2),
+    MOUSE_MIDDLE("СКМ", 2),
     MOUSE_4("MOUSE4", 3),
     MOUSE_5("MOUSE5", 4),
     KEY_NONE("NONE", -1);

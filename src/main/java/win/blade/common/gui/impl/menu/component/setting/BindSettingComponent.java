@@ -2,11 +2,12 @@ package win.blade.common.gui.impl.menu.component.setting;
 
 import net.minecraft.client.gui.DrawContext;
 import org.lwjgl.glfw.GLFW;
-import ru.blade.common.GuiRender.melon.keyboard.Keyboard;
+
 import win.blade.common.gui.impl.menu.MenuScreen;
 import win.blade.common.gui.impl.menu.component.SettingComponent;
 import win.blade.common.gui.impl.menu.settings.impl.BindSetting;
 import win.blade.common.utils.color.ColorUtility;
+import win.blade.common.utils.keyboard.Keyboard;
 import win.blade.common.utils.math.animation.Easing;
 import win.blade.common.utils.other.IMouse;
 import win.blade.common.utils.render.builders.Builder;

@@ -14,31 +14,34 @@ import win.blade.core.module.api.Module;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.stream.Collectors;
 
 public class ModulePanel extends WindowComponent implements AnimationHelp {
-    private List<ModuleComponent> moduleComponents = new ArrayList<>();
+    private final List<ModuleComponent> allModuleComponents = new ArrayList<>();
+    private List<ModuleComponent> categoryModuleComponents = new ArrayList<>();
     private Category selectedCategory = Category.COMBAT;
     private ModuleComponent focusedComponent = null;
 
     public ModulePanel(MenuScreen menuScreen) {
         super(menuScreen);
+        for (Module module : Manager.moduleManager.all()) {
+            allModuleComponents.add(new ModuleComponent(module, menuScreen));
+        }
         updateModules();
     }
 
     private void updateModules() {
-        moduleComponents.clear();
-        for (Module module : Manager.moduleManager.all()) {
-            if (module.category() == selectedCategory) {
-                moduleComponents.add(new ModuleComponent(module, menuScreen));
-            }
-        }
+        categoryModuleComponents = allModuleComponents.stream()
+                .filter(comp -> comp.module.category() == selectedCategory)
+                .collect(Collectors.toList());
         menuScreen.scrollOffset = 0;
     }
 
     public void setSelectedCategory(Category category) {
-        this.selectedCategory = category;
-        updateModules();
+        if (this.selectedCategory != category) {
+            this.selectedCategory = category;
+            updateModules();
+        }
     }
 
     public Category getSelectedCategory() {
@@ -46,8 +49,8 @@ public class ModulePanel extends WindowComponent implements AnimationHelp {
     }
 
     private boolean hasActiveBinding() {
-        for (ModuleComponent component : moduleComponents) {
-            if (hasBindingInComponent(component) || hasTypingInComponent(component)) {
+        for (ModuleComponent component : allModuleComponents) {
+            if (component.settingComponent.isBinding() || hasBindingInComponent(component) || hasTypingInComponent(component)) {
                 return true;
             }
         }
@@ -68,19 +71,30 @@ public class ModulePanel extends WindowComponent implements AnimationHelp {
                 .anyMatch(StringSettingComponent::isTyping);
     }
 
+    private List<ModuleComponent> getFilteredModules() {
+        if (!menuScreen.isSearching()) {
+            return categoryModuleComponents;
+        }
+
+        return allModuleComponents.stream()
+                .filter(comp -> !menuScreen.searchCheck(comp.module.name()))
+                .collect(Collectors.toList());
+    }
+
     public void render(DrawContext context, int mouseX, int mouseY, float delta, float alpha, float scale, float panelX, float panelY) {
         context.enableScissor(
-                (int)(panelX + 115 * scale) - 1,
-                (int)(panelY + 40 * scale) - 1,
+                (int)(panelX + 115 * scale),
+                (int)(panelY + 40 * scale),
                 (int)(panelX + 115 * scale + 330 * scale),
                 (int)(panelY + 40 * scale + 220 * scale)
         );
 
+        List<ModuleComponent> filteredModules = getFilteredModules();
         long elapsTimer = timer.elapsedTime();
         float leftColumnY = panelY + 40 * scale + menuScreen.scrollOffset;
         float rightColumnY = panelY + 40 * scale + menuScreen.scrollOffset;
 
-        for (int i = 0; i < moduleComponents.size(); i++) {
+        for (int i = 0; i < filteredModules.size(); i++) {
             float stagger = i * moduleStagger();
             float progress = MathHelper.clamp((elapsTimer - stagger) / moduleDuration(), 0.0f, 1.0f);
 
@@ -91,7 +105,7 @@ public class ModulePanel extends WindowComponent implements AnimationHelp {
             float alphaMultiplier = menuScreen.isClosing ? 1.0f : easedProgress;
             float x = panelX + 115 * scale + (i % 2) * (160 * scale + 5 * scale) + (menuScreen.isClosing ? 0 : animXOffset);
 
-            ModuleComponent moduleComponent = moduleComponents.get(i);
+            ModuleComponent moduleComponent = filteredModules.get(i);
             float moduleHeight = moduleComponent.getActualHeight();
             float y = (i % 2 == 0) ? leftColumnY : rightColumnY;
 
@@ -130,11 +144,12 @@ public class ModulePanel extends WindowComponent implements AnimationHelp {
             return;
         }
 
+        List<ModuleComponent> filteredModules = getFilteredModules();
         long elapsTimer = timer.elapsedTime();
         float leftColumnY = panelY + 40 * scale + menuScreen.scrollOffset;
         float rightColumnY = panelY + 40 * scale + menuScreen.scrollOffset;
 
-        for (int i = 0; i < moduleComponents.size(); i++) {
+        for (int i = 0; i < filteredModules.size(); i++) {
             float stagger = i * moduleStagger();
             float progress = MathHelper.clamp((elapsTimer - stagger) / moduleDuration(), 0.0f, 1.0f);
 
@@ -144,7 +159,7 @@ public class ModulePanel extends WindowComponent implements AnimationHelp {
             float animXOffset = (i % 2 == 0 ? -50.0f : 50.0f) * (1.0f - easedProgress);
             float x = panelX + 115 * scale + (i % 2) * (160 * scale + 5 * scale) + (menuScreen.isClosing ? 0 : animXOffset);
 
-            ModuleComponent moduleComponent = moduleComponents.get(i);
+            ModuleComponent moduleComponent = filteredModules.get(i);
             float moduleHeight = moduleComponent.getActualHeight();
             float y = (i % 2 == 0) ? leftColumnY : rightColumnY;
 
@@ -173,11 +188,12 @@ public class ModulePanel extends WindowComponent implements AnimationHelp {
 
             menuScreen.scrollOffset += scrollDelta * 15;
 
+            List<ModuleComponent> filteredModules = getFilteredModules();
             float leftColumnHeight = 0;
             float rightColumnHeight = 0;
 
-            for (int i = 0; i < moduleComponents.size(); i++) {
-                float moduleHeight = moduleComponents.get(i).getActualHeight();
+            for (int i = 0; i < filteredModules.size(); i++) {
+                float moduleHeight = filteredModules.get(i).getActualHeight();
                 if (i % 2 == 0) {
                     leftColumnHeight += moduleHeight + 2 * scale;
                 } else {
@@ -204,7 +220,7 @@ public class ModulePanel extends WindowComponent implements AnimationHelp {
     @Override
     public void keyPressed(int keyCode, int scanCode, int modifiers) {
         if (hasActiveBinding()) {
-            for (ModuleComponent component : moduleComponents) {
+            for (ModuleComponent component : allModuleComponents) {
                 component.keyPressed(keyCode, scanCode, modifiers);
             }
         } else if (this.focusedComponent != null) {
@@ -214,7 +230,7 @@ public class ModulePanel extends WindowComponent implements AnimationHelp {
 
     public void charTyped(char chr, int modifiers) {
         if (hasActiveBinding()) {
-            for (ModuleComponent component : moduleComponents) {
+            for (ModuleComponent component : allModuleComponents) {
                 component.charTyped(chr, modifiers);
             }
         } else if (this.focusedComponent != null) {

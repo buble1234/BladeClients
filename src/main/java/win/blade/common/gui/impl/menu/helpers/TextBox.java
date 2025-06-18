@@ -30,7 +30,7 @@ public class TextBox implements IMouse, MinecraftInstance {
 
     private TextAlign textAlign;
     private float posX;
-    private String placeholder;
+    public String placeholder;
     public float width;
     private boolean hideCharacters;
     private boolean onlyNumbers;
