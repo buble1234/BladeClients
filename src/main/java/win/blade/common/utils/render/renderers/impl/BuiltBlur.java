@@ -56,8 +56,7 @@ public record BuiltBlur(
         float width = this.size.width(), height = this.size.height();
 		ShaderProgram shader = RenderSystem.setShader(BLUR_SHADER_KEY);
         shader.getUniform("Size").set(width, height);
-        shader.getUniform("Radius").set(this.radius.radius1(), this.radius.radius2(),
-            this.radius.radius3(), this.radius.radius4());
+        shader.getUniform("Radius").set(this.radius.radius1(), this.radius.radius2(), this.radius.radius3(), this.radius.radius4());
         shader.getUniform("Smoothness").set(this.smoothness);
         shader.getUniform("BlurRadius").set(this.blurRadius);
 
