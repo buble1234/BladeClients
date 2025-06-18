@@ -6,7 +6,7 @@ import win.blade.core.module.api.Module;
 
 import java.util.function.Supplier;
 
-public class Setting<T> implements ISetting, MinecraftInstance {
+public class Setting<T> implements MinecraftInstance {
 
     private String name;
     private T value;
@@ -42,7 +42,6 @@ public class Setting<T> implements ISetting, MinecraftInstance {
         return this;
     }
 
-    @Override
     public Setting<T> setVisible(Supplier<Boolean> value) {
         this.visible = value;
         if (mc.world != null && mc.player != null && onSetVisible != null) {
