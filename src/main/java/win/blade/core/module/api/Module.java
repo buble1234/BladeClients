@@ -1,10 +1,13 @@
 package win.blade.core.module.api;
 
 import net.minecraft.client.util.InputUtil;
+import win.blade.common.gui.impl.menu.settings.Setting;
 import win.blade.common.utils.minecraft.ChatUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.Manager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public abstract class Module implements MinecraftInstance {
@@ -15,12 +18,22 @@ public abstract class Module implements MinecraftInstance {
     private boolean enabled = false;
     private int keybind;
 
+    private List<Setting<?>> settings;
+
+
+    public List<Setting<?>> getSettings() {
+        return settings;
+    }
+
+
     protected Module() {
         var info = Optional.ofNullable(getClass().getAnnotation(ModuleInfo.class)).orElseThrow(() -> new IllegalStateException("Module %s must have @ModuleInfo annotation".formatted(getClass().getSimpleName())));
         this.data = new ModuleData(info.name(), info.category(), info.desc(), info.descKey(), info.bind());
         this.keybind = info.bind();
-
+        this.settings = new ArrayList<>();
     }
+
+
 
     public final Module toggle() {
         return setEnabled(!enabled);

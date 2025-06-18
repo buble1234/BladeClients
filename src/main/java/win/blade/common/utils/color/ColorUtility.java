@@ -1,5 +1,8 @@
 package win.blade.common.utils.color;
 
+import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.math.MathHelper;
+
 import java.awt.*;
 
 public class ColorUtility {
@@ -11,6 +14,27 @@ public class ColorUtility {
     public static int[] unpack(int color) {
         return new int[] {color >> 16 & 0xFF, color >> 8 & 0xFF, color & 0xFF, color >> 24 & 0xFF};
     }
+
+
+    public static int overCol(int color1, int color2, float factor) {
+        float f = MathHelper.clamp(factor, 0.0f, 1.0f);
+        return ColorHelper.getArgb(
+                (int) MathHelper.lerp(f, ColorHelper.getAlpha(color1), ColorHelper.getAlpha(color2)),
+                (int) MathHelper.lerp(f, ColorHelper.getRed(color1), ColorHelper.getRed(color2)),
+                (int) MathHelper.lerp(f, ColorHelper.getGreen(color1), ColorHelper.getGreen(color2)),
+                (int) MathHelper.lerp(f, ColorHelper.getBlue(color1), ColorHelper.getBlue(color2))
+        );
+    }
+
+    public static int multDark(int color, float factor) {
+        return ColorHelper.getArgb(
+                ColorHelper.getAlpha(color),
+                Math.round(ColorHelper.getRed(color) * factor),
+                Math.round(ColorHelper.getGreen(color) * factor),
+                Math.round(ColorHelper.getBlue(color) * factor)
+        );
+    }
+
 
     public static float[] normalize(Color color) {
         return new float[] {color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f};

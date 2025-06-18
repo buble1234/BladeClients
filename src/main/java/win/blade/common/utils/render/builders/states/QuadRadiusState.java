@@ -15,5 +15,4 @@ public record QuadRadiusState(float radius1, float radius2, float radius3, float
 	public QuadRadiusState(float radius) {
 		this(radius, radius, radius, radius);
 	}
-
 }
