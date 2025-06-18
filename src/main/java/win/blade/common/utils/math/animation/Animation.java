@@ -1,7 +1,4 @@
-package win.blade.common.utils.math.anmation;
-
-
-import win.blade.common.utils.math.anmation.Easing;
+package win.blade.common.utils.math.animation;
 
 import java.util.function.Consumer;
 

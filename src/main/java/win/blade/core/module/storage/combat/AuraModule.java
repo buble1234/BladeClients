@@ -25,7 +25,7 @@ import java.util.List;
         category = Category.COMBAT,
         bind = GLFW.GLFW_KEY_R
 )
-public class Aura extends Module {
+public class AuraModule extends Module {
 
     private static final double ATTACK_RANGE = 4.5;
     private static final double SEARCH_RANGE = 6.0;
