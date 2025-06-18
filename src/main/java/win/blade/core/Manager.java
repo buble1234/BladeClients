@@ -5,16 +5,25 @@ import win.blade.common.hud.ControlHudElement;
 import win.blade.common.hud.impl.RectangleHudElement;
 import win.blade.common.hud.impl.TimeHudElement;
 import win.blade.common.utils.minecraft.ChatUtility;
+import win.blade.common.utils.render.builders.Builder;
+import win.blade.common.utils.render.builders.states.QuadColorState;
+import win.blade.common.utils.render.builders.states.QuadRadiusState;
+import win.blade.common.utils.render.builders.states.SizeState;
+import win.blade.common.utils.render.renderers.impl.BuiltBlur;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.controllers.IEventBus;
 import win.blade.core.event.impl.input.InputEvents;
+import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleManager;
 
+import java.awt.*;
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
+
+import static win.blade.common.utils.render.renderers.IRenderer.DEFAULT_MATRIX;
 
 /**
  * Автор: NoCap
@@ -43,6 +52,16 @@ public class Manager {
         EVENT_BUS.subscribe(moduleManager);
 
         moduleManager.initialize();
+    }
+
+    @EventHandler
+    public void onRender(RenderEvents.Screen e) {
+        BuiltBlur rectangle = Builder.blur()
+                .size(new SizeState(80, 40))
+                .color(new QuadColorState(new Color(150, 50, 50)))
+                .radius(new QuadRadiusState(5f, 5f, 5f, 5f))
+                .build();
+        rectangle.render(DEFAULT_MATRIX, 100f, 100f);
     }
 
     @EventHandler

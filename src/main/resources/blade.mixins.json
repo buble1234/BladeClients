@@ -4,12 +4,16 @@
   "package": "win.blade.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "minecraft.network.MixinClientConnection"
   ],
   "client": [
     "MixinMinecraftClient",
     "accessor.MinecraftClientAccessor",
+    "minecraft.client.MixinClientPlayerEntity",
     "minecraft.entity.MixinPlayerEntity",
     "minecraft.gui.MixinTitleScreen",
+    "minecraft.gui.widgets.MixinPressableWidget",
+    "minecraft.gui.widgets.MixinSliderWidget",
     "minecraft.input.MixinKeyboard",
     "minecraft.input.MixinMouse",
     "minecraft.render.MixinGameRenderer",

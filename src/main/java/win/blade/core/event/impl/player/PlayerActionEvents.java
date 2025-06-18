@@ -1,6 +1,7 @@
 package win.blade.core.event.impl.player;
 
 import net.minecraft.entity.Entity;
+import win.blade.common.utils.render.msdf.MsdfFont;
 import win.blade.core.event.controllers.Event;
 
 public abstract class PlayerActionEvents extends Event {
@@ -30,6 +31,19 @@ public abstract class PlayerActionEvents extends Event {
     public static class Jump extends PlayerActionEvents {
         public Jump() {
             super();
+        }
+    }
+
+    public static class CloseInventory extends PlayerActionEvents {
+        private final int id;
+
+        public CloseInventory(int id) {
+            super();
+            this.id = id;
+        }
+
+        public int getId() {
+            return id;
         }
     }
 }
