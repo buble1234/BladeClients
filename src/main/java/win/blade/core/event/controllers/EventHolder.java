@@ -49,4 +49,8 @@ public class EventHolder {
     public static PlayerActionEvents.Jump getJumpEvent() {
         return new PlayerActionEvents.Jump();
     }
+
+    public static PlayerActionEvents.CloseInventory getCloseInventoryEvent(int id) {
+        return new PlayerActionEvents.CloseInventory(id);
+    }
 }
