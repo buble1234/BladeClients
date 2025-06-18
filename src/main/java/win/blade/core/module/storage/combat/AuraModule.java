@@ -159,7 +159,7 @@ public class AuraModule extends Module {
         }
 
         if (distanceToTarget <= attackRange.getValue()) {
-            handleCombat(target);
+            //handleCombat(target);
         }
 
         handleAutoBlock(target);

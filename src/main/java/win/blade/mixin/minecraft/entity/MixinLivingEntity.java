@@ -19,27 +19,6 @@ public abstract class MixinLivingEntity {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;addVelocityInternal(Lnet/minecraft/util/math/Vec3d;)V")
     )
     private void correctJumpMovement(LivingEntity entity, Vec3d velocity) {
-        if (entity != MinecraftClient.getInstance().player) {
-            entity.addVelocityInternal(velocity);
-            return;
-        }
-
-        AimManager manager = AimManager.INSTANCE;
-        TargetTask task = manager.getActiveTask();
-        ViewDirection aimDirection = manager.getCurrentDirection();
-
-        if (task == null || !task.settings().enableMovementFix() || aimDirection == null) {
-            entity.addVelocityInternal(velocity);
-            return;
-        }
-
-        float yawRad = aimDirection.yaw() * 0.017453292F;
-        Vec3d correctedVelocity = new Vec3d(
-                -MathHelper.sin(yawRad) * 0.2,
-                velocity.y,
-                MathHelper.cos(yawRad) * 0.2
-        );
-
-        entity.addVelocityInternal(correctedVelocity);
+        entity.addVelocityInternal(velocity);
     }
 }
