@@ -39,7 +39,7 @@ public class Manager {
     public static final TimeHudElement timeElement = new TimeHudElement();
     public static final RectangleHudElement rectangleElement = new RectangleHudElement();
     public static final ModuleManager moduleManager = new ModuleManager();
-    public static MenuScreen menuScreen;
+    private static MenuScreen menuScreen;
 
     private static final Set<Integer> pressedKeys = new HashSet<>();
 
@@ -54,7 +54,6 @@ public class Manager {
         EVENT_BUS.subscribe(moduleManager);
 
         moduleManager.initialize();
-        menuScreen = new MenuScreen();
     }
 
 
@@ -109,6 +108,10 @@ public class Manager {
                             (bind == GLFW.GLFW_MOUSE_BUTTON_5 && button == 4);
                 })
                 .forEach(Module::toggle);
+    }
+
+    public static MenuScreen getMenuScreen() {
+        return menuScreen == null ? menuScreen = new MenuScreen() : menuScreen;
     }
 
     public static ModuleManager getModuleManagement() {

@@ -2,6 +2,7 @@ package win.blade.core.module.storage.render;
 
 import org.lwjgl.glfw.GLFW;
 import win.blade.common.gui.impl.menu.MenuScreen;
+import win.blade.core.Manager;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
@@ -14,11 +15,9 @@ import win.blade.core.module.api.ModuleInfo;
 )
 public class Menu extends Module {
 
-
-
     @Override
     public void onEnable() {
-        mc.setScreen();
+        mc.setScreen(Manager.getMenuScreen());
         this.setEnabled(false);
     }
 }
