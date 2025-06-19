@@ -71,7 +71,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         TargetTask task = manager.getActiveTask();
 
         //if (manager.isEnabled() && direction != null && task != null && (task.settings().enableSilentAim() || task.settings().enableMovementFix())) {
-            //return direction.pitch();
+        //return direction.pitch();
         //}
         if (manager.isEnabled() && direction != null && task != null) {
             return direction.pitch();
