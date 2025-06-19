@@ -22,7 +22,7 @@ public final class ResourceUtility {
 
 	private static final ResourceManager RESOURCE_MANAGER = MinecraftClient.getInstance().getResourceManager();
 	private static final Gson GSON = new Gson();
-	
+
 	public static Identifier getShaderIdentifier(String dir, String name) {
 		return Identifier.of("blade", "core/" + dir + "/"+ name);
 	}
@@ -38,10 +38,10 @@ public final class ResourceUtility {
 	public static String toString(Identifier identifier) {
 		return toString(identifier, "\n");
 	}
-	
+
 	public static String toString(Identifier identifier, String delimiter) {
-		try(InputStream inputStream = RESOURCE_MANAGER.open(identifier);
-				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+		try (InputStream inputStream = MinecraftClient.getInstance().getResourceManager().open(identifier);
+			 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
 			return reader.lines().collect(Collectors.joining(delimiter));
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
