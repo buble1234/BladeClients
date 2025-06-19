@@ -12,13 +12,11 @@ import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
 import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
-import win.blade.common.utils.aim.core.MultiSmoothTransition;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
 import win.blade.common.utils.aim.base.AimCalculator;
 import win.blade.common.utils.aim.core.AimSettings;
 import win.blade.common.utils.aim.core.ViewDirection;
-import win.blade.common.utils.aim.core.MultiViewDirection;
 import win.blade.common.utils.aim.mode.AdaptiveSmooth;
 import win.blade.common.utils.player.AttackUtility;
 import win.blade.common.utils.player.SprintUtility;
@@ -31,33 +29,20 @@ import win.blade.core.module.api.ModuleInfo;
 
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
  * Автор: Claude [еблан тупой]
  * Дата создания: 18.06.2025
- * Обновлено: Добавлена поддержка MultiViewDirection
  */
 
 @ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
-    private final ModeSetting rotationMode = new ModeSetting(this, "Мод ротации", "Плавный", "Снап", "1 тик", "Мульти", "Сканирование");
+    private final ModeSetting rotationMode = new ModeSetting(this, "Мод ротации", "Плавный", "Снап", "1 тик");
     private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3, 1, 6, 0.1f);
     private final SliderSetting rotationRange = new SliderSetting(this, "Дистанция поворота", 4, 1, 8, 0.1f);
     private final ModeSetting pvpMode = new ModeSetting(this, "Мод пвп", "Новое (1.9)", "Старое (1.8)");
     private final ModeSetting criticalsMode = new ModeSetting(this, "Мод критических ударов", "Только в прыжке", "Всегда", "Выкл");
-
-    private final ModeSetting multiStrategy = new ModeSetting(this, "Стратегия мульти", "PRIORITY", "CLOSEST", "SEQUENTIAL", "RANDOM")
-            .setVisible(() -> rotationMode.getValue().equals("Мульти") || rotationMode.getValue().equals("Сканирование"));
-    private final SliderSetting multiTargets = new SliderSetting(this, "Макс. целей", 3, 1, 8, 1)
-            .setVisible(() -> rotationMode.getValue().equals("Мульти"));
-    private final SliderSetting scanRadius = new SliderSetting(this, "Радиус сканирования", 5, 2, 10, 0.5f)
-            .setVisible(() -> rotationMode.getValue().equals("Сканирование"));
-    private final SliderSetting scanPoints = new SliderSetting(this, "Точки сканирования", 6, 4, 12, 1)
-            .setVisible(() -> rotationMode.getValue().equals("Сканирование"));
-    private final SliderSetting switchDelay = new SliderSetting(this, "Задержка переключения", 500, 100, 2000, 50)
-            .setVisible(() -> rotationMode.getValue().equals("Мульти") || rotationMode.getValue().equals("Сканирование"));
 
     private final MultiBooleanSetting target = new MultiBooleanSetting(this, "Таргет",
             BooleanSetting.of("Игроки", true),
@@ -74,8 +59,7 @@ public class AuraModule extends Module {
             BooleanSetting.of("Сбрасывать спринт", true),
             BooleanSetting.of("Ломать щит", true),
             BooleanSetting.of("Отпускать щит", true),
-            BooleanSetting.of("Visual rotate", true),
-            BooleanSetting.of("Предиктивное прицеливание", false)
+            BooleanSetting.of("Visual rotate", true)
     );
 
     private final ModeSetting moveCorrectionMode = new ModeSetting(this, "Мод корректировки движений", "Незаметная", "Сфокусированная", "Выкл")
@@ -86,12 +70,8 @@ public class AuraModule extends Module {
     private final Random random = new Random();
 
     private Entity currentTarget;
-    private List<Entity> currentMultiTargets;
-    private MultiViewDirection activeMultiView;
-    private MultiSmoothTransition multiSmoothTransition;
     private long lastAttackTime = 0;
     private long nextAttackTime = 0;
-    private long lastSwitchTime = 0;
     private boolean wasBlocking = false;
 
     @Override
@@ -99,7 +79,6 @@ public class AuraModule extends Module {
         super.onEnable();
         resetState();
         updateTargetSettings();
-        multiSmoothTransition = new MultiSmoothTransition(13.5f);
     }
 
     @Override
@@ -110,26 +89,19 @@ public class AuraModule extends Module {
 
     private void resetState() {
         currentTarget = null;
-        currentMultiTargets = null;
-        activeMultiView = null;
         lastAttackTime = 0;
         nextAttackTime = 0;
-        lastSwitchTime = 0;
         wasBlocking = false;
         AimManager.INSTANCE.disable();
     }
 
     private void cleanup() {
         AimManager.INSTANCE.disable();
-        if (multiSmoothTransition != null) {
-            multiSmoothTransition.clearMultiTarget();
-        }
         if (wasBlocking && mc.player != null) {
             mc.player.stopUsingItem();
             wasBlocking = false;
         }
         currentTarget = null;
-        activeMultiView = null;
     }
 
     @EventHandler
@@ -137,15 +109,6 @@ public class AuraModule extends Module {
         if (mc.player == null || mc.world == null) return;
 
         updateTargetSettings();
-
-        switch (rotationMode.getValue()) {
-            case "Мульти" -> handleMultiTargeting();
-            case "Сканирование" -> handleAreaScanning();
-            default -> handleSingleTargeting();
-        }
-    }
-
-    private void handleSingleTargeting() {
         Entity target = findBestTarget();
 
         if (target != null) {
@@ -153,131 +116,6 @@ public class AuraModule extends Module {
         } else {
             handleNoTarget();
         }
-    }
-
-    private void handleMultiTargeting() {
-        List<Entity> targets = findMultipleTargets();
-
-        if (!targets.isEmpty()) {
-            updateMultiView(targets);
-            handleMultiTargetRotation();
-
-            Entity closestTarget = getClosestTarget(targets);
-            if (closestTarget != null && mc.player.distanceTo(closestTarget) <= attackRange.getValue()) {
-                handleCombat(closestTarget);
-            }
-        } else {
-            handleNoTarget();
-        }
-    }
-
-    private void handleAreaScanning() {
-        if (mc.player == null) return;
-
-        Vec3d playerPos = mc.player.getPos();
-        Vec3d scanCenter = playerPos.add(scanRadius.getValue(), 0, 0);
-
-        MultiViewDirection scanPattern = AimCalculator.createScanPattern(
-                scanCenter,
-                scanRadius.getValue(),
-                scanPoints.getValue().intValue(),
-                getMultiStrategy()
-        );
-
-        if (activeMultiView == null || !activeMultiView.hasActivePoints()) {
-            activeMultiView = scanPattern;
-        }
-
-        handleMultiViewRotation();
-
-        Entity foundTarget = findBestTarget();
-        if (foundTarget != null && mc.player.distanceTo(foundTarget) <= attackRange.getValue()) {
-            handleCombat(foundTarget);
-        }
-    }
-
-    private void updateMultiView(List<Entity> targets) {
-        long currentTime = System.currentTimeMillis();
-
-        if (activeMultiView == null ||
-                currentTime - lastSwitchTime > switchDelay.getValue() ||
-                !targets.equals(currentMultiTargets)) {
-
-            MultiViewDirection.Strategy strategy = getMultiStrategy();
-
-            if (options.getValue("Предиктивное прицеливание")) {
-                activeMultiView = AimCalculator.calculatePredictiveMultiTarget(targets, 20.0f, strategy);
-            } else {
-                activeMultiView = AimCalculator.calculateMultiTarget(targets, strategy);
-            }
-
-            currentMultiTargets = targets;
-            lastSwitchTime = currentTime;
-        }
-    }
-
-    private MultiViewDirection.Strategy getMultiStrategy() {
-        return switch (multiStrategy.getValue()) {
-            case "PRIORITY" -> MultiViewDirection.Strategy.PRIORITY;
-            case "CLOSEST" -> MultiViewDirection.Strategy.CLOSEST;
-            case "SEQUENTIAL" -> MultiViewDirection.Strategy.SEQUENTIAL;
-            case "RANDOM" -> MultiViewDirection.Strategy.RANDOM;
-            default -> MultiViewDirection.Strategy.PRIORITY;
-        };
-    }
-
-    private void handleMultiTargetRotation() {
-        if (activeMultiView != null && activeMultiView.hasActivePoints()) {
-            handleMultiViewRotation();
-        }
-    }
-
-    private void handleMultiViewRotation() {
-        if (activeMultiView == null) return;
-
-        ViewDirection targetDirection = activeMultiView.getCurrentDirection();
-        if (targetDirection == null || targetDirection == ViewDirection.ORIGIN) return;
-
-        multiSmoothTransition.setActiveMultiTarget(activeMultiView);
-
-        AimSettings multiSettings = new AimSettings(
-                multiSmoothTransition,
-                options.getValue("Visual rotate"),
-                options.getValue("Корректировать движения"),
-                moveCorrectionMode.is("Незаметная")
-        );
-
-        TargetTask multiTask = multiSettings.buildTask(targetDirection);
-        AimManager.INSTANCE.execute(multiTask);
-    }
-
-    private List<Entity> findMultipleTargets() {
-        if (mc.player == null || mc.world == null) return List.of();
-
-        Box searchArea = mc.player.getBoundingBox().expand(TargetUtility.maxTargetDistance);
-        List<Entity> potentialTargets = mc.world.getOtherEntities(mc.player, searchArea);
-
-        return potentialTargets.stream()
-                .filter(TargetUtility::isValidTarget)
-                .sorted((e1, e2) -> {
-                    double dist1 = mc.player.distanceTo(e1);
-                    double dist2 = mc.player.distanceTo(e2);
-
-                    if (e1 instanceof PlayerEntity && !(e2 instanceof PlayerEntity)) return -1;
-                    if (e2 instanceof PlayerEntity && !(e1 instanceof PlayerEntity)) return 1;
-
-                    return Double.compare(dist1, dist2);
-                })
-                .limit(multiTargets.getValue().intValue())
-                .collect(Collectors.toList());
-    }
-
-    private Entity getClosestTarget(List<Entity> targets) {
-        if (mc.player == null || targets.isEmpty()) return null;
-
-        return targets.stream()
-                .min((e1, e2) -> Double.compare(mc.player.distanceTo(e1), mc.player.distanceTo(e2)))
-                .orElse(null);
     }
 
     private void updateTargetSettings() {
@@ -320,20 +158,16 @@ public class AuraModule extends Module {
         }
 
         if (distanceToTarget <= attackRange.getValue()) {
-            handleCombat(target);
+            //handleCombat(target);
         }
 
         handleAutoBlock(target);
     }
 
     private void handleNoTarget() {
-        if (currentTarget != null || activeMultiView != null) {
+        if (currentTarget != null) {
             AimManager.INSTANCE.disable();
-            if (multiSmoothTransition != null) {
-                multiSmoothTransition.clearMultiTarget();
-            }
             currentTarget = null;
-            activeMultiView = null;
 
             if (wasBlocking) {
                 stopBlocking();
@@ -515,14 +349,8 @@ public class AuraModule extends Module {
     }
 
     public Entity getCurrentTarget() { return currentTarget; }
-    public List<Entity> getMultiTargets() { return currentMultiTargets; }
-    public MultiViewDirection getActiveMultiView() { return activeMultiView; }
-    public boolean isMultiTargeting() { return activeMultiView != null && activeMultiView.hasActivePoints(); }
     public boolean isAttacking() { return AttackUtility.isAttacking(); }
     public double getDistanceToTarget() {
         return currentTarget != null ? mc.player.distanceTo(currentTarget) : -1;
-    }
-    public int getActiveTargetCount() {
-        return currentMultiTargets != null ? currentMultiTargets.size() : (currentTarget != null ? 1 : 0);
     }
 }

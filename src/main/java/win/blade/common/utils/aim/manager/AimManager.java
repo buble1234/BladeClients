@@ -1,14 +1,15 @@
 package win.blade.common.utils.aim.manager;
 
 import win.blade.common.utils.aim.core.ViewDirection;
-import win.blade.common.utils.minecraft.MinecraftInstance;
+
+import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
 /**
  * Автор: NoCap
  * Дата создания: 18.06.2025
  */
 
-public class AimManager implements MinecraftInstance {
+public class AimManager {
     public static final AimManager INSTANCE = new AimManager();
 
     private ViewDirection currentDirection;
