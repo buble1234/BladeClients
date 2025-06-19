@@ -99,7 +99,7 @@ public class ModuleSettingComponent extends SettingComponent implements IMouse {
         if (1.0f - animProgress > 0.01f) {
             Builder.text()
                     .font(font)
-                    .text(moduleSetting.getValue() ? "Enabled" : "Disabled")
+                    .text(moduleSetting.getValue() ? "Включен" : "Выключен")
                     .size(6 * scale)
                     .color(new Color(230, 230, 230, (int) (255 * alpha * (1.0f - animProgress))))
                     .build()
@@ -120,7 +120,7 @@ public class ModuleSettingComponent extends SettingComponent implements IMouse {
 
             Builder.text()
                     .font(font)
-                    .text("Bind")
+                    .text("Бинд")
                     .size(6 * scale)
                     .color(new Color(230, 230, 230, (int) (255 * alpha * animProgress)))
                     .build()
@@ -132,7 +132,7 @@ public class ModuleSettingComponent extends SettingComponent implements IMouse {
                     .size(6 * scale)
                     .color(new Color(160, 160, 160, (int) (255 * alpha * animProgress)))
                     .build()
-                    .render(matrix, x + 10 * scale + font.getWidth("Bind", 6 * scale) + (4 * scale), y + 22 * scale + yOffset);
+                    .render(matrix, x + 10 * scale + font.getWidth("Бинд", 6 * scale) + (4 * scale), y + 22 * scale + yOffset);
 
             float buttonX = x + 10 * scale;
             float buttonsY = y + 34 * scale + yOffset;

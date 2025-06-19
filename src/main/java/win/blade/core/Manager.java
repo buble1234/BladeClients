@@ -5,10 +5,13 @@ import win.blade.common.gui.impl.menu.MenuScreen;
 import win.blade.common.hud.ControlHudElement;
 import win.blade.common.hud.impl.RectangleHudElement;
 import win.blade.common.hud.impl.TimeHudElement;
+import win.blade.common.hud.notification.NotificationManager;
+import win.blade.common.utils.resource.ResourceUtility;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.controllers.IEventBus;
 import win.blade.core.event.impl.minecraft.UpdateEvent;
+import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.module.api.BindMode;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleManager;
@@ -27,7 +30,9 @@ public class Manager implements MinecraftInstance {
     public static final TimeHudElement timeElement = new TimeHudElement();
     public static final RectangleHudElement rectangleElement = new RectangleHudElement();
     public static final ModuleManager moduleManager = new ModuleManager();
+    public static final NotificationManager notificationManager = new NotificationManager();
     private static MenuScreen menuScreen;
+
 
     private final Map<Module, Boolean> wasKeyPressed = new HashMap<>();
 
@@ -42,6 +47,13 @@ public class Manager implements MinecraftInstance {
         EVENT_BUS.subscribe(moduleManager);
 
         moduleManager.initialize();
+    }
+
+
+
+    @EventHandler
+    public void onRender(RenderEvents.Screen e) {
+        notificationManager.render(e.getDrawContext());
     }
 
 
@@ -64,11 +76,11 @@ public class Manager implements MinecraftInstance {
             boolean isPress = Keyboard.isKeyDown(module.keybind());
             boolean prevPress = wasKeyPressed.getOrDefault(module, false);
 
-            if (module.getBindMode() == BindMode.TOGGLE) {
+            if (module.getBindMode() == BindMode.ПЕРЕКЛЮЧАТЬ) {
                 if (isPress && !prevPress) {
                     module.toggle();
                 }
-            } else if (module.getBindMode() == BindMode.HOLD) {
+            } else if (module.getBindMode() == BindMode.УДЕРЖИВАТЬ) {
                 if (isPress != module.isEnabled()) {
                     module.setEnabled(isPress);
                 }
@@ -79,7 +91,7 @@ public class Manager implements MinecraftInstance {
     }
 
     public static MenuScreen getMenuScreen() {
-        return menuScreen == null ? menuScreen = new MenuScreen() : menuScreen;
+        return menuScreen == null  ? menuScreen = new MenuScreen() : menuScreen;
     }
 
     public static ModuleManager getModuleManagement() {

@@ -15,4 +15,5 @@ public @interface ModuleInfo {
     Category category();
 
     String descKey() default "default";
+
 }

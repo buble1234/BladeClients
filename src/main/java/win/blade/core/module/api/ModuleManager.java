@@ -10,10 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public final class ModuleManager {
+public final class ModuleManager extends HashMap<String,Module> {
 
     private static final ModuleManager INSTANCE = new ModuleManager();
-    private final Map<String, Module> modules = new ConcurrentHashMap<>();
 
     public ModuleManager() {
     }
@@ -55,22 +54,22 @@ public final class ModuleManager {
     }
 
     private void registerSingle(Module module) {
-        modules.put(module.name().toLowerCase(), module);
+        put(module.name().toLowerCase(), module);
     }
 
     public Optional<Module> find(String name) {
-        return Optional.ofNullable(modules.get(name.toLowerCase()));
+        return Optional.ofNullable(get(name.toLowerCase()));
     }
 
     public <T extends Module> Optional<T> find(Class<T> clazz) {
-        return modules.values().stream()
+        return values().stream()
                 .filter(clazz::isInstance)
                 .map(clazz::cast)
                 .findFirst();
     }
 
     public Stream<Module> stream() {
-        return modules.values().stream();
+        return values().stream();
     }
 
     public Stream<Module> enabled() {
@@ -110,6 +109,6 @@ public final class ModuleManager {
     }
 
     public List<Module> all() {
-        return List.copyOf(modules.values());
+        return List.copyOf(values());
     }
 }
