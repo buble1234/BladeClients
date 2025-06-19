@@ -13,6 +13,11 @@ import java.util.regex.Pattern;
 
 import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
+/**
+ * Автор: NoCap
+ * Дата создания: 17.06.2025
+ */
+
 public class ServerUtility {
 
     private static final Map<String, Object> cache = new ConcurrentHashMap<>();

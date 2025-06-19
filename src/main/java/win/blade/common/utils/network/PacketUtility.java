@@ -28,6 +28,11 @@ import java.util.ArrayList;
 
 import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
+/**
+ * Автор: NoCap
+ * Дата создания: 17.06.2025
+ */
+
 public class PacketUtility {
     
     private static final AtomicInteger sentPackets = new AtomicInteger(0);

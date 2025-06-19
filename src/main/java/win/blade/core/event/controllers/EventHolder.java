@@ -6,9 +6,9 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import win.blade.core.event.impl.input.InputEvents;
+import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.event.impl.player.PlayerActionEvents;
 import win.blade.core.event.impl.render.RenderEvents;
-import win.blade.core.event.impl.minecraft.UpdateEvent;
 
 /**
  * Автор: NoCap
@@ -18,10 +18,13 @@ import win.blade.core.event.impl.minecraft.UpdateEvent;
 
 public class EventHolder {
 
-    public static UpdateEvent getUpdateEvent() {
-        return new UpdateEvent();
+    public static UpdateEvents.Update getUpdateEvent() {
+        return new UpdateEvents.Update();
     }
 
+    public static UpdateEvents.PlayerUpdate getPlayerUpdateEvent() {
+        return new UpdateEvents.PlayerUpdate();
+    }
     public static RenderEvents getScreenRenderEvent(MatrixStack matrixStack, float partialTicks, DrawContext drawContext) {
         return new RenderEvents.Screen(matrixStack, partialTicks, drawContext);
     }

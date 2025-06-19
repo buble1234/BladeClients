@@ -1,9 +1,14 @@
-package win.blade.common.utils.rotation.core;
+package win.blade.common.utils.aim.core;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
-import win.blade.common.utils.rotation.manager.TargetTask;
-import win.blade.common.utils.rotation.mode.AdaptiveSmooth;
+import win.blade.common.utils.aim.manager.TargetTask;
+import win.blade.common.utils.aim.mode.AdaptiveSmooth;
+
+/**
+ * Автор: NoCap
+ * Дата создания: 18.06.2025
+ */
 
 public record AimSettings(
         SmoothTransition transitionMode,
@@ -11,6 +16,15 @@ public record AimSettings(
         boolean enableMovementFix,
         boolean enableSilentAim
 ) {
+
+    public static final AimSettings AIM = new AimSettings(
+            new AdaptiveSmooth(12f), false, false, false
+    );
+
+    public static final AimSettings FAIM = new AimSettings(
+            new AdaptiveSmooth(12f), false, true, true
+    );
+
     public static final AimSettings SAIM = new AimSettings(
             new AdaptiveSmooth(12f), false, true, true
     );

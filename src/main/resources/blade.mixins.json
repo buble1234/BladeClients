@@ -7,7 +7,8 @@
     "minecraft.entity.MixinEntity",
     "minecraft.entity.MixinLivingEntity",
     "minecraft.item.MixinItem",
-    "minecraft.network.MixinClientConnection"
+    "minecraft.network.MixinClientConnection",
+    "minecraft.other.fluid.MixinFlowableFluid"
   ],
   "client": [
     "MixinMinecraftClient",
@@ -18,7 +19,6 @@
     "minecraft.gui.MixinTitleScreen",
     "minecraft.gui.widgets.MixinPressableWidget",
     "minecraft.gui.widgets.MixinSliderWidget",
-    "minecraft.input.MixinInput",
     "minecraft.input.MixinKeyboard",
     "minecraft.input.MixinKeyboardInput",
     "minecraft.input.MixinMouse",

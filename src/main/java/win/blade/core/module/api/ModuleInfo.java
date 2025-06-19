@@ -1,5 +1,7 @@
 package win.blade.core.module.api;
 
+import org.lwjgl.glfw.GLFW;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -10,7 +12,7 @@ public @interface ModuleInfo {
 
     String desc() default "У модуля нету описания";
 
-    int bind() default 0;
+    int bind() default GLFW.GLFW_KEY_UNKNOWN;
 
     Category category();
 

@@ -1,7 +1,12 @@
-package win.blade.common.utils.rotation.core;
+package win.blade.common.utils.aim.core;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
+
+/**
+ * Автор: NoCap
+ * Дата создания: 18.06.2025
+ */
 
 public interface SmoothTransition {
     ViewDirection interpolate(ViewDirection current, ViewDirection target);

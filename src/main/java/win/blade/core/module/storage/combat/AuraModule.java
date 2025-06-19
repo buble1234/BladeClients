@@ -1,8 +1,6 @@
 package win.blade.core.module.storage.combat;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShieldItem;
@@ -10,22 +8,21 @@ import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import org.lwjgl.glfw.GLFW;
 import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
 import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
-import win.blade.common.utils.rotation.manager.AimManager;
-import win.blade.common.utils.rotation.manager.TargetTask;
-import win.blade.common.utils.rotation.base.AimCalculator;
-import win.blade.common.utils.rotation.core.AimSettings;
-import win.blade.common.utils.rotation.core.ViewDirection;
-import win.blade.common.utils.rotation.mode.AdaptiveSmooth;
+import win.blade.common.utils.aim.manager.AimManager;
+import win.blade.common.utils.aim.manager.TargetTask;
+import win.blade.common.utils.aim.base.AimCalculator;
+import win.blade.common.utils.aim.core.AimSettings;
+import win.blade.common.utils.aim.core.ViewDirection;
+import win.blade.common.utils.aim.mode.AdaptiveSmooth;
 import win.blade.common.utils.player.AttackUtility;
 import win.blade.common.utils.player.SprintUtility;
 import win.blade.common.utils.player.TargetUtility;
 import win.blade.core.event.controllers.EventHandler;
-import win.blade.core.event.impl.minecraft.UpdateEvent;
+import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
@@ -33,11 +30,12 @@ import win.blade.core.module.api.ModuleInfo;
 import java.util.List;
 import java.util.Random;
 
-@ModuleInfo(
-        name = "Aura",
-        category = Category.COMBAT,
-        bind = GLFW.GLFW_KEY_R
-)
+/**
+ * Автор: Claude [еблан тупой]
+ * Дата создания: 18.06.2025
+ */
+
+@ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
     private final ModeSetting rotationMode = new ModeSetting(this, "Мод ротации", "Плавный", "Снап", "1 тик");
@@ -60,7 +58,8 @@ public class AuraModule extends Module {
             BooleanSetting.of("Корректировать движения", true),
             BooleanSetting.of("Сбрасывать спринт", true),
             BooleanSetting.of("Ломать щит", true),
-            BooleanSetting.of("Отпускать щит", true)
+            BooleanSetting.of("Отпускать щит", true),
+            BooleanSetting.of("Visual rotate", true)
     );
 
     private final ModeSetting moveCorrectionMode = new ModeSetting(this, "Мод корректировки движений", "Незаметная", "Сфокусированная", "Выкл")
@@ -106,7 +105,7 @@ public class AuraModule extends Module {
     }
 
     @EventHandler
-    public void onUpdate(UpdateEvent event) {
+    public void onUpdate(UpdateEvents.Update event) {
         if (mc.player == null || mc.world == null) return;
 
         updateTargetSettings();
@@ -183,7 +182,7 @@ public class AuraModule extends Module {
             case "Плавный" -> {
                 AimSettings smoothSettings = new AimSettings(
                         new AdaptiveSmooth(13.5f, 1.5f),
-                        false,
+                        options.getValue("Visual rotate"),
                         options.getValue("Корректировать движения"),
                         moveCorrectionMode.is("Незаметная")
                 );

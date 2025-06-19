@@ -2,6 +2,11 @@ package win.blade.common.utils.player;
 
 import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
+/**
+ * Автор: NoCap
+ * Дата создания: 17.06.2025
+ */
+
 public final class MovementUtility {
 
     public static boolean isMoving() {

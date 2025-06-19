@@ -5,6 +5,11 @@ import net.minecraft.util.math.MathHelper;
 
 import java.awt.*;
 
+/**
+ * Автор: NoCap
+ * Дата создания: 17.06.2025
+ */
+
 public class ColorUtility {
 
     public static int pack(int red, int green, int blue, int alpha) {

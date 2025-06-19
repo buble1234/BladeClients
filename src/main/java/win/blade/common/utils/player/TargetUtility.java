@@ -6,20 +6,23 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.util.hit.HitResult;
 import win.blade.common.utils.minecraft.MinecraftInstance;
-import win.blade.common.utils.rotation.base.AimCalculator;
 
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Comparator;
 import java.util.stream.Collectors;
+
+/**
+ * Автор: NoCap && Claude
+ * Дата создания: 18.06.2025
+ */
 
 public class TargetUtility implements MinecraftInstance {
 

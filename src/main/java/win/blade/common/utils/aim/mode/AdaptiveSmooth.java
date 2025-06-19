@@ -1,7 +1,12 @@
-package win.blade.common.utils.rotation.mode;
+package win.blade.common.utils.aim.mode;
 
-import win.blade.common.utils.rotation.core.SmoothTransition;
-import win.blade.common.utils.rotation.core.ViewDirection;
+import win.blade.common.utils.aim.core.SmoothTransition;
+import win.blade.common.utils.aim.core.ViewDirection;
+
+/**
+ * Автор: NoCap
+ * Дата создания: 18.06.2025
+ */
 
 public record AdaptiveSmooth(float baseSpeed, float acceleration) implements SmoothTransition {
 

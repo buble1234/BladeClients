@@ -12,6 +12,11 @@ import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.util.Hand;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 
+/**
+ * Автор: NoCap && Claude
+ * Дата создания: 18.06.2025
+ */
+
 public class AttackUtility implements MinecraftInstance {
 
     public enum AttackMode {

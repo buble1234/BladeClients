@@ -1,14 +1,21 @@
-package win.blade.common.utils.rotation.base;
+package win.blade.common.utils.aim.base;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
-import win.blade.common.utils.rotation.manager.AimManager;
-import win.blade.common.utils.rotation.core.ViewDirection;
+import win.blade.common.utils.aim.manager.AimManager;
+import win.blade.common.utils.aim.core.ViewDirection;
+
+import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
+
+/**
+ * Автор: NoCap
+ * Дата создания: 18.06.2025
+ */
 
 public class AimCalculator {
 
     public static ViewDirection calculateToEntity(Entity entity) {
-        var player = net.minecraft.client.MinecraftClient.getInstance().player;
+        var player = mc.player;
         if (player == null) return ViewDirection.ORIGIN;
 
         Vec3d playerPos = player.getCameraPosVec(1.0f);
@@ -28,7 +35,7 @@ public class AimCalculator {
     }
 
     public static ViewDirection calculatePredictiveAim(Entity entity, float velocity) {
-        var player = net.minecraft.client.MinecraftClient.getInstance().player;
+        var player = mc.player;
         if (player == null) return ViewDirection.ORIGIN;
 
         Vec3d playerPos = player.getCameraPosVec(1.0f);

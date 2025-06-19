@@ -1,7 +1,12 @@
-package win.blade.common.utils.rotation.core;
+package win.blade.common.utils.aim.core;
 
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+
+/**
+ * Автор: NoCap
+ * Дата создания: 18.06.2025
+ */
 
 public record ViewDirection(float yaw, float pitch) {
     public static final ViewDirection ORIGIN = new ViewDirection(0, 0);
