@@ -1,9 +1,14 @@
-package win.blade.common.utils.rotation.manager;
+package win.blade.common.utils.aim.manager;
 
-import net.minecraft.client.MinecraftClient;
-import win.blade.common.utils.rotation.core.ViewDirection;
+import win.blade.common.utils.aim.core.ViewDirection;
+import win.blade.common.utils.minecraft.MinecraftInstance;
 
-public class AimManager {
+/**
+ * Автор: NoCap
+ * Дата создания: 18.06.2025
+ */
+
+public class AimManager implements MinecraftInstance {
     public static final AimManager INSTANCE = new AimManager();
 
     private ViewDirection currentDirection;
@@ -62,8 +67,15 @@ public class AimManager {
         tickCounter = 0;
     }
 
+    public void forceRotation(ViewDirection direction) {
+        this.currentDirection = direction;
+        this.previousDirection = direction;
+        this.serverDirection = direction;
+        this.isActive = false;
+    }
+
     private ViewDirection getPlayerDirection() {
-        var player = MinecraftClient.getInstance().player;
+        var player = mc.player;
         return player != null ? new ViewDirection(player.getYaw(), player.getPitch()) : ViewDirection.ORIGIN;
     }
 

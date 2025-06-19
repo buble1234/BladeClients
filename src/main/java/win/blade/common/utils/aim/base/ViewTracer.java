@@ -1,4 +1,4 @@
-package win.blade.common.utils.rotation.base;
+package win.blade.common.utils.aim.base;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ProjectileUtil;
@@ -6,9 +6,14 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.client.MinecraftClient;
-import win.blade.common.utils.rotation.core.ViewDirection;
+import win.blade.common.utils.aim.core.ViewDirection;
 
 import java.util.function.Predicate;
+
+/**
+ * Автор: NoCap
+ * Дата создания: 18.06.2025
+ */
 
 public class ViewTracer {
 

@@ -13,7 +13,7 @@ import win.blade.common.utils.network.PacketUtility;
 import win.blade.common.utils.network.ServerUtility;
 import win.blade.common.utils.player.MovementUtility;
 import win.blade.core.event.controllers.EventHandler;
-import win.blade.core.event.impl.minecraft.UpdateEvent;
+import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.event.impl.network.PacketEvent;
 import win.blade.core.event.impl.player.PlayerActionEvents;
 import win.blade.core.module.api.Category;
@@ -29,17 +29,16 @@ import java.util.concurrent.TimeUnit;
 @ModuleInfo(
         name = "InvWalk",
         category = Category.MOVE,
-        desc = "Позволяет передвигаться с открытым инвентарём",
-        bind = GLFW.GLFW_KEY_G
+        desc = "Позволяет передвигаться с открытым инвентарём"
 )
-public class InvWalk extends Module {
+public class InvWalkModule extends Module {
     private final List<Packet<?>> packets = new ArrayList<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final TimerUtil wait = new TimerUtil();
     private KeyBinding[] keys;
 
     @EventHandler
-    public void onTick(UpdateEvent event) {
+    public void onTick(UpdateEvents.Update event) {
         if (mc.player == null || mc.currentScreen instanceof ChatScreen || mc.currentScreen instanceof CreativeInventoryScreen) {
             return;
         }

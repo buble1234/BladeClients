@@ -5,13 +5,17 @@ import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
+/**
+ * Автор: NoCap
+ * Дата создания: 18.06.2025
+ */
+
 @ModuleInfo(
         name = "HitMarkers",
         category = Category.RENDER,
-        desc = "Спавнит торусы при ударе",
-        bind = GLFW.GLFW_KEY_V
+        desc = "Спавнит торусы при ударе"
 )
-public class Torus extends Module {
+public class TorusModule extends Module {
 
 
 //

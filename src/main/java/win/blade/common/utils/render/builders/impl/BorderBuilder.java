@@ -11,6 +11,7 @@ public final class BorderBuilder extends AbstractBuilder<BuiltBorder> {
     private SizeState size;
     private QuadRadiusState radius;
     private QuadColorState color;
+    private QuadColorState outlineColor;
     private float thickness;
     private float internalSmoothness, externalSmoothness;
 
@@ -29,6 +30,11 @@ public final class BorderBuilder extends AbstractBuilder<BuiltBorder> {
         return this;
     }
 
+    public BorderBuilder outlineColor(QuadColorState outlineColor) {
+        this.outlineColor = outlineColor;
+        return this;
+    }
+
     public BorderBuilder thickness(float thickness) {
         this.thickness = thickness;
         return this;
@@ -43,11 +49,12 @@ public final class BorderBuilder extends AbstractBuilder<BuiltBorder> {
     @Override
     protected BuiltBorder _build() {
         return new BuiltBorder(
-            this.size,
-            this.radius,
-            this.color,
-            this.thickness,
-            this.internalSmoothness, this.externalSmoothness
+                this.size,
+                this.radius,
+                this.color,
+                this.outlineColor,
+                this.thickness,
+                this.internalSmoothness, this.externalSmoothness
         );
     }
 
@@ -56,9 +63,9 @@ public final class BorderBuilder extends AbstractBuilder<BuiltBorder> {
         this.size = SizeState.NONE;
         this.radius = QuadRadiusState.NO_ROUND;
         this.color = QuadColorState.TRANSPARENT;
+        this.outlineColor = QuadColorState.TRANSPARENT;
         this.thickness = 0.0f;
         this.internalSmoothness = 1.0f;
         this.externalSmoothness = 1.0f;
     }
-
 }

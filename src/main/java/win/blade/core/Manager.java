@@ -8,7 +8,7 @@ import win.blade.common.hud.impl.TimeHudElement;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.controllers.IEventBus;
-import win.blade.core.event.impl.minecraft.UpdateEvent;
+import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.BindMode;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleManager;
@@ -46,7 +46,7 @@ public class Manager implements MinecraftInstance {
 
 
     @EventHandler
-    public void onUpdate(UpdateEvent e) {
+    public void onUpdate(UpdateEvents.Update e) {
         handleKeybinds();
     }
 

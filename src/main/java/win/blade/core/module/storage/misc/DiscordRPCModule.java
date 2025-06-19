@@ -15,20 +15,24 @@ import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
+/**
+ * Автор: NoCap
+ * Дата создания: 18.06.2025
+ */
+
 @ModuleInfo(
         name = "DiscordRPC",
         category = Category.MISC,
-        desc = "Показывает статус игры в Discord",
-        bind = GLFW.GLFW_KEY_R
+        desc = "Показывает статус игры в Discord"
 )
-public class DiscordRPC extends Module {
+public class DiscordRPCModule extends Module {
 
     private IPCClient client;
     private final long timeStamp = System.currentTimeMillis();
 
     private static final long APPLICATION_ID = 1384850624776245399L;
 
-    public DiscordRPC() {
+    public DiscordRPCModule() {
         setEnabled(true);
     }
 

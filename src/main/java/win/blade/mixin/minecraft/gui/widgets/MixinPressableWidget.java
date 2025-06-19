@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
@@ -20,7 +21,7 @@ import win.blade.common.utils.render.renderers.impl.BuiltText;
 import java.awt.*;
 
 @Mixin(PressableWidget.class)
-public abstract class MixinPressableWidget extends ClickableWidget {
+public abstract class MixinPressableWidget extends ClickableWidget implements MinecraftInstance {
 
 //    private final Color normalColor = new Color(30, 30, 30);
 //    private final Color hoverColor = new Color(50, 50, 50);

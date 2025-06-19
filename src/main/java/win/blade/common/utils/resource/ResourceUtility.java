@@ -13,6 +13,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 
+/**
+ * Автор: NoCap
+ * Дата создания: 17.06.2025
+ */
+
 public final class ResourceUtility {
 
 	private static final ResourceManager RESOURCE_MANAGER = MinecraftClient.getInstance().getResourceManager();

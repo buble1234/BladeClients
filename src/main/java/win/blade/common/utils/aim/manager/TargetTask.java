@@ -1,9 +1,14 @@
-package win.blade.common.utils.rotation.manager;
+package win.blade.common.utils.aim.manager;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
-import win.blade.common.utils.rotation.core.AimSettings;
-import win.blade.common.utils.rotation.core.ViewDirection;
+import win.blade.common.utils.aim.core.AimSettings;
+import win.blade.common.utils.aim.core.ViewDirection;
+
+/**
+ * Автор: NoCap
+ * Дата создания: 18.06.2025
+ */
 
 public record TargetTask(
         ViewDirection targetDirection,

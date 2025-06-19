@@ -8,13 +8,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.Manager;
 import win.blade.core.event.impl.network.PacketEvent;
 
-import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
-
 @Mixin(ClientConnection.class)
-public class MixinClientConnection {
+public class MixinClientConnection implements MinecraftInstance {
 
     @Inject(method = "handlePacket", at = @At("HEAD"), cancellable = true)
     private static <T extends PacketListener> void onHandlePacket(Packet<T> packet, PacketListener listener, CallbackInfo info) {

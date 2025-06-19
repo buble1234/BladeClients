@@ -6,12 +6,14 @@ import net.minecraft.item.Item;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import win.blade.common.utils.rotation.core.ViewDirection;
-import win.blade.common.utils.rotation.manager.AimManager;
+import win.blade.common.utils.minecraft.MinecraftInstance;
+import win.blade.common.utils.aim.core.ViewDirection;
+import win.blade.common.utils.aim.manager.AimManager;
 
 @Mixin(Item.class)
-public class MixinItem {
+public class MixinItem implements MinecraftInstance {
 
+    // Todo: по факту не нужная хуйня, можно удалить :)
     @Redirect(method = "raycast", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getYaw()F"))
     private static float interceptRaycastYaw(PlayerEntity player) {
         if (player != MinecraftClient.getInstance().player) {

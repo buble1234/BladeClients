@@ -11,11 +11,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
 
 @Mixin(GameRenderer.class)
-public abstract class MixinGameRenderer {
+public abstract class MixinGameRenderer implements MinecraftInstance {
 
     @Shadow
     @Final
@@ -31,10 +32,8 @@ public abstract class MixinGameRenderer {
         Manager.EVENT_BUS.post(EventHolder.getWorldRenderEvent(newMatStack, this.camera, tickCounter.getTickDelta(false)));
     }
 
-//    @Redirect(
-//            method = "findCrosshairTarget",
-//            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getRotationVec(F)Lnet/minecraft/util/math/Vec3d;")
-//    )
+    // TODO: Не обязательно
+//    @Redirect(method = "findCrosshairTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getRotationVec(F)Lnet/minecraft/util/math/Vec3d;"))
 //    private Vec3d interceptCrosshairRotation(Entity entity, float tickDelta) {
 //        if (entity instanceof ClientPlayerEntity) {
 //            AimManager manager = AimManager.INSTANCE;

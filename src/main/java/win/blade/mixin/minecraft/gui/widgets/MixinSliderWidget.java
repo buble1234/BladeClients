@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
@@ -21,7 +22,7 @@ import win.blade.common.utils.render.renderers.impl.BuiltText;
 import java.awt.*;
 
 @Mixin(SliderWidget.class)
-public abstract class MixinSliderWidget extends ClickableWidget {
+public abstract class MixinSliderWidget extends ClickableWidget implements MinecraftInstance {
 //    @Shadow protected double value;
 //
 //    private final Color sliderBackground = new Color(30, 30, 30);

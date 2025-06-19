@@ -1,8 +1,7 @@
-package win.blade.core.module.storage.hud;
+package win.blade.core.module.storage.render.hud;
 
 import net.minecraft.client.gui.DrawContext;
 import org.joml.Matrix4f;
-import org.lwjgl.glfw.GLFW;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
@@ -16,16 +15,16 @@ import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
+import win.blade.core.module.api.NonRegistrable;
 
 import java.awt.*;
 
 @ModuleInfo(
         name = "Watermark",
         category = Category.RENDER,
-        desc = "Отображает водяной знак клиента",
-        bind = GLFW.GLFW_KEY_Y
+        desc = "Отображает водяной знак клиента"
 )
-public class Watermark extends Module implements MinecraftInstance {
+public class WatermarkModule extends Module implements MinecraftInstance, NonRegistrable {
 
     private final int x = 10;
     private final int y = 10;

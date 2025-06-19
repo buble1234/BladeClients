@@ -14,6 +14,11 @@ import win.blade.mixin.accessor.MinecraftClientAccessor;
 
 import java.util.Optional;
 
+/**
+ * Автор: NoCap
+ * Дата создания: 17.06.2025
+ */
+
 public class MinecraftUtility {
 
     public static Session newSession(String name){

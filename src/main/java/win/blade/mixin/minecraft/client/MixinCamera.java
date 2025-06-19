@@ -9,17 +9,18 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import win.blade.common.utils.rotation.core.ViewDirection;
-import win.blade.common.utils.rotation.manager.AimManager;
+import win.blade.common.utils.minecraft.MinecraftInstance;
+import win.blade.common.utils.aim.core.ViewDirection;
+import win.blade.common.utils.aim.manager.AimManager;
 
 @Mixin(Camera.class)
-public abstract class MixinCamera {
+public abstract class MixinCamera implements MinecraftInstance {
 
     @Shadow
     protected abstract void setRotation(float yaw, float pitch);
 
     @Inject(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setPos(DDD)V", shift = At.Shift.AFTER))
-    private void hookCameraUpdate(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci) {
+    private void onCameraUpdate(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci) {
         var manager = AimManager.INSTANCE;
         var task = manager.getActiveTask();
 

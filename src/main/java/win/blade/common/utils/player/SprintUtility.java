@@ -4,6 +4,11 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.math.MathHelper;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 
+/**
+ * Автор: NoCap
+ * Дата создания: 17.06.2025
+ */
+
 public class SprintUtility implements MinecraftInstance {
 
     private static boolean emergencyStop = false;
