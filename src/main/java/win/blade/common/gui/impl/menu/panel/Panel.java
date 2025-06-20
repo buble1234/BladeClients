@@ -1,13 +1,10 @@
 package win.blade.common.gui.impl.menu.panel;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
 import win.blade.common.gui.impl.menu.MenuScreen;
 import win.blade.common.gui.impl.menu.module.ModulePanel;
 import win.blade.common.gui.impl.menu.window.WindowComponent;
+import win.blade.common.utils.other.IMouse;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
@@ -16,61 +13,71 @@ import win.blade.common.utils.render.msdf.FontType;
 
 import java.awt.Color;
 
-public class Panel extends WindowComponent {
+public class Panel extends WindowComponent implements IMouse {
     private final CategoryPanel categoryPanel;
     private final ModulePanel modulePanel;
+    private final UserComponent userComponent;
 
     public Panel(MenuScreen menuScreen) {
         super(menuScreen);
         this.categoryPanel = new CategoryPanel(menuScreen);
         this.modulePanel = new ModulePanel(menuScreen);
+        this.userComponent = new UserComponent(menuScreen);
     }
 
-    public void render(DrawContext context, int mouseX, int mouseY, float delta, float alpha, float scale) {
-        float x = (menuScreen.width / 2f) - ((450 * scale) / 2f);
-        float y = (menuScreen.height / 2f) - ((270 * scale) / 2f);
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta, float alpha) {
+        float scale = menuScreen.scaleAnimation.get();
+        this.width = 450 * scale;
+        this.height = 270 * scale;
+        this.x = (menuScreen.width / 2f) - (this.width / 2f);
+        this.y = (menuScreen.height / 2f) - (this.height / 2f);
 
         Builder.blur()
-                .size(new SizeState(450 * scale, 270 * scale))
+                .size(new SizeState(width, height))
                 .color(new QuadColorState(new Color(24, 25, 34, (int) (240 * alpha))))
-                .radius(new QuadRadiusState(12f))
+                .radius(new QuadRadiusState(12f * scale))
                 .blurRadius(10)
+                .brightness(3)
                 .build()
                 .render(x, y);
 
-
+        userComponent.x = x + 10 * scale;
+        userComponent.y = y + height - 30 * scale;
+        userComponent.render(context, mouseX, mouseY, delta, alpha);
 
         Builder.text()
                 .font(FontType.icon2.get())
                 .text("a")
-                .color(new Color(-1, true))
-                .size(12)
+                .size(12 * scale)
+                .color(new Color(255, 255, 255, (int) (255 * alpha)))
                 .build()
-                .render(x + 15 * scale, y + 27* scale);
+                .render(x + 15 * scale, y + 20 * scale);
 
         Builder.text()
                 .font(FontType.sf_regular.get())
                 .text("blade")
-                .size(14f)
+                .size(14f * scale)
                 .color(new Color(255, 255, 255, (int) (255 * alpha)))
                 .build()
-                .render(x + 38 * scale, y + 25 * scale);
+                .render(x + 38 * scale, y + 18 * scale);
+
 
         Builder.rectangle()
-                .size(new SizeState(1, 270 * scale))
+                .size(new SizeState(2, height))
                 .color(new QuadColorState(new Color(255, 255, 255, (int) (15 * alpha))))
                 .radius(new QuadRadiusState(0f))
                 .build()
                 .render(x + 110 * scale, y);
 
         Builder.rectangle()
-                .size(new SizeState(338 * scale, 1))
+                .size(new SizeState(width - (111 * scale), 2))
                 .color(new QuadColorState(new Color(255, 255, 255, (int) (15 * alpha))))
                 .radius(new QuadRadiusState(0f))
                 .build()
                 .render(x + 111 * scale, y + 30 * scale);
 
-        context.enableScissor((int) x, (int) y, (int) (x + 110 * scale), (int) (y + 270 * scale));
+        context.enableScissor((int) x, (int) y, (int) (x + 110 * scale), (int) (y + height));
         categoryPanel.render(context, mouseX, mouseY, delta, alpha, scale, x, y);
         context.disableScissor();
 
@@ -82,11 +89,8 @@ public class Panel extends WindowComponent {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta, float alpha) {
-    }
-
-    @Override
     public void mouseClicked(double mouseX, double mouseY, int button) {
+        userComponent.mouseClicked(mouseX, mouseY, button);
         categoryPanel.mouseClicked(mouseX, mouseY, button, menuScreen.scaleAnimation.get());
         modulePanel.mouseClicked(mouseX, mouseY, button);
     }

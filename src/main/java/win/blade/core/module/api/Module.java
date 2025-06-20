@@ -66,8 +66,8 @@ public abstract class Module implements MinecraftInstance {
     }
 
     private void status(boolean enabled) {
-        String status = enabled ? "enabled" : "disabled";
-        Manager.notificationManager.add(data.name() + " " + status, NotificationType.INFO, 2000);
+        Manager.notificationManager.add(data.name() + " " + (enabled ? "enabled" : "disabled"),
+                enabled ? NotificationType.SUCCESS : NotificationType.ERROR, 2000);
     }
 
     protected void onEnable() {}

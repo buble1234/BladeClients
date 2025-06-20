@@ -7,6 +7,7 @@ import org.lwjgl.glfw.GLFW;
 import ru.blade.common.GuiRender.melon.interfaces.TextAlign;
 import win.blade.common.gui.impl.menu.helpers.TextBox;
 import win.blade.common.gui.impl.menu.panel.Panel;
+import win.blade.common.gui.impl.menu.window.WindowManager;
 import win.blade.common.utils.keyboard.Keyboard;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.AnimationHelp;
@@ -21,7 +22,7 @@ import win.blade.common.utils.render.msdf.FontType;
 import java.awt.Color;
 
 public class MenuScreen extends Screen implements AnimationHelp, IMouse {
-    private final Panel panel;
+    public final WindowManager windowManager = new WindowManager();
     public final Animation alphaAnimation = new Animation();
     public final Animation scaleAnimation = new Animation();
     public boolean isClosing = false;
@@ -32,7 +33,6 @@ public class MenuScreen extends Screen implements AnimationHelp, IMouse {
 
     public MenuScreen() {
         super(Text.of("Menu"));
-        this.panel = new Panel(this);
     }
 
     @Override
@@ -45,8 +45,11 @@ public class MenuScreen extends Screen implements AnimationHelp, IMouse {
         scaleAnimation.run(1.0, 0.4, Easing.EASE_OUT_BACK);
         timer.reset();
 
-        searchField = new TextBox(0, 0, 0, FontType.sf_regular.get(), 8, Color.WHITE.getRGB(), TextAlign.CENTER, "Search (Ctrl + F)", false, false);
-        unfocus();
+        windowManager.clear();
+        windowManager.add(new Panel(this));
+
+        searchField = new TextBox(0, 0, 0, FontType.sf_regular.get(), 8, Color.WHITE.getRGB(), TextAlign.CENTER, "Поиск (Ctrl + F)", false, false);
+        unfocusSearch();
         searchAnimation.set(0.5);
     }
 
@@ -61,42 +64,46 @@ public class MenuScreen extends Screen implements AnimationHelp, IMouse {
             return;
         }
 
-        panel.render(context, mouseX, mouseY, delta, alphaAnimation.get(), scaleAnimation.get());
-        renderSearch(context, mouseX, mouseY);
+        windowManager.render(context, mouseX, mouseY, delta, alphaAnimation.get());
+        renderSearchPanel(context, mouseX, mouseY);
     }
 
-
-    // возможно кал, можете переделать поиск.
-    public void renderSearch(DrawContext context, int mouseX, int mouseY) {
-        searchAnimation.run(searchField.selected ? 1.0 : 0.7, 0.4, Easing.EASE_OUT_CUBIC);
-
+    private void renderSearchPanel(DrawContext context, int mouseX, int mouseY) {
+        searchAnimation.run(searchField.selected ? 1.0 : 0.9, 0.4, Easing.EASE_OUT_CUBIC);
 
         float anim = searchAnimation.get();
         float scale = scaleAnimation.get();
 
-        float mainPanelX = (width / 2f) - ((450 * scale) / 2f);
+        float mainPanelWidth = 450 * scale;
+        float mainPanelX = (width / 2f) - (mainPanelWidth / 2f);
         float mainPanelY = (height / 2f) - ((270 * scale) / 2f);
 
-        float searchWidth = searchField.font.getWidth(isSearching() ? searchField.getText() : searchField.placeholder, 8 * scale) + 20 * scale;
-        float searchX = (mainPanelX + (450 * scale) / 2f) - (searchWidth / 2f);
-        float searchY = mainPanelY + (270 * scale) + 10 * scale + (10 * scale * (1.0f - anim));
+        float yOffset = 10 * scale * (1.0f - anim);
+        float searchPanelHeight = 20 * scale;
+        float searchPanelY = mainPanelY + (270 * scale) + 10 * scale + yOffset;
+
+        String textToShow = isSearching() ? searchField.getText() : searchField.placeholder;
+        float searchPanelWidth = searchField.font.getWidth(textToShow, 8 * scale) + 20 * scale;
+        float searchPanelX = (mainPanelX + mainPanelWidth / 2f) - (searchPanelWidth / 2f);
 
         Builder.blur()
-                .size(new SizeState(searchWidth, 20 * scale))
+                .size(new SizeState(searchPanelWidth, searchPanelHeight))
                 .radius(new QuadRadiusState(6f * scale))
                 .color(new QuadColorState(new Color(24, 25, 34, (int) (230 * alphaAnimation.get() * anim))))
                 .blurRadius(10)
+                .brightness(3)
                 .build()
-                .render(searchX, searchY);
+                .render(searchPanelX, searchPanelY);
 
-        searchField.x = (searchX + searchWidth / 2f) - (2 * scale);
-        searchField.y = searchY + ((20 * scale) - (8 * scale)) / 2f;
-        searchField.width = searchWidth - 10 * scale;
+        searchField.x = searchPanelX + searchPanelWidth / 2f;
+        searchField.y = searchPanelY + (searchPanelHeight - (8 * scale)) / 2f;
+        searchField.width = searchPanelWidth - 10 * scale;
         searchField.fontSize = 8 * scale;
         searchField.color = new Color(255, 255, 255, (int)(255 * alphaAnimation.get() * anim)).getRGB();
         searchField.draw(context, alphaAnimation.get() * anim);
     }
-    public void unfocus() {
+
+    private void unfocusSearch() {
         if (searchField != null) {
             searchField.selected = false;
             searchField.setText("");
@@ -107,26 +114,30 @@ public class MenuScreen extends Screen implements AnimationHelp, IMouse {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         float scale = scaleAnimation.get();
-
-        float mainPanelX = (width / 2f) - ((450 * scale) / 2f);
+        float mainPanelWidth = 450 * scale;
+        float mainPanelX = (width / 2f) - (mainPanelWidth / 2f);
         float mainPanelY = (height / 2f) - ((270 * scale) / 2f);
-        boolean hoverPanel = isHover(mouseX, mouseY, mainPanelX, mainPanelY, 450 * scale, 270 * scale);
 
-        float searchWidth = searchField.font.getWidth(isSearching() ? searchField.getText() : searchField.placeholder, 8 * scale) + 20 * scale;
-        float searchX = (mainPanelX + (450 * scale) / 2f) - (searchWidth / 2f);
-        float searchY = mainPanelY + (270 * scale) + 10 * scale + (10 * scale * (1.0f - searchAnimation.get()));
-        boolean hoverSearch = isHover(mouseX, mouseY, searchX, searchY, searchWidth, 20 * scale);
+        float anim = searchAnimation.get();
+        float yOffset = 10 * scale * (1.0f - anim);
+        float searchPanelHeight = 20 * scale;
+        float searchPanelYPos = mainPanelY + (270 * scale) + 10 * scale + yOffset;
+        String textToShow = isSearching() ? searchField.getText() : searchField.placeholder;
+        float searchPanelWidth = searchField.font.getWidth(textToShow, 8 * scale) + 20 * scale;
+        float searchPanelXPos = (mainPanelX + mainPanelWidth / 2f) - (searchPanelWidth / 2f);
+        boolean isHoveringSearch = isHover(mouseX, mouseY, searchPanelXPos, searchPanelYPos, searchPanelWidth, searchPanelHeight);
 
-        if (searchField.selected && !hoverSearch) {
-            unfocus();
-        }
-
-        if (hoverSearch) {
+        if (isHoveringSearch) {
             if (isLClick(button)) {
                 searchField.selected = true;
             }
-        } else if (hoverPanel) {
-            panel.mouseClicked(mouseX, mouseY, button);
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        windowManager.mouseClicked(mouseX, mouseY, button);
+
+        if (searchField.selected && !windowManager.isAnyHovered(mouseX, mouseY)) {
+            unfocusSearch();
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
@@ -134,13 +145,13 @@ public class MenuScreen extends Screen implements AnimationHelp, IMouse {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        panel.mouseReleased(mouseX, mouseY, button);
+        windowManager.mouseReleased(mouseX, mouseY, button);
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        panel.mouseScrolled(mouseX, mouseY, verticalAmount);
+        windowManager.mouseScrolled(mouseX, mouseY, verticalAmount);
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
@@ -148,7 +159,7 @@ public class MenuScreen extends Screen implements AnimationHelp, IMouse {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && keyCode == GLFW.GLFW_KEY_F) {
             if (searchField.selected) {
-                unfocus();
+                unfocusSearch();
             } else {
                 searchField.selected = true;
             }
@@ -157,14 +168,14 @@ public class MenuScreen extends Screen implements AnimationHelp, IMouse {
 
         if (searchField.selected) {
             if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-                unfocus();
+                unfocusSearch();
                 return true;
             }
             searchField.keyPressed(keyCode, scanCode, modifiers);
             return true;
         }
 
-        panel.keyPressed(keyCode, scanCode, modifiers);
+        windowManager.keyPressed(keyCode, scanCode, modifiers);
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -175,7 +186,7 @@ public class MenuScreen extends Screen implements AnimationHelp, IMouse {
             scrollOffset = 0;
             return true;
         }
-        panel.charTyped(chr, modifiers);
+        windowManager.charTyped(chr, modifiers);
         return super.charTyped(chr, modifiers);
     }
 

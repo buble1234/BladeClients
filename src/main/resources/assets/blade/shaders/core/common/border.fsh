@@ -1,4 +1,3 @@
-// Author NoCap
 #version 150
 
 #moj_import <blade:common.glsl>
@@ -11,6 +10,10 @@ uniform vec4 Radius;
 uniform float Thickness;
 uniform vec2 Smoothness;
 uniform vec4 OutlineColor[4];
+uniform vec4 OutlineColor2[4];
+uniform float gradientFlag;
+uniform float gradientSpeed;
+uniform float globalTime;
 
 out vec4 OutColor;
 
@@ -32,6 +35,15 @@ void main() {
     vec4 bottomColor = mix(OutlineColor[1], OutlineColor[2], normalizedCoord.x);
     vec4 outlineColor = mix(topColor, bottomColor, normalizedCoord.y);
 
+    if (gradientFlag > 0.5) {
+        vec4 topColor2 = mix(OutlineColor2[0], OutlineColor2[3], normalizedCoord.x);
+        vec4 bottomColor2 = mix(OutlineColor2[1], OutlineColor2[2], normalizedCoord.x);
+        vec4 outlineColor2 = mix(topColor2, bottomColor2, normalizedCoord.y);
+
+        float t = fract(globalTime * gradientSpeed);
+        outlineColor = mix(outlineColor, outlineColor2, t);
+    }
+
     vec4 finalColor;
 
     if (borderAlpha > 0.0) {
@@ -42,7 +54,7 @@ void main() {
 
     finalColor.a *= outerAlpha;
 
-    if (finalColor.a == 0.0) { // alpha test
+    if (finalColor.a == 0.0) {
         discard;
     }
 

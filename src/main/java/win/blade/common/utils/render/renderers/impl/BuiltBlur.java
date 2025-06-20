@@ -27,13 +27,14 @@ public record BuiltBlur(
         QuadRadiusState radius,
         QuadColorState color,
         float smoothness,
-        float blurRadius
-    ) implements IRenderer {
+        float blurRadius,
+        float brightness
+) implements IRenderer {
 
-	private static final ShaderProgramKey BLUR_SHADER_KEY = new ShaderProgramKey(ResourceUtility.getShaderIdentifier("blurs", "blur"),
-		VertexFormats.POSITION_COLOR, Defines.EMPTY);
+    private static final ShaderProgramKey BLUR_SHADER_KEY = new ShaderProgramKey(ResourceUtility.getShaderIdentifier("blurs", "blur"),
+            VertexFormats.POSITION_COLOR, Defines.EMPTY);
     private static final Supplier<SimpleFramebuffer> TEMP_FBO_SUPPLIER = Suppliers
-        .memoize(() -> new SimpleFramebuffer(1920, 1024, false));
+            .memoize(() -> new SimpleFramebuffer(1920, 1024, false));
     private static final Framebuffer MAIN_FBO = MinecraftClient.getInstance().getFramebuffer();
 
     @Override
@@ -53,18 +54,18 @@ public record BuiltBlur(
 
         RenderSystem.setShaderTexture(0, fbo.getColorAttachment());
 
-        float width = this.size.width(), height = this.size.height();
-		ShaderProgram shader = RenderSystem.setShader(BLUR_SHADER_KEY);
-        shader.getUniform("Size").set(width, height);
+        ShaderProgram shader = RenderSystem.setShader(BLUR_SHADER_KEY);
+        shader.getUniform("Size").set(this.size.width(), this.size.height());
         shader.getUniform("Radius").set(this.radius.radius1(), this.radius.radius2(), this.radius.radius3(), this.radius.radius4());
         shader.getUniform("Smoothness").set(this.smoothness);
         shader.getUniform("BlurRadius").set(this.blurRadius);
+        shader.getUniform("Brightness").set(this.brightness);
 
-		BufferBuilder builder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        BufferBuilder builder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         builder.vertex(matrix, x, y, z).color(this.color.color1());
-        builder.vertex(matrix, x, y + height, z).color(this.color.color2());
-        builder.vertex(matrix, x + width, y + height, z).color(this.color.color3());
-        builder.vertex(matrix, x + width, y, z).color(this.color.color4());
+        builder.vertex(matrix, x, y + this.size.height(), z).color(this.color.color2());
+        builder.vertex(matrix, x + this.size.width(), y + this.size.height(), z).color(this.color.color3());
+        builder.vertex(matrix, x + this.size.width(), y, z).color(this.color.color4());
 
         BufferRenderer.drawWithGlobalProgram(builder.end());
 

@@ -11,6 +11,7 @@ public final class BlurBuilder extends AbstractBuilder<BuiltBlur> {
     private QuadColorState color;
     private float smoothness;
     private float blurRadius;
+    private float brightness;
 
     public BlurBuilder size(SizeState size) {
         this.size = size;
@@ -37,14 +38,20 @@ public final class BlurBuilder extends AbstractBuilder<BuiltBlur> {
         return this;
     }
 
+    public BlurBuilder brightness(float brightness) {
+        this.brightness = brightness;
+        return this;
+    }
+
     @Override
     protected BuiltBlur _build() {
         return new BuiltBlur(
-            this.size,
-            this.radius,
-            this.color,
-            this.smoothness,
-            this.blurRadius
+                this.size,
+                this.radius,
+                this.color,
+                this.smoothness,
+                this.blurRadius,
+                this.brightness
         );
     }
 
@@ -55,6 +62,7 @@ public final class BlurBuilder extends AbstractBuilder<BuiltBlur> {
         this.color = QuadColorState.WHITE;
         this.smoothness = 1.0f;
         this.blurRadius = 0.0f;
+        this.brightness = 1.0f;
     }
 
 }

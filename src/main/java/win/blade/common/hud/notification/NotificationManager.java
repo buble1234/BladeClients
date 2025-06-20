@@ -2,6 +2,8 @@ package win.blade.common.hud.notification;
 
 import net.minecraft.client.gui.DrawContext;
 import win.blade.common.hud.notification.impl.InfoNotification;
+import win.blade.common.hud.notification.impl.SuccessNotification;
+import win.blade.common.hud.notification.impl.ErrorNotification;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -9,15 +11,12 @@ public class NotificationManager {
     private final CopyOnWriteArrayList<Notification> notifications = new CopyOnWriteArrayList<>();
 
     public void add(String content, NotificationType type, long delay) {
-        Notification notification = null;
+        Notification notification = switch (type) {
+            case INFO -> new InfoNotification(content, delay, notifications.size());
+            case SUCCESS -> new SuccessNotification(content, delay, notifications.size());
+            case ERROR -> new ErrorNotification(content, delay, notifications.size());
+        };
 
-        switch (type) {
-            case INFO:
-                notification = new InfoNotification(content, delay, notifications.size());
-                break;
-        }
-
-        if (notification == null) return;
         notifications.add(notification);
     }
 
