@@ -18,4 +18,7 @@ public @interface ModuleInfo {
 
     String descKey() default "default";
 
+
+    BindMode mode() default BindMode.ПЕРЕКЛЮЧАТЬ;
+
 }
