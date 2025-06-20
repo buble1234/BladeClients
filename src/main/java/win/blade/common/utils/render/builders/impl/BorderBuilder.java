@@ -14,6 +14,9 @@ public final class BorderBuilder extends AbstractBuilder<BuiltBorder> {
     private QuadColorState outlineColor;
     private float thickness;
     private float internalSmoothness, externalSmoothness;
+    private boolean gradientEnabled;
+    private QuadColorState outlineColor2;
+    private float gradientSpeed;
 
     public BorderBuilder size(SizeState size) {
         this.size = size;
@@ -46,6 +49,13 @@ public final class BorderBuilder extends AbstractBuilder<BuiltBorder> {
         return this;
     }
 
+    public BorderBuilder gradient(boolean enabled, QuadColorState outlineColor2, float speed) {
+        this.gradientEnabled = enabled;
+        this.outlineColor2 = outlineColor2;
+        this.gradientSpeed = speed;
+        return this;
+    }
+
     @Override
     protected BuiltBorder _build() {
         return new BuiltBorder(
@@ -54,7 +64,10 @@ public final class BorderBuilder extends AbstractBuilder<BuiltBorder> {
                 this.color,
                 this.outlineColor,
                 this.thickness,
-                this.internalSmoothness, this.externalSmoothness
+                this.internalSmoothness, this.externalSmoothness,
+                this.gradientEnabled,
+                this.outlineColor2,
+                this.gradientSpeed
         );
     }
 
@@ -67,5 +80,8 @@ public final class BorderBuilder extends AbstractBuilder<BuiltBorder> {
         this.thickness = 0.0f;
         this.internalSmoothness = 1.0f;
         this.externalSmoothness = 1.0f;
+        this.gradientEnabled = false;
+        this.outlineColor2 = QuadColorState.TRANSPARENT;
+        this.gradientSpeed = 2.0f;
     }
 }

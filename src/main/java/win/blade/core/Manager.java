@@ -26,6 +26,7 @@ public class Manager implements MinecraftInstance {
 
     public static final IEventBus EVENT_BUS = new EventBus();
 
+    private boolean panic;
     public static final ControlHudElement controlElement = new ControlHudElement();
     public static final TimeHudElement timeElement = new TimeHudElement();
     public static final RectangleHudElement rectangleElement = new RectangleHudElement();
@@ -37,6 +38,7 @@ public class Manager implements MinecraftInstance {
     private final Map<Module, Boolean> wasKeyPressed = new HashMap<>();
 
     public void init() {
+        setPanic(false);
         EVENT_BUS.registerLambdaFactory("win.blade",
                 (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
 
@@ -92,6 +94,14 @@ public class Manager implements MinecraftInstance {
 
     public static MenuScreen getMenuScreen() {
         return menuScreen == null  ? menuScreen = new MenuScreen() : menuScreen;
+    }
+
+    public boolean isPanic() {
+        return panic;
+    }
+
+    public void setPanic( boolean toggle) {
+       panic = toggle;
     }
 
     public static ModuleManager getModuleManagement() {

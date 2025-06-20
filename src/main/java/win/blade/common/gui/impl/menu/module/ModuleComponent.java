@@ -30,19 +30,22 @@ public class ModuleComponent extends WindowComponent {
         settingComponent.width = width - 8 * scale;
         settingComponent.scale = scale;
 
+        Builder.border()
+                .size(new SizeState(width, height))
+                .radius(new QuadRadiusState(8))
+                .color(new QuadColorState(new Color(15, 15, 15, 5).getRGB()))
+                .outlineColor(new QuadColorState(new Color(19, 21, 27, 40).getRGB()))
+
+                .build()
+                .render( x, y);
+
         context.enableScissor((int) x, (int) y, (int) (x + width), (int) (y + height));
         settingComponent.render(context, mouseX, mouseY, 0, alpha);
         context.disableScissor();
 
         lastHeight = settingComponent.height + 8 * scale;
 
-        Builder.border()
-                .size(new SizeState(width, height))
-                .radius(new QuadRadiusState(8f))
-                .thickness(0.01f)
-                .color(new QuadColorState(new Color(15, 15, 15, 50)))
-                .build()
-                .render(x, y);
+
     }
 
     public void mouseClicked(double mouseX, double mouseY, int button) {
