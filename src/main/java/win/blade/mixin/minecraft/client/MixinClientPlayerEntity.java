@@ -6,6 +6,7 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -55,9 +56,6 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         ViewDirection direction = manager.getCurrentDirection();
         TargetTask task = manager.getActiveTask();
 
-//        if (manager.isEnabled() && direction != null && task != null && (task.settings().enableSilentAim() || task.settings().enableMovementFix())) {
-//            return direction.yaw();
-//        }
         if (manager.isEnabled() && direction != null && task != null) {
             return direction.yaw();
         }
@@ -70,9 +68,6 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         ViewDirection direction = manager.getCurrentDirection();
         TargetTask task = manager.getActiveTask();
 
-        //if (manager.isEnabled() && direction != null && task != null && (task.settings().enableSilentAim() || task.settings().enableMovementFix())) {
-        //return direction.pitch();
-        //}
         if (manager.isEnabled() && direction != null && task != null) {
             return direction.pitch();
         }
@@ -85,9 +80,6 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         ViewDirection direction = manager.getCurrentDirection();
         TargetTask task = manager.getActiveTask();
 
-//        if (manager.isEnabled() && direction != null && task != null && task.settings().enableSilentAim()) {
-//            return direction.yaw();
-//        }
         if (manager.isEnabled() && direction != null && task != null) {
             return direction.yaw();
         }
@@ -100,12 +92,11 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         ViewDirection direction = manager.getCurrentDirection();
         TargetTask task = manager.getActiveTask();
 
-//        if (manager.isEnabled() && direction != null && task != null && task.settings().enableSilentAim()) {
-//            return direction.pitch();
-//        }
         if (manager.isEnabled() && direction != null && task != null) {
             return direction.pitch();
         }
         return original;
     }
+
+
 }

@@ -33,7 +33,6 @@ public class MixinEntity implements MinecraftInstance {
             ViewDirection direction = manager.getCurrentDirection();
             TargetTask task = manager.getActiveTask();
 
-            // ИСПРАВЛЕНО: rotation vector только для silent aim!
             if (manager.isEnabled() && direction != null && task != null && task.settings().enableSilentAim()) {
                 cir.setReturnValue(direction.asVector());
             }
@@ -59,11 +58,9 @@ public class MixinEntity implements MinecraftInstance {
             ViewDirection aimDirection = aimManager.getCurrentDirection();
             TargetTask task = aimManager.getActiveTask();
 
-            // ИСПРАВЛЕНО: movement fix работает независимо от silent aim!
             if (task != null && aimDirection != null && task.settings().enableMovementFix()) {
                 ci.cancel();
 
-                // Применяем коррекцию движения относительно AIM направления
                 Vec3d correctedVelocity = fixMovementInput(movementInput, speed, aimDirection.yaw());
                 mc.player.setVelocity(mc.player.getVelocity().add(correctedVelocity));
             }

@@ -16,33 +16,33 @@ import win.blade.common.utils.aim.manager.TargetTask;
 public class MixinKeyboardInput implements MinecraftInstance {
 
     // Todo: сделать свободную коррекцию
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void fixMovementCorrection(CallbackInfo ci) {
-        KeyboardInput input = (KeyboardInput) (Object) this;
-        ClientPlayerEntity player = mc.player;
-        AimManager aimManager = AimManager.INSTANCE;
-        ViewDirection aimDirection = aimManager.getCurrentDirection();
-        TargetTask task = aimManager.getActiveTask();
-
-        if (task == null || aimDirection == null || player == null || !task.settings().enableMovementFix()) {
-            return;
-        }
-
-        float originalForward = input.movementForward;
-        float originalSideways = input.movementSideways;
-
-        if (originalForward == 0.0f && originalSideways == 0.0f) {
-            return;
-        }
-
-        float playerYaw = MathHelper.wrapDegrees(player.getYaw());
-        float aimYaw = MathHelper.wrapDegrees(aimDirection.yaw());
-        float deltaYaw = MathHelper.wrapDegrees(aimYaw - playerYaw) * 0.017453292f;
-
-        float correctedSideways = originalSideways * MathHelper.cos(deltaYaw) - originalForward * MathHelper.sin(deltaYaw);
-        float correctedForward = originalForward * MathHelper.cos(deltaYaw) + originalSideways * MathHelper.sin(deltaYaw);
-
-        input.movementSideways = Math.round(correctedSideways);
-        input.movementForward = Math.round(correctedForward);
-    }
+//    @Inject(method = "tick", at = @At("TAIL"))
+//    private void fixMovementCorrection(CallbackInfo ci) {
+//        KeyboardInput input = (KeyboardInput) (Object) this;
+//        ClientPlayerEntity player = mc.player;
+//        AimManager aimManager = AimManager.INSTANCE;
+//        ViewDirection aimDirection = aimManager.getCurrentDirection();
+//        TargetTask task = aimManager.getActiveTask();
+//
+//        if (task == null || aimDirection == null || player == null || !task.settings().enableMovementFix()) {
+//            return;
+//        }
+//
+//        float originalForward = input.movementForward;
+//        float originalSideways = input.movementSideways;
+//
+//        if (originalForward == 0.0f && originalSideways == 0.0f) {
+//            return;
+//        }
+//
+//        float playerYaw = MathHelper.wrapDegrees(player.getYaw());
+//        float aimYaw = MathHelper.wrapDegrees(aimDirection.yaw());
+//        float deltaYaw = MathHelper.wrapDegrees(aimYaw - playerYaw) * 0.017453292f;
+//
+//        float correctedSideways = originalSideways * MathHelper.cos(deltaYaw) - originalForward * MathHelper.sin(deltaYaw);
+//        float correctedForward = originalForward * MathHelper.cos(deltaYaw) + originalSideways * MathHelper.sin(deltaYaw);
+//
+//        input.movementSideways = Math.round(correctedSideways);
+//        input.movementForward = Math.round(correctedForward);
+//    }
 }
