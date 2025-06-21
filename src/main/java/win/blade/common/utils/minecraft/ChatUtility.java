@@ -3,6 +3,9 @@ package win.blade.common.utils.minecraft;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.NotNull;
+
+import java.awt.*;
 
 import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
@@ -33,5 +36,12 @@ public class ChatUtility {
         } else {
             System.out.println(message.getString());
         }
+    }
+
+    public static @NotNull MutableText sendClientPrefix() {
+        MutableText prefix = Text.literal("[Blade]").formatted(Formatting.WHITE);
+        MutableText arrow = Text.literal("➜").formatted(Formatting.WHITE);
+
+        return prefix.append(Text.literal(" ").formatted(Formatting.RESET)).append(arrow);
     }
 }

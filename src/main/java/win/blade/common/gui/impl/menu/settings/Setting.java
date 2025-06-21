@@ -18,7 +18,6 @@ public class Setting<T> implements MinecraftInstance {
     private Runnable onSetVisible;
     private final Animation animation = new Animation();
 
-    // Этот конструктор теперь становится главным. Он позволяет создавать сеттинги без модуля.
     public Setting(Module parent, String name, T value) {
         this.parent = parent;
         this.name = name;
@@ -28,7 +27,6 @@ public class Setting<T> implements MinecraftInstance {
         }
     }
 
-    // Этот конструктор теперь просто вызывает главный, передавая null в качестве родителя.
     public Setting(String name, T value) {
         this(null, name, value);
     }

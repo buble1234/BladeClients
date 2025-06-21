@@ -6,7 +6,7 @@ import win.blade.common.hud.ControlHudElement;
 import win.blade.common.hud.impl.RectangleHudElement;
 import win.blade.common.hud.impl.TimeHudElement;
 import win.blade.common.hud.notification.NotificationManager;
-import win.blade.common.utils.resource.ResourceUtility;
+import win.blade.core.commands.CommandManager;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.controllers.IEventBus;
@@ -32,6 +32,8 @@ public class Manager implements MinecraftInstance {
     public static final RectangleHudElement rectangleElement = new RectangleHudElement();
     public static final ModuleManager moduleManager = new ModuleManager();
     public static final NotificationManager notificationManager = new NotificationManager();
+    public static final CommandManager commandManager = new CommandManager();
+
     private static MenuScreen menuScreen;
 
 
@@ -47,6 +49,7 @@ public class Manager implements MinecraftInstance {
         EVENT_BUS.subscribe(timeElement);
         EVENT_BUS.subscribe(rectangleElement);
         EVENT_BUS.subscribe(moduleManager);
+        EVENT_BUS.subscribe(commandManager);
 
         moduleManager.initialize();
     }
@@ -107,4 +110,5 @@ public class Manager implements MinecraftInstance {
     public static ModuleManager getModuleManagement() {
         return moduleManager;
     }
+    public static CommandManager getCommandManager() { return commandManager; }
 }
