@@ -23,12 +23,20 @@ public class ModeSetting extends Setting<String> {
         return getValue().equalsIgnoreCase(mode) && getVisible().get();
     }
 
+    public boolean is(int index){
+        for (String mode : modes)
+            if(mode.equalsIgnoreCase(getValue())) return true;
+
+        return false;
+    }
+
     @Override
     public ModeSetting set(String value) {
         super.set(value);
         this.cachedValue = super.getValue();
         return this;
     }
+
 
     @Override
     public ModeSetting setVisible(Supplier<Boolean> value) {

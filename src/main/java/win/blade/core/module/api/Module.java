@@ -16,7 +16,7 @@ public abstract class Module implements MinecraftInstance {
     private final ModuleData data;
     private boolean enabled = false;
     private int keybind;
-    private BindMode bindMode = BindMode.ПЕРЕКЛЮЧАТЬ;
+    private BindMode bindMode;
 
     private List<Setting<?>> settings;
 
@@ -29,6 +29,7 @@ public abstract class Module implements MinecraftInstance {
         this.data = new ModuleData(info.name(), info.category(), info.desc(), info.descKey(), info.bind());
         this.keybind = info.bind();
         this.settings = new ArrayList<>();
+        bindMode = info.mode();
     }
 
     public final Module toggle() {
