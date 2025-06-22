@@ -5,6 +5,7 @@ import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
 import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.utils.minecraft.ChatUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.event.impl.network.PacketEvent;
@@ -41,6 +42,8 @@ public class PacketDelayer extends Module {
     protected void onDisable() {
         assert mc.getNetworkHandler() == null;
         delayedPackets.forEach(mc.getNetworkHandler()::sendPacket);
+        ChatUtility.print("Отправил", delayedPackets.size(), "пакетов");
+        delayedPackets.clear();
 
         super.onDisable();
     }
@@ -51,11 +54,19 @@ public class PacketDelayer extends Module {
             setEnabled(false);
         }
 
+//        if(delayedPackets.size() >= 8){
+//            for (Packet<?> delayedPacket : delayedPackets) {
+//                mc.getNetworkHandler().sendPacket(delayedPacket);
+//            }
+//            delayedPackets.clear();
+//        }
+
     }
 
 
     @EventHandler
-    public void onPacket(PacketEvent e){
+    public void onPacket(PacketEvent.Send e){
+//        ChatUtility.print("fs");
         var packet = e.getPacket();
         Packet<?> toAdd = null;
         if(packetMode.is(3)){
@@ -72,6 +83,8 @@ public class PacketDelayer extends Module {
         if(toAdd == null) return;
 
         delayedPackets.add(toAdd);
+        e.cancel();
+//        ChatUtility.print("Отменил " + toAdd.toString());
     }
 
 
