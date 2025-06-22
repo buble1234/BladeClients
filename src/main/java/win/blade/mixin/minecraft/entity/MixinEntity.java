@@ -33,7 +33,7 @@ public class MixinEntity implements MinecraftInstance {
             ViewDirection direction = manager.getCurrentDirection();
             TargetTask task = manager.getActiveTask();
 
-            if (manager.isEnabled() && direction != null && task != null && task.settings().enableSilentAim()) {
+            if (manager.isEnabled() && direction != null && task != null) {
                 cir.setReturnValue(direction.asVector());
             }
         }
