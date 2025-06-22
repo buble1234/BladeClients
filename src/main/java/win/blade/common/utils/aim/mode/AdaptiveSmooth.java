@@ -1,5 +1,6 @@
 package win.blade.common.utils.aim.mode;
 
+import net.minecraft.util.math.MathHelper;
 import win.blade.common.utils.aim.core.SmoothTransition;
 import win.blade.common.utils.aim.core.ViewDirection;
 
@@ -16,21 +17,33 @@ public record AdaptiveSmooth(float baseSpeed, float acceleration) implements Smo
 
     @Override
     public ViewDirection interpolate(ViewDirection current, ViewDirection target) {
-        ViewDirection delta = ViewDirection.difference(current, target);
-        
-        float variance = 0.15f + (float)(Math.random() * 0.1f);
-        float dynamicSpeed = baseSpeed * (1.0f + variance);
-        
-        double distance = current.distanceTo(target);
-        float speedMultiplier = distance > 15.0 ? acceleration : 1.0f;
-        float finalSpeed = dynamicSpeed * speedMultiplier;
-        
-        float maxYawDelta = Math.min(finalSpeed, Math.abs(delta.yaw()));
-        float maxPitchDelta = Math.min(finalSpeed * 0.8f, Math.abs(delta.pitch()));
-        
-        float newYaw = current.yaw() + Math.signum(delta.yaw()) * maxYawDelta;
-        float newPitch = current.pitch() + Math.signum(delta.pitch()) * maxPitchDelta;
-        
+        float yawDelta = MathHelper.wrapDegrees(target.yaw() - current.yaw());
+        float pitchDelta = MathHelper.wrapDegrees(target.pitch() - current.pitch());
+
+        double distance = Math.sqrt(yawDelta * yawDelta + pitchDelta * pitchDelta);
+
+        float speedMultiplier = 1.0f;
+        if (distance > 30.0) {
+            speedMultiplier = acceleration;
+        } else if (distance > 15.0) {
+            float t = (float) ((distance - 15.0) / 15.0);
+            speedMultiplier = 1.0f + (acceleration - 1.0f) * t;
+        }
+
+        float currentSpeed = baseSpeed * speedMultiplier;
+
+        float smoothingFactor = Math.min(currentSpeed / 100.0f, 0.3f);
+
+        float yawStep = yawDelta * smoothingFactor;
+        float pitchStep = pitchDelta * smoothingFactor;
+
+        float maxStep = currentSpeed;
+        yawStep = MathHelper.clamp(yawStep, -maxStep, maxStep);
+        pitchStep = MathHelper.clamp(pitchStep, -maxStep * 0.8f, maxStep * 0.8f);
+
+        float newYaw = current.yaw() + yawStep;
+        float newPitch = current.pitch() + pitchStep;
+
         return new ViewDirection(newYaw, newPitch).clamp();
     }
 }

@@ -181,7 +181,7 @@ public class AuraModule extends Module {
         switch (rotationMode.getValue()) {
             case "Плавный" -> {
                 AimSettings smoothSettings = new AimSettings(
-                        new AdaptiveSmooth(13.5f, 1.5f),
+                        new AdaptiveSmooth(53.5f, 15.6f),
                         options.getValue("Visual rotate"),
                         options.getValue("Корректировать движения"),
                         moveCorrectionMode.is("Незаметная")

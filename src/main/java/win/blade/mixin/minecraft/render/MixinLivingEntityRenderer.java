@@ -31,7 +31,10 @@ public class MixinLivingEntityRenderer<T extends LivingEntity, S extends LivingE
 
         if (currentDirection != null && previousDirection != null) {
             float renderYaw = MathHelper.lerpAngleDegrees(tickDelta, previousDirection.yaw(), currentDirection.yaw());
-            float renderPitch = MathHelper.lerp(tickDelta, previousDirection.pitch(), currentDirection.pitch());
+            float renderPitch = MathHelper.lerpAngleDegrees(tickDelta, previousDirection.pitch(), currentDirection.pitch());
+
+            renderYaw = MathHelper.wrapDegrees(renderYaw);
+            renderPitch = MathHelper.clamp(renderPitch, -90f, 90f);
 
             livingEntityRenderState.bodyYaw = renderYaw;
             livingEntityRenderState.yawDegrees = 0;
