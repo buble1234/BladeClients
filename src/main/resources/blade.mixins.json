@@ -25,9 +25,13 @@
     "minecraft.input.MixinKeyboard",
     "minecraft.input.MixinKeyboardInput",
     "minecraft.input.MixinMouse",
+    "minecraft.render.MixinBossBarHud",
     "minecraft.render.MixinGameRenderer",
     "minecraft.render.MixinInGameHud",
-    "minecraft.render.MixinLivingEntityRenderer"
+    "minecraft.render.MixinInGameOverlayRenderer",
+    "minecraft.render.MixinLivingEntityRenderer",
+    "minecraft.render.MixinParticleManager",
+    "minecraft.render.MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

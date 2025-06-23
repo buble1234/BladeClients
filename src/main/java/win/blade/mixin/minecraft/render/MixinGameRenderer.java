@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
+import win.blade.core.event.impl.render.RenderCancelEvents;
 
 @Mixin(GameRenderer.class)
 public abstract class MixinGameRenderer implements MinecraftInstance {
@@ -46,4 +47,13 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
 //
 //        return entity.getRotationVec(tickDelta);
 //    }
+
+    @Inject(method = "tiltViewWhenHurt", at = @At("HEAD"), cancellable = true)
+    private void onTiltViewWhenHurt(MatrixStack matrices, float tickDelta, CallbackInfo ci) {
+        RenderCancelEvents.CameraShake event = new RenderCancelEvents.CameraShake();
+        Manager.EVENT_BUS.post(event);
+        if (event.isCancelled()) {
+            ci.cancel();
+        }
+    }
 }
