@@ -25,4 +25,14 @@ public class MixinInGameOverlayRenderer {
             ci.cancel();
         }
     }
+
+    @Inject(method = "renderUnderwaterOverlay", at = @At("HEAD"), cancellable = true)
+    private static void onRenderUnderwaterOverlay(MinecraftClient client, MatrixStack matrices, VertexConsumerProvider vertexConsumers, CallbackInfo ci) {
+        RenderCancelEvents.UnderWaterOverlay event = new RenderCancelEvents.UnderWaterOverlay();
+        Manager.EVENT_BUS.post(event);
+        if (event.isCancelled()) {
+            ci.cancel();
+        }
+    }
+
 }

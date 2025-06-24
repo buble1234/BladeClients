@@ -30,7 +30,6 @@
     "minecraft.render.MixinInGameHud",
     "minecraft.render.MixinInGameOverlayRenderer",
     "minecraft.render.MixinLivingEntityRenderer",
-    "minecraft.render.MixinParticleManager",
     "minecraft.render.MixinWorldRenderer"
   ],
   "injectors": {

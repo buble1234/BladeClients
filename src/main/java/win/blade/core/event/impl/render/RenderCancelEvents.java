@@ -9,18 +9,7 @@ import win.blade.core.event.controllers.Event;
 
 public abstract class RenderCancelEvents extends Event {
 
-    private boolean cancelled;
-
     protected RenderCancelEvents() {
-        this.cancelled = false;
-    }
-
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    public void setCancelled(boolean cancelled) {
-        this.cancelled = cancelled;
     }
 
     public static class FireOverlay extends RenderCancelEvents {
@@ -55,6 +44,24 @@ public abstract class RenderCancelEvents extends Event {
 
     public static class Weather extends RenderCancelEvents {
         public Weather() {
+            super();
+        }
+    }
+
+    public static class UnderWaterOverlay extends RenderCancelEvents {
+        public UnderWaterOverlay() {
+            super();
+        }
+    }
+
+    public static class FreezeOverlay extends RenderCancelEvents {
+        public FreezeOverlay() {
+            super();
+        }
+    }
+
+    public static class PortalOverlay extends RenderCancelEvents {
+        public PortalOverlay() {
             super();
         }
     }

@@ -22,7 +22,7 @@ public abstract class MixinInGameHud implements MinecraftInstance {
         Manager.EVENT_BUS.post(EventHolder.getScreenRenderEvent(new MatrixStack(), tickCounter.getTickDelta(false), context));
     }
 
-    @Inject(method = "renderScoreboardSidebar", at = @At(value = "HEAD"), cancellable = true)
+    @Inject(method = "renderScoreboardSidebar(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/scoreboard/ScoreboardObjective;)V", at = @At(value = "HEAD"), cancellable = true)
     private void onRenderScoreboardSidebar(DrawContext context, ScoreboardObjective objective, CallbackInfo ci) {
         RenderCancelEvents.Scoreboard event = new RenderCancelEvents.Scoreboard();
         Manager.EVENT_BUS.post(event);
@@ -40,4 +40,21 @@ public abstract class MixinInGameHud implements MinecraftInstance {
         }
     }
 
+    @Inject(method = "renderMiscOverlays", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/InGameHud;renderOverlay(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/util/Identifier;F)V", ordinal = 1), cancellable = true)
+    private void onRenderFreezeOverlay(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+        RenderCancelEvents.FreezeOverlay event = new RenderCancelEvents.FreezeOverlay();
+        Manager.EVENT_BUS.post(event);
+        if (event.isCancelled()) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "renderPortalOverlay", at = @At("HEAD"), cancellable = true)
+    private void onRenderPortalOverlay(DrawContext context, float nauseaStrength, CallbackInfo ci) {
+        RenderCancelEvents.PortalOverlay event = new RenderCancelEvents.PortalOverlay();
+        Manager.EVENT_BUS.post(event);
+        if (event.isCancelled()) {
+            ci.cancel();
+        }
+    }
 }
