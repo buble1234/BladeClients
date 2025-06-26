@@ -30,8 +30,12 @@ public abstract class MixinCamera implements MinecraftInstance {
             ViewDirection current = manager.getCurrentDirection();
             ViewDirection previous = manager.getPreviousDirection();
 
-            float yaw = MathHelper.lerp(tickDelta, previous.yaw(), current.yaw());
-            float pitch = MathHelper.lerp(tickDelta, previous.pitch(), current.pitch());
+            float yaw = MathHelper.lerpAngleDegrees(tickDelta, previous.yaw(), current.yaw());
+            float pitch = MathHelper.lerpAngleDegrees(tickDelta, previous.pitch(), current.pitch());
+
+            yaw = MathHelper.wrapDegrees(yaw);
+            pitch = MathHelper.clamp(pitch, -90f, 90f);
+
             setRotation(yaw, pitch);
         }
     }
