@@ -49,4 +49,16 @@ public class ColorUtility {
         int[] components = unpack(color);
         return new float[] {components[0] / 255.0f, components[1] / 255.0f, components[2] / 255.0f, components[3] / 255.0f};
     }
+
+
+    public static int applyAlpha(int color, float alpha) {
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8) & 0xFF;
+        int b = color & 0xFF;
+        return pack(r, g, b, (int) (255 * alpha));
+    }
+
+    public static int getAlpha(int color) {
+        return (color >> 24) & 0xFF;
+    }
 }

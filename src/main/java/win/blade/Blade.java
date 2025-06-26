@@ -1,6 +1,7 @@
 package win.blade;
 
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.client.MinecraftClient;
 import win.blade.core.Manager;
 
 public class Blade implements ModInitializer {

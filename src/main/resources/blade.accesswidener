@@ -6,8 +6,10 @@ accessible class net/minecraft/network/packet/c2s/play/PlayerInteractEntityC2SPa
 accessible field net/minecraft/client/network/ClientPlayerEntity lastSprinting Z
 accessible    field    net/minecraft/client/render/chunk/ChunkBuilder$ChunkData    nonEmptyLayers    Ljava/util/Set;
 accessible    field    net/minecraft/client/render/chunk/ChunkBuilder$ChunkData    occlusionGraph    Lnet/minecraft/client/render/chunk/ChunkOcclusionData;
+accessible field net/minecraft/client/gl/Framebuffer depthAttachment I
 accessible field net/minecraft/entity/projectile/FishingBobberEntity CAUGHT_FISH Lnet/minecraft/entity/data/TrackedData;
 accessible field net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket onGround Z
+accessible method net/minecraft/client/render/GameRenderer getFov (Lnet/minecraft/client/render/Camera;FZ)F
 accessible field net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket pitch F
 accessible field net/minecraft/network/packet/c2s/play/ChatMessageC2SPacket chatMessage Ljava/lang/String;
 accessible field net/minecraft/entity/LimbAnimator pos F
