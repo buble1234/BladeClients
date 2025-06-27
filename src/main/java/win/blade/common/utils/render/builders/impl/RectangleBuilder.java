@@ -16,13 +16,27 @@ public final class RectangleBuilder extends AbstractBuilder<BuiltRectangle> {
         return this;
     }
 
+    public RectangleBuilder size(float x, float y) {
+        this.size = new SizeState(x, y);
+        return this;
+    }
+
     public RectangleBuilder radius(QuadRadiusState radius) {
         this.radius = radius;
         return this;
     }
 
+    public RectangleBuilder radius(float radius){
+    this.radius = new QuadRadiusState(radius);
+        return this;
+    }
+
     public RectangleBuilder color(QuadColorState color) {
         this.color = color;
+        return this;
+    }
+    public RectangleBuilder color(int color) {
+        this.color = new QuadColorState(color);
         return this;
     }
 

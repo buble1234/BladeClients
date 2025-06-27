@@ -11,6 +11,13 @@ public class Animation {
     private Easing easing = Easing.LINEAR;
     private Consumer<Animation> finishAction;
 
+    public Animation(){}
+
+
+    public Animation(int s){
+        value = s;
+    }
+
     public void run(double valueTo, double duration, Easing easing, boolean safe) {
         if (safe && isAnimating() && (valueTo == this.toValue)) {
             return;

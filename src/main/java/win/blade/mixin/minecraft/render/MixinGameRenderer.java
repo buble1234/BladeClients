@@ -1,6 +1,7 @@
 package win.blade.mixin.minecraft.render;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
@@ -11,6 +12,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
@@ -31,6 +33,11 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
         newMatStack.multiplyPositionMatrix(matrix4f2);
 
         Manager.EVENT_BUS.post(EventHolder.getWorldRenderEvent(newMatStack, this.camera, tickCounter.getTickDelta(false)));
+
+
+        MathUtility.lastProjMat.set(RenderSystem.getProjectionMatrix());
+        MathUtility.lastModMat.set(RenderSystem.getModelViewMatrix());
+        MathUtility.lastWorldSpaceMatrix.set(newMatStack.peek().getPositionMatrix());
     }
 
     // TODO: Не обязательно
