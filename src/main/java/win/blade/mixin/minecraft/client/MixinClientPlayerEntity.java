@@ -47,6 +47,8 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void onPlayerTick(CallbackInfo ci) {
+        if (mc.player == null || mc.world == null) return;
+        Manager.EVENT_BUS.post(EventHolder.getPlayerUpdateEvent());
         AimManager.INSTANCE.tick();
     }
 

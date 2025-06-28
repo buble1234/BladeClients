@@ -12,6 +12,7 @@ import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.mode.AdaptiveSmooth;
 import win.blade.common.utils.player.TargetUtility;
 import win.blade.core.event.controllers.EventHandler;
+import win.blade.core.event.controllers.EventPriority;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
@@ -24,9 +25,7 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
-
     private final SliderSetting aimRange = new SliderSetting(this, "Дистанция поворота", 4, 1, 8, 0.1f);
-
     private final MultiBooleanSetting targetType = new MultiBooleanSetting(this, "Типы целей",
             BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
             BooleanSetting.of("Игроки с бронёй", true).onAction(this::updateTargetTypes),
@@ -36,7 +35,6 @@ public class AuraModule extends Module {
             BooleanSetting.of("Животные", false).onAction(this::updateTargetTypes),
             BooleanSetting.of("Жители", false).onAction(this::updateTargetTypes)
     );
-
     private final BooleanSetting correctionMove = new BooleanSetting(this, "Корректировать движения", true);
     private final BooleanSetting viewSync = new BooleanSetting(this, "Синхронизировать взгляд", true);
 
@@ -44,74 +42,63 @@ public class AuraModule extends Module {
 
     @Override
     public void onEnable() {
-        resetState();
+        currentTarget = null;
         super.onEnable();
     }
 
     @Override
     protected void onDisable() {
-        cleanup();
+        clearTarget();
         super.onDisable();
     }
 
-    private void resetState() {
+    private void clearTarget() {
         currentTarget = null;
         AimManager.INSTANCE.disable();
-    }
-
-    private void cleanup() {
-        AimManager.INSTANCE.disable();
-        currentTarget = null;
     }
 
     private void updateTargetTypes() {
         TargetUtility.updateTargetTypes(targetType);
         if (currentTarget != null && !TargetUtility.isValidTarget(currentTarget)) {
-            AimManager.INSTANCE.disable();
-            currentTarget = null;
+            clearTarget();
         }
     }
 
     @EventHandler
-    public void onUpdate(UpdateEvents.Update event) {
-        if (mc.player == null || mc.world == null) return;
+    public void onUpdate(UpdateEvents.PlayerUpdate event) {
+        if (mc.player == null || mc.world == null) {
+            clearTarget();
+            return;
+        }
 
         updateTargetTypes();
+        updateCurrentTarget();
 
-        Entity target = TargetUtility.findBestTarget(aimRange.getValue());
-
-        if (target != null) {
-            handleTargetFound(target);
-        } else {
-            handleNoTarget();
-        }
-    }
-
-    private void handleTargetFound(Entity target) {
-        currentTarget = target;
-        double distanceToTarget = mc.player.distanceTo(target);
-
-        if (distanceToTarget <= aimRange.getValue()) {
-            aim(target);
-        }
-    }
-
-    private void handleNoTarget() {
         if (currentTarget != null) {
+            aimAtTarget();
+        } else {
             AimManager.INSTANCE.disable();
+        }
+    }
+
+    private void updateCurrentTarget() {
+        Entity potentialTarget = TargetUtility.findBestTarget(aimRange.getValue());
+        if (potentialTarget != null && mc.player.distanceTo(potentialTarget) <= aimRange.getValue()) {
+            currentTarget = potentialTarget;
+        } else {
             currentTarget = null;
         }
     }
 
-    private void aim(Entity target) {
-        ViewDirection targetDirection = AimCalculator.calculateToEntity(target);
+    private void aimAtTarget() {
+        ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget);
         AimSettings smoothSettings = new AimSettings(
                 new AdaptiveSmooth(12f),
                 viewSync.getValue(),
                 correctionMove.getValue() || viewSync.getValue(),
                 false
         );
-        TargetTask smoothTask = smoothSettings.buildTask(targetDirection, target.getPos(), target);
+        TargetTask smoothTask = smoothSettings.buildTask(targetDirection, currentTarget.getPos(), currentTarget);
         AimManager.INSTANCE.execute(smoothTask);
     }
 
