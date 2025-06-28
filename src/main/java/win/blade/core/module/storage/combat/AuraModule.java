@@ -2,8 +2,6 @@ package win.blade.core.module.storage.combat;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
@@ -26,13 +24,11 @@ import win.blade.core.module.api.ModuleInfo;
 /**
  * Автор: NoCap
  * Дата создания: 28.06.2025
- * Обновлено: 28.06.2025 (фикс автопрыжка при autoJump = false)
  */
 @ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuraModule.class);
-
+    private final ModeSetting rotationMode = new ModeSetting(this, "Режим ротации", "Обычный", "Обычный", "Во время удара");
     private final SliderSetting aimRange = new SliderSetting(this, "Дистанция поворота", 4.5f, 2, 8, 0.1f);
     private final MultiBooleanSetting targetType = new MultiBooleanSetting(this, "Типы целей",
             BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
@@ -58,25 +54,24 @@ public class AuraModule extends Module {
     );
 
     private Entity currentTarget;
-    private long lastJumpTime;
+    private int aimPeriodTicks = 0;
 
     @Override
     public void onEnable() {
         currentTarget = null;
-        lastJumpTime = 0;
-        LOGGER.info("AuraModule enabled");
+        aimPeriodTicks = 0;
         super.onEnable();
     }
 
     @Override
     protected void onDisable() {
         clearTarget();
-        LOGGER.info("AuraModule disabled");
         super.onDisable();
     }
 
     private void clearTarget() {
         currentTarget = null;
+        aimPeriodTicks = 0;
         AimManager.INSTANCE.disable();
     }
 
@@ -98,8 +93,37 @@ public class AuraModule extends Module {
         updateCurrentTarget();
 
         if (currentTarget != null) {
-            aimAtTarget();
+            if (rotationMode.is("Во время удара")) {
+                if (aimPeriodTicks > 0) {
+                    aimPeriodTicks--;
+                }
+
+                if (currentTarget instanceof LivingEntity livingTarget) {
+                    AttackManager.AttackMode attackMode = pvpMode.is("1.8") ? AttackManager.AttackMode.LEGACY : AttackManager.AttackMode.MODERN;
+                    AttackManager.CriticalMode mode = switch (criticalMode.getValue()) {
+                        case "Jump" -> AttackManager.CriticalMode.JUMP;
+                        case "Adaptive" -> AttackManager.CriticalMode.ADAPTIVE;
+                        default -> AttackManager.CriticalMode.NONE;
+                    };
+                    AttackSettings settings = new AttackSettings(attackMode, mode, cps.getValue(), auraOptions.get("Отжимать щит").getValue(), auraOptions.get("Проверять еду").getValue(), aimRange.getValue(), auraOptions.get("Авто прыжок").getValue(), auraOptions.get("Сбрасывать спринт").getValue());
+
+                    if (AttackManager.canAttack(livingTarget, settings)) {
+                        aimPeriodTicks = 5;
+                    }
+                }
+
+                if (aimPeriodTicks > 0) {
+                    aimAtTarget();
+                } else {
+                    AimManager.INSTANCE.disable();
+                }
+
+            } else {
+                aimAtTarget();
+            }
+
             performAttack();
+
         } else {
             AimManager.INSTANCE.disable();
         }
@@ -116,13 +140,13 @@ public class AuraModule extends Module {
 
     private void aimAtTarget() {
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget);
-        AimSettings smoothSettings = new AimSettings(
+        AimSettings aimSettings = new AimSettings(
                 new AdaptiveSmooth(12f),
                 auraOptions.get("Синхронизировать взгляд").getValue(),
                 auraOptions.get("Корректировать движения").getValue() || auraOptions.get("Синхронизировать взгляд").getValue(),
                 false
         );
-        TargetTask smoothTask = smoothSettings.buildTask(targetDirection, currentTarget.getPos(), currentTarget);
+        TargetTask smoothTask = aimSettings.buildTask(targetDirection, currentTarget.getPos(), currentTarget);
         AimManager.INSTANCE.execute(smoothTask);
     }
 
@@ -139,7 +163,7 @@ public class AuraModule extends Module {
             default -> AttackManager.CriticalMode.NONE;
         };
 
-        AttackSettings settings = new AttackSettings(
+        AttackSettings attackSettings = new AttackSettings(
                 attackMode,
                 mode,
                 cps.getValue(),
@@ -150,8 +174,8 @@ public class AuraModule extends Module {
                 auraOptions.get("Сбрасывать спринт").getValue()
         );
 
-        if (AttackManager.canAttack(livingTarget, settings)) {
-            AttackManager.performAttack(livingTarget, settings);
+        if (AttackManager.canAttack(livingTarget, attackSettings)) {
+            AttackManager.performAttack(livingTarget, attackSettings);
         }
     }
 
