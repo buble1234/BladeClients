@@ -29,6 +29,7 @@ import win.blade.core.module.api.ModuleInfo;
 public class AuraModule extends Module {
 
     private final ModeSetting rotationMode = new ModeSetting(this, "Режим ротации", "Обычный", "Обычный", "Во время удара");
+    private final SliderSetting attackRange = new SliderSetting(this, "Дистанция поворота", 3.0f, 1.0f, 6.0f, 0.1f);
     private final SliderSetting aimRange = new SliderSetting(this, "Дистанция поворота", 4.5f, 2, 8, 0.1f);
     private final MultiBooleanSetting targetType = new MultiBooleanSetting(this, "Типы целей",
             BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
@@ -54,12 +55,12 @@ public class AuraModule extends Module {
     );
 
     private Entity currentTarget;
-    private int aimPeriodTicks = 0;
+    private int aimTicks = 0;
 
     @Override
     public void onEnable() {
         currentTarget = null;
-        aimPeriodTicks = 0;
+        aimTicks = 0;
         super.onEnable();
     }
 
@@ -71,7 +72,7 @@ public class AuraModule extends Module {
 
     private void clearTarget() {
         currentTarget = null;
-        aimPeriodTicks = 0;
+        aimTicks = 0;
         AimManager.INSTANCE.disable();
     }
 
@@ -94,8 +95,8 @@ public class AuraModule extends Module {
 
         if (currentTarget != null) {
             if (rotationMode.is("Во время удара")) {
-                if (aimPeriodTicks > 0) {
-                    aimPeriodTicks--;
+                if (aimTicks > 0) {
+                    aimTicks--;
                 }
 
                 if (currentTarget instanceof LivingEntity livingTarget) {
@@ -105,14 +106,14 @@ public class AuraModule extends Module {
                         case "Adaptive" -> AttackManager.CriticalMode.ADAPTIVE;
                         default -> AttackManager.CriticalMode.NONE;
                     };
-                    AttackSettings settings = new AttackSettings(attackMode, mode, cps.getValue(), auraOptions.get("Отжимать щит").getValue(), auraOptions.get("Проверять еду").getValue(), aimRange.getValue(), auraOptions.get("Авто прыжок").getValue(), auraOptions.get("Сбрасывать спринт").getValue());
+                    AttackSettings settings = new AttackSettings(attackMode, mode, cps.getValue(), auraOptions.get("Отжимать щит").getValue(), auraOptions.get("Проверять еду").getValue(), attackRange.getValue(), auraOptions.get("Авто прыжок").getValue(), auraOptions.get("Сбрасывать спринт").getValue());
 
                     if (AttackManager.canAttack(livingTarget, settings)) {
-                        aimPeriodTicks = 5;
+                        aimTicks = 5;
                     }
                 }
 
-                if (aimPeriodTicks > 0) {
+                if (aimTicks > 0) {
                     aimAtTarget();
                 } else {
                     AimManager.INSTANCE.disable();
@@ -130,8 +131,8 @@ public class AuraModule extends Module {
     }
 
     private void updateCurrentTarget() {
-        Entity potentialTarget = TargetUtility.findBestTarget(aimRange.getValue());
-        if (potentialTarget instanceof LivingEntity && mc.player.distanceTo(potentialTarget) <= aimRange.getValue() && TargetUtility.isValidTarget(potentialTarget)) {
+        Entity potentialTarget = TargetUtility.findBestTarget(aimRange.getValue() + attackRange.getValue());
+        if (potentialTarget instanceof LivingEntity && mc.player.distanceTo(potentialTarget) <= aimRange.getValue() + attackRange.getValue() && TargetUtility.isValidTarget(potentialTarget)) {
             currentTarget = potentialTarget;
         } else {
             currentTarget = null;
@@ -169,7 +170,7 @@ public class AuraModule extends Module {
                 cps.getValue(),
                 auraOptions.get("Отжимать щит").getValue(),
                 auraOptions.get("Проверять еду").getValue(),
-                aimRange.getValue(),
+                attackRange.getValue(),
                 auraOptions.get("Авто прыжок").getValue(),
                 auraOptions.get("Сбрасывать спринт").getValue()
         );
