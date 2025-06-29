@@ -128,7 +128,7 @@ public class AuraModule extends Module {
             }
 
             if (mc.crosshairTarget instanceof EntityHitResult result && result.getEntity() == currentTarget) {
-                //performAttack();
+                performAttack();
             }
 
         } else {
