@@ -32,7 +32,8 @@ public class NoDelayModule extends Module {
     );
 
     @EventHandler
-    public void onEnable(UpdateEvents.Update updateEvent) {
+    public void onUpdate(UpdateEvents.Update updateEvent) {
+        if (mc.player == null || mc.world == null || mc.interactionManager == null) return;
         if (delayOptions.getValue("Прыжок")) {
             resetJumpCooldown();
         }
@@ -47,6 +48,7 @@ public class NoDelayModule extends Module {
     }
 
     private void resetJumpCooldown() {
+        if (mc.player == null || mc.world == null || mc.interactionManager == null) return;
         LivingEntityAccessor livingEntityAccessor = (LivingEntityAccessor) mc.player;
         if (livingEntityAccessor != null && livingEntityAccessor.getLastJumpCooldown() > 0) {
             livingEntityAccessor.setLastJumpCooldown(0);
@@ -54,6 +56,7 @@ public class NoDelayModule extends Module {
     }
 
     private void resetItemUseCooldown() {
+        if (mc.player == null || mc.world == null || mc.interactionManager == null) return;
         MinecraftClientAccessor minecraftClientAccessor = (MinecraftClientAccessor) mc;
         if (minecraftClientAccessor != null && minecraftClientAccessor.getItemUseCooldown() > 0) {
             minecraftClientAccessor.setItemUseCooldown(0);
@@ -61,6 +64,7 @@ public class NoDelayModule extends Module {
     }
 
     private void resetBlockCooldown() {
+        if (mc.player == null || mc.world == null || mc.interactionManager == null) return;
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK && mc.crosshairTarget instanceof BlockHitResult hitResult) {
             float destroyProgress = mc.interactionManager.getBlockBreakingProgress();
             if (destroyProgress > 0.5f) {
