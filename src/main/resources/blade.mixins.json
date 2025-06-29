@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "accessor.LivingEntityAccessor",
+    "accessor.PlayerPositionLookS2CPacketAccessor",
     "minecraft.client.MixinChatInputSuggestor",
     "minecraft.entity.MixinEntity",
     "minecraft.entity.MixinLivingEntity",
