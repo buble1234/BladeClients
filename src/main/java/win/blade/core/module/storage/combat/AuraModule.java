@@ -33,7 +33,7 @@ public class AuraModule extends Module {
     private final ModeSetting aimMode = new ModeSetting(this, "Режим поворота", "Обычный", "Обычный", "Во время удара");
     private final ModeSetting bypassMode = new ModeSetting(this, "Режим обхода", "Обычный", "Distance");
     private final SliderSetting rotateTick = new SliderSetting(this, "Тики поворота", 5, 1, 10, 1.0f).setVisible(() -> aimMode.is("Во время удара"));
-    private final SliderSetting attackRange = new SliderSetting(this, "Дистанция поворота", 3.0f, 1.0f, 6.0f, 0.1f);
+    private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
     private final SliderSetting aimRange = new SliderSetting(this, "Дистанция поворота", 4.5f, 2, 8, 0.1f);
     private final MultiBooleanSetting targetType = new MultiBooleanSetting(this, "Типы целей",
             BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
@@ -148,7 +148,7 @@ public class AuraModule extends Module {
     private void aimAtTarget() {
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget);
         AimSettings aimSettings = new AimSettings(
-                bypassMode.is("Distance") ? new DistanceMode(0.5f, 2.0f) : new AdaptiveSmooth(12f),
+                bypassMode.is("Distance") ? new DistanceMode(0.8f, 2.5f) : new AdaptiveSmooth(12f),
                 auraOptions.get("Синхронизировать взгляд").getValue(),
                 auraOptions.get("Корректировать движения").getValue() || auraOptions.get("Синхронизировать взгляд").getValue(),
                 false
