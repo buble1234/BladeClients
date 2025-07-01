@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.client.MinecraftClient;
 import win.blade.common.utils.aim.core.ViewDirection;
@@ -44,5 +45,13 @@ public class ViewTracer {
     public static boolean canReach(Entity target, double range, ViewDirection direction) {
         EntityHitResult result = traceEntity(range, direction, entity -> entity == target);
         return result != null && result.getEntity() == target;
+    }
+
+
+    public static float distanceTo(Entity entity, Vec3d vec3d) {
+        float f = (float)(entity.getX() - vec3d.getX());
+        float g = (float)(entity.getY() - vec3d.getY());
+        float h = (float)(entity.getZ() - vec3d.getZ());
+        return MathHelper.sqrt(f * f + g * g + h * h);
     }
 }

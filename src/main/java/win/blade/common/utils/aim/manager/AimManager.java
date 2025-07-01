@@ -25,7 +25,7 @@ public class AimManager {
     public void tick() {
         long currentTime = System.currentTimeMillis();
 
-        if (currentTime - lastTickTime < 50) return;
+        if (currentTime - lastTickTime < mc.getRenderTickCounter().getTickDelta(false)) return;
         lastTickTime = currentTime;
         tickCounter++;
 

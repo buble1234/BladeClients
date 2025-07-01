@@ -1,25 +1,21 @@
 package win.blade.core.module.storage.combat;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ShieldItem;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.hit.EntityHitResult;
 import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
 import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
 import win.blade.common.utils.aim.base.AimCalculator;
 import win.blade.common.utils.aim.core.AimSettings;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.mode.AdaptiveSmooth;
-import win.blade.common.utils.player.AttackUtility;
-import win.blade.common.utils.player.SprintUtility;
+import win.blade.common.utils.aim.mode.DistanceMode;
+import win.blade.common.utils.attack.AttackSettings;
+import win.blade.common.utils.attack.AttackManager;
 import win.blade.common.utils.player.TargetUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
@@ -27,329 +23,173 @@ import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
-import java.util.List;
-import java.util.Random;
-
 /**
- * Автор: Claude [еблан тупой]
- * Дата создания: 18.06.2025
+ * Автор: NoCap
+ * Дата создания: 28.06.2025
  */
-
 @ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
-    private final ModeSetting rotationMode = new ModeSetting(this, "Мод ротации", "Плавный", "Снап", "1 тик");
-    private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3, 1, 6, 0.1f);
-    private final SliderSetting rotationRange = new SliderSetting(this, "Дистанция поворота", 4, 1, 8, 0.1f);
-    private final ModeSetting pvpMode = new ModeSetting(this, "Мод пвп", "Новое (1.9)", "Старое (1.8)");
-    private final ModeSetting criticalsMode = new ModeSetting(this, "Мод критических ударов", "Только в прыжке", "Всегда", "Выкл");
-
-    private final MultiBooleanSetting target = new MultiBooleanSetting(this, "Таргет",
-            BooleanSetting.of("Игроки", true),
-            BooleanSetting.of("Мобы", true),
-            BooleanSetting.of("Животные", true),
-            BooleanSetting.of("Друзья", true),
-            BooleanSetting.of("Тимейты", true),
-            BooleanSetting.of("Невидимые", true),
-            BooleanSetting.of("Голые", true)
+    private final ModeSetting aimMode = new ModeSetting(this, "Режим поворота", "Обычный", "Обычный", "Во время удара");
+    private final ModeSetting bypassMode = new ModeSetting(this, "Режим обхода", "Обычный", "Distance");
+    private final SliderSetting rotateTick = new SliderSetting(this, "Тики поворота", 5, 1, 10, 1.0f).setVisible(() -> aimMode.is("Во время удара"));
+    private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
+    private final SliderSetting aimRange = new SliderSetting(this, "Дистанция поворота", 4.5f, 2, 8, 0.1f);
+    private final MultiBooleanSetting targetType = new MultiBooleanSetting(this, "Типы целей",
+            BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
+            BooleanSetting.of("Игроки с бронёй", true).onAction(this::updateTargetTypes),
+            BooleanSetting.of("Невидимые игроки", false).onAction(this::updateTargetTypes),
+            BooleanSetting.of("Тиммейты", false).onAction(this::updateTargetTypes),
+            BooleanSetting.of("Мобы", true).onAction(this::updateTargetTypes),
+            BooleanSetting.of("Животные", false).onAction(this::updateTargetTypes),
+            BooleanSetting.of("Жители", false).onAction(this::updateTargetTypes)
     );
 
-    private final MultiBooleanSetting options = new MultiBooleanSetting(this, "Опции",
+    private final ModeSetting pvpMode = new ModeSetting(this, "Режим PvP", "1.9", "1.8", "1.9");
+    private final SliderSetting cps = new SliderSetting(this, "Скорость атаки", 12, 8, 16, 0.5f).setVisible(() -> pvpMode.is("1.8"));
+    private final ModeSetting criticalMode = new ModeSetting(this, "Криты", "None", "None", "Jump", "Adaptive");
+
+    private final MultiBooleanSetting auraOptions = new MultiBooleanSetting(this, "Опции",
             BooleanSetting.of("Корректировать движения", true),
             BooleanSetting.of("Сбрасывать спринт", true),
-            BooleanSetting.of("Ломать щит", true),
-            BooleanSetting.of("Отпускать щит", true),
-            BooleanSetting.of("Visual rotate", true)
+            BooleanSetting.of("Отжимать щит", true),
+            BooleanSetting.of("Проверять еду", true),
+            BooleanSetting.of("Авто прыжок", true),
+            BooleanSetting.of("Синхронизировать взгляд", true)
     );
 
-    private final ModeSetting moveCorrectionMode = new ModeSetting(this, "Мод корректировки движений", "Незаметная", "Сфокусированная", "Выкл")
-            .setVisible(() -> options.getValue("Корректировать движения"));
-    private final ModeSetting keepSprintMode = new ModeSetting(this, "Мод сброса спринта", "Обычный", "Легитный", "Рандомный")
-            .setVisible(() -> options.getValue("Сбрасывать спринт"));
-
-    private final Random random = new Random();
-
     private Entity currentTarget;
-    private long lastAttackTime = 0;
-    private long nextAttackTime = 0;
-    private boolean wasBlocking = false;
+    private float aimTicks = 0;
 
     @Override
     public void onEnable() {
+        currentTarget = null;
+        aimTicks = 0;
         super.onEnable();
-        resetState();
-        updateTargetSettings();
     }
 
     @Override
     protected void onDisable() {
-        cleanup();
+        clearTarget();
         super.onDisable();
     }
 
-    private void resetState() {
+    private void clearTarget() {
         currentTarget = null;
-        lastAttackTime = 0;
-        nextAttackTime = 0;
-        wasBlocking = false;
+        aimTicks = 0;
         AimManager.INSTANCE.disable();
     }
 
-    private void cleanup() {
-        AimManager.INSTANCE.disable();
-        if (wasBlocking && mc.player != null) {
-            mc.player.stopUsingItem();
-            wasBlocking = false;
+    private void updateTargetTypes() {
+        TargetUtility.updateTargetTypes(targetType);
+        if (currentTarget != null && !TargetUtility.isValidTarget(currentTarget)) {
+            clearTarget();
         }
-        currentTarget = null;
     }
 
     @EventHandler
-    public void onUpdate(UpdateEvents.Update event) {
-        if (mc.player == null || mc.world == null) return;
-
-        updateTargetSettings();
-        Entity target = findBestTarget();
-
-        if (target != null) {
-            handleTargetFound(target);
-        } else {
-            handleNoTarget();
-        }
-    }
-
-    private void updateTargetSettings() {
-        TargetUtility.targetPlayers = target.getValue("Игроки");
-        TargetUtility.targetMobs = target.getValue("Мобы");
-        TargetUtility.targetAnimals = target.getValue("Животные");
-        TargetUtility.targetFriends = target.getValue("Друзья");
-        TargetUtility.targetTeammates = target.getValue("Тимейты");
-        TargetUtility.targetInvisible = target.getValue("Невидимые");
-        TargetUtility.targetNaked = target.getValue("Голые");
-        TargetUtility.maxTargetDistance = Math.max(attackRange.getValue(), rotationRange.getValue());
-    }
-
-    private Entity findBestTarget() {
-        if (mc.player == null || mc.world == null) return null;
-
-        Box searchArea = mc.player.getBoundingBox().expand(TargetUtility.maxTargetDistance);
-        List<Entity> potentialTargets = mc.world.getOtherEntities(mc.player, searchArea);
-
-        return potentialTargets.stream()
-                .filter(TargetUtility::isValidTarget)
-                .min((e1, e2) -> {
-                    double dist1 = mc.player.distanceTo(e1);
-                    double dist2 = mc.player.distanceTo(e2);
-
-                    if (e1 instanceof PlayerEntity && !(e2 instanceof PlayerEntity)) return -1;
-                    if (e2 instanceof PlayerEntity && !(e1 instanceof PlayerEntity)) return 1;
-
-                    return Double.compare(dist1, dist2);
-                })
-                .orElse(null);
-    }
-
-    private void handleTargetFound(Entity target) {
-        currentTarget = target;
-        double distanceToTarget = mc.player.distanceTo(target);
-
-        if (distanceToTarget <= rotationRange.getValue()) {
-            performRotation(target);
+    public void onUpdate(UpdateEvents.PlayerUpdate event) {
+        if (mc.player == null || mc.world == null || !mc.player.isAlive() || mc.currentScreen != null) {
+            clearTarget();
+            return;
         }
 
-        if (distanceToTarget <= attackRange.getValue()) {
-            //handleCombat(target);
-        }
+        updateTargetTypes();
+        updateCurrentTarget();
 
-        handleAutoBlock(target);
-    }
-
-    private void handleNoTarget() {
         if (currentTarget != null) {
-            AimManager.INSTANCE.disable();
-            currentTarget = null;
-
-            if (wasBlocking) {
-                stopBlocking();
-            }
-        }
-    }
-
-    private void performRotation(Entity target) {
-        ViewDirection targetDirection = AimCalculator.calculateToEntity(target);
-
-        switch (rotationMode.getValue()) {
-            case "Плавный" -> {
-                AimSettings smoothSettings = new AimSettings(
-                        new AdaptiveSmooth(13.5f, 1.5f),
-                        options.getValue("Visual rotate"),
-                        options.getValue("Корректировать движения"),
-                        moveCorrectionMode.is("Незаметная")
-                );
-                TargetTask smoothTask = smoothSettings.buildTask(targetDirection, target.getPos(), target);
-                AimManager.INSTANCE.execute(smoothTask);
-            }
-            case "Снап" -> {
-                AimSettings snapSettings = new AimSettings(
-                        new AdaptiveSmooth(999f, 0f),
-                        false,
-                        options.getValue("Корректировать движения"),
-                        moveCorrectionMode.is("Незаметная")
-                );
-                TargetTask snapTask = snapSettings.buildTask(targetDirection, target.getPos(), target);
-                AimManager.INSTANCE.execute(snapTask);
-            }
-            case "1 тик" -> {
-                sendRotationPacket(targetDirection);
-            }
-        }
-    }
-
-    private void sendRotationPacket(ViewDirection direction) {
-        if (mc.getNetworkHandler() != null && mc.player != null) {
-            PlayerMoveC2SPacket.LookAndOnGround packet =
-                    new PlayerMoveC2SPacket.LookAndOnGround(
-                            direction.yaw(),
-                            direction.pitch(),
-                            mc.player.isOnGround(),
-                            mc.player.horizontalCollision
-                    );
-            mc.getNetworkHandler().sendPacket(packet);
-        }
-    }
-
-    private void handleCombat(Entity target) {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime < nextAttackTime) return;
-
-        if (!AimCalculator.hasLineOfSight(target, attackRange.getValue())) return;
-
-        if (wasBlocking && options.getValue("Отпускать щит")) {
-            stopBlocking();
-        }
-
-        if (options.getValue("Ломать щит") && target instanceof PlayerEntity player) {
-            breakShield(player);
-        }
-
-        AttackUtility.AttackMode mode = pvpMode.getValue().equals("Старое (1.8)") ? AttackUtility.AttackMode.OLD : AttackUtility.AttackMode.NEW;
-
-        AttackUtility.CriticalMode critMode = getCriticalMode();
-
-        if (AttackUtility.canAttack(mode)) {
-            if (options.getValue("Сбрасывать спринт")) {
-                handleSprintReset();
-            }
-
-            AttackUtility.performAttack(target, mode, critMode);
-            lastAttackTime = currentTime;
-            calculateNextAttackTime();
-        }
-    }
-
-    private void handleSprintReset() {
-        if (mc.player == null) return;
-
-        boolean wasSprinting = mc.player.isSprinting();
-
-        switch (keepSprintMode.getValue()) {
-            case "Обычный" -> SprintUtility.handleAttackSprint();
-            case "Легитный" -> {
-                if (wasSprinting) {
-                    mc.player.setSprinting(false);
-                    mc.execute(() -> mc.execute(() -> {
-                        if (mc.player != null && SprintUtility.canSprint()) {
-                            mc.player.setSprinting(true);
-                        }
-                    }));
+            if (aimMode.is("Во время удара")) {
+                if (aimTicks > 0) {
+                    aimTicks--;
                 }
-            }
-            case "Рандомный" -> {
-                if (wasSprinting && random.nextFloat() > 0.3f) {
-                    SprintUtility.handleAttackSprint();
+
+                if (currentTarget instanceof LivingEntity livingTarget) {
+                    AttackManager.AttackMode attackMode = pvpMode.is("1.8") ? AttackManager.AttackMode.LEGACY : AttackManager.AttackMode.MODERN;
+                    AttackManager.CriticalMode mode = switch (criticalMode.getValue()) {
+                        case "Jump" -> AttackManager.CriticalMode.JUMP;
+                        case "Adaptive" -> AttackManager.CriticalMode.ADAPTIVE;
+                        default -> AttackManager.CriticalMode.NONE;
+                    };
+                    AttackSettings settings = new AttackSettings(attackMode, mode, cps.getValue(), auraOptions.get("Отжимать щит").getValue(), auraOptions.get("Проверять еду").getValue(), attackRange.getValue(), auraOptions.get("Авто прыжок").getValue(), auraOptions.get("Сбрасывать спринт").getValue());
+
+                    if (AttackManager.canAttack(livingTarget, settings)) {
+                        aimTicks = rotateTick.getValue();
+                    }
+                }
+
+                if (aimTicks > 0) {
+                    aimAtTarget();
                 } else {
-                    mc.player.setSprinting(false);
+                    AimManager.INSTANCE.disable();
                 }
+
+            } else {
+                aimAtTarget();
             }
-        }
-    }
 
-    private AttackUtility.CriticalMode getCriticalMode() {
-        return switch (criticalsMode.getValue()) {
-            case "Всегда" -> AttackUtility.CriticalMode.ALWAYS;
-            case "Выкл" -> AttackUtility.CriticalMode.NONE;
-            case "Только в прыжке" -> AttackUtility.CriticalMode.JUMP_ONLY;
-            default -> AttackUtility.CriticalMode.JUMP_ONLY;
-        };
-    }
+            if (mc.crosshairTarget instanceof EntityHitResult result && result.getEntity() == currentTarget) {
+                performAttack();
+            }
 
-    private void calculateNextAttackTime() {
-        if (pvpMode.getValue().equals("Старое (1.8)")) {
-            nextAttackTime = System.currentTimeMillis() + 50 + random.nextInt(50);
         } else {
-            nextAttackTime = System.currentTimeMillis() + 100 + random.nextInt(100);
+            AimManager.INSTANCE.disable();
         }
     }
 
-    private void handleAutoBlock(Entity target) {
-        if (mc.player == null || !(target instanceof PlayerEntity)) return;
-
-        ItemStack offhand = mc.player.getOffHandStack();
-        if (!(offhand.getItem() instanceof ShieldItem)) return;
-
-        double distance = mc.player.distanceTo(target);
-        if (distance <= 4.0 && isLookingAtPlayer((PlayerEntity) target)) {
-            if (!wasBlocking) {
-                startBlocking();
-            }
-        } else if (wasBlocking && distance > 5.0) {
-            if (options.getValue("Отпускать щит")) {
-                stopBlocking();
-            }
+    private void updateCurrentTarget() {
+        Entity potentialTarget = TargetUtility.findBestTarget(aimRange.getValue() + attackRange.getValue());
+        if (potentialTarget instanceof LivingEntity && mc.player.distanceTo(potentialTarget) <= aimRange.getValue() + attackRange.getValue() && TargetUtility.isValidTarget(potentialTarget)) {
+            currentTarget = potentialTarget;
+        } else {
+            currentTarget = null;
         }
     }
 
-    private boolean isLookingAtPlayer(PlayerEntity target) {
-        Vec3d toPlayer = mc.player.getPos().subtract(target.getPos()).normalize();
-        Vec3d targetLook = Vec3d.fromPolar(target.getPitch(), target.getYaw()).normalize();
-        double dot = toPlayer.dotProduct(targetLook);
-        return dot > 0.5;
+    private void aimAtTarget() {
+        ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget);
+        AimSettings aimSettings = new AimSettings(
+                bypassMode.is("Distance") ? new DistanceMode(0.8f, 2.5f) : new AdaptiveSmooth(12f),
+                auraOptions.get("Синхронизировать взгляд").getValue(),
+                auraOptions.get("Корректировать движения").getValue() || auraOptions.get("Синхронизировать взгляд").getValue(),
+                false
+        );
+        TargetTask smoothTask = aimSettings.buildTask(targetDirection, currentTarget.getPos(), currentTarget);
+        AimManager.INSTANCE.execute(smoothTask);
     }
 
-    private void startBlocking() {
-        if (mc.player != null && !wasBlocking) {
-            mc.player.setCurrentHand(Hand.OFF_HAND);
-            wasBlocking = true;
+    private void performAttack() {
+        if (!(currentTarget instanceof LivingEntity livingTarget)) {
+            return;
+        }
+
+        AttackManager.AttackMode attackMode = pvpMode.is("1.8") ? AttackManager.AttackMode.LEGACY : AttackManager.AttackMode.MODERN;
+
+        AttackManager.CriticalMode mode = switch (criticalMode.getValue()) {
+            case "Jump" -> AttackManager.CriticalMode.JUMP;
+            case "Adaptive" -> AttackManager.CriticalMode.ADAPTIVE;
+            default -> AttackManager.CriticalMode.NONE;
+        };
+
+        AttackSettings attackSettings = new AttackSettings(
+                attackMode,
+                mode,
+                cps.getValue(),
+                auraOptions.get("Отжимать щит").getValue(),
+                auraOptions.get("Проверять еду").getValue(),
+                attackRange.getValue(),
+                auraOptions.get("Авто прыжок").getValue(),
+                auraOptions.get("Сбрасывать спринт").getValue()
+        );
+
+        if (AttackManager.canAttack(livingTarget, attackSettings)) {
+            AttackManager.performAttack(livingTarget, attackSettings);
         }
     }
 
-    private void stopBlocking() {
-        if (mc.player != null && wasBlocking) {
-            mc.player.stopUsingItem();
-            wasBlocking = false;
-        }
+    public Entity getCurrentTarget() {
+        return currentTarget;
     }
 
-    private void breakShield(PlayerEntity target) {
-        ItemStack targetOffhand = target.getOffHandStack();
-        if (targetOffhand.getItem() instanceof ShieldItem && target.isBlocking()) {
-            ItemStack mainHand = mc.player.getMainHandStack();
-            if (mainHand.getItem() instanceof net.minecraft.item.AxeItem) {
-                return;
-            }
-
-            for (int i = 0; i < 9; i++) {
-                ItemStack stack = mc.player.getInventory().getStack(i);
-                if (stack.getItem() instanceof net.minecraft.item.AxeItem) {
-                    mc.player.getInventory().selectedSlot = i;
-                    break;
-                }
-            }
-        }
-    }
-
-    public Entity getCurrentTarget() { return currentTarget; }
-    public boolean isAttacking() { return AttackUtility.isAttacking(); }
     public double getDistanceToTarget() {
         return currentTarget != null ? mc.player.distanceTo(currentTarget) : -1;
     }

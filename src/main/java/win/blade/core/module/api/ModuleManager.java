@@ -6,7 +6,6 @@ import win.blade.common.utils.minecraft.ChatUtility;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -82,6 +81,11 @@ public final class ModuleManager extends HashMap<String,Module> {
 
     public Stream<Module> filter(Predicate<Module> predicate) {
         return stream().filter(predicate);
+    }
+
+    public <T extends Module> T get(Class<T> t) {
+        return  filter((module) -> module.getClass().equals(t)).map(m -> (T) m)
+                .findFirst().orElse(null);
     }
 
     public ModuleManager enableAll(Predicate<Module> filter) {

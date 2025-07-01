@@ -29,11 +29,11 @@ public record ViewDirection(float yaw, float pitch) {
     }
 
     public ViewDirection combine(ViewDirection other) {
-        return new ViewDirection(yaw + other.yaw, pitch + other.pitch);
+        return new ViewDirection(yaw + other.yaw, pitch + other.pitch).clamp();
     }
 
     public ViewDirection subtract(ViewDirection other) {
-        return new ViewDirection(yaw - other.yaw, pitch - other.pitch);
+        return new ViewDirection(yaw - other.yaw, pitch - other.pitch).clamp();
     }
 
     public ViewDirection scale(float multiplier) {
@@ -41,14 +41,24 @@ public record ViewDirection(float yaw, float pitch) {
     }
 
     public static ViewDirection difference(ViewDirection start, ViewDirection end) {
-        return new ViewDirection(
-                MathHelper.wrapDegrees(end.yaw - start.yaw),
-                MathHelper.wrapDegrees(end.pitch - start.pitch)
-        );
+        float yawDiff = MathHelper.wrapDegrees(end.yaw - start.yaw);
+        float pitchDiff = MathHelper.wrapDegrees(end.pitch - start.pitch);
+
+        return new ViewDirection(yawDiff, pitchDiff);
     }
 
     public double distanceTo(ViewDirection other) {
         ViewDirection delta = difference(this, other);
         return Math.sqrt(delta.yaw * delta.yaw + delta.pitch * delta.pitch);
+    }
+
+    public static ViewDirection lerpAngles(ViewDirection from, ViewDirection to, float factor) {
+        float yawDelta = MathHelper.wrapDegrees(to.yaw - from.yaw);
+        float pitchDelta = MathHelper.wrapDegrees(to.pitch - from.pitch);
+
+        float newYaw = from.yaw + yawDelta * factor;
+        float newPitch = from.pitch + pitchDelta * factor;
+
+        return new ViewDirection(newYaw, newPitch).clamp();
     }
 }

@@ -1,0 +1,17 @@
+package win.blade.common.utils.attack;
+
+/**
+ * Автор: NoCap
+ * Дата создания: 28.06.2025
+ */
+public record AttackSettings(
+        AttackManager.AttackMode attackMode,
+        AttackManager.CriticalMode criticalMode,
+        float cps,
+        boolean unpressShield,
+        boolean checkEating,
+        double attackRange,
+        boolean autoJump,
+        boolean resetSprint
+) {
+}

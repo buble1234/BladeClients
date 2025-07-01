@@ -26,10 +26,7 @@ public class Manager implements MinecraftInstance {
 
     public static final IEventBus EVENT_BUS = new EventBus();
 
-    private boolean panic;
-    public static final ControlHudElement controlElement = new ControlHudElement();
-    public static final TimeHudElement timeElement = new TimeHudElement();
-    public static final RectangleHudElement rectangleElement = new RectangleHudElement();
+    private static boolean panic;
     public static final ModuleManager moduleManager = new ModuleManager();
     public static final NotificationManager notificationManager = new NotificationManager();
     public static final CommandManager commandManager = new CommandManager();
@@ -45,9 +42,6 @@ public class Manager implements MinecraftInstance {
                 (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
 
         EVENT_BUS.subscribe(this);
-        EVENT_BUS.subscribe(controlElement);
-        EVENT_BUS.subscribe(timeElement);
-        EVENT_BUS.subscribe(rectangleElement);
         EVENT_BUS.subscribe(moduleManager);
         EVENT_BUS.subscribe(commandManager);
 
@@ -99,12 +93,12 @@ public class Manager implements MinecraftInstance {
         return menuScreen == null  ? menuScreen = new MenuScreen() : menuScreen;
     }
 
-    public boolean isPanic() {
+    public static boolean isPanic() {
         return panic;
     }
 
     public void setPanic( boolean toggle) {
-       panic = toggle;
+        panic = toggle;
     }
 
     public static ModuleManager getModuleManagement() {

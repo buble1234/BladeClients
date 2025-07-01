@@ -5,6 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "accessor.MinecraftClientAccessor",
+    "accessor.LivingEntityAccessor",
+    "accessor.PlayerPositionLookS2CPacketAccessor",
     "minecraft.client.MixinChatInputSuggestor",
     "minecraft.entity.MixinEntity",
     "minecraft.entity.MixinLivingEntity",
@@ -29,9 +31,12 @@
     "minecraft.input.MixinKeyboard",
     "minecraft.input.MixinKeyboardInput",
     "minecraft.input.MixinMouse",
+    "minecraft.render.MixinBossBarHud",
     "minecraft.render.MixinGameRenderer",
     "minecraft.render.MixinInGameHud",
-    "minecraft.render.MixinLivingEntityRenderer"
+    "minecraft.render.MixinInGameOverlayRenderer",
+    "minecraft.render.MixinLivingEntityRenderer",
+    "minecraft.render.MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1
