@@ -2,6 +2,7 @@ package win.blade.core.module.storage.combat;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.hit.EntityHitResult;
 import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
@@ -12,6 +13,7 @@ import win.blade.common.utils.aim.base.AimCalculator;
 import win.blade.common.utils.aim.core.AimSettings;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.mode.AdaptiveSmooth;
+import win.blade.common.utils.aim.mode.DistanceMode;
 import win.blade.common.utils.attack.AttackSettings;
 import win.blade.common.utils.attack.AttackManager;
 import win.blade.common.utils.player.TargetUtility;
@@ -28,8 +30,10 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
-    private final ModeSetting rotationMode = new ModeSetting(this, "Режим ротации", "Обычный", "Обычный", "Во время удара");
-    private final SliderSetting attackRange = new SliderSetting(this, "Дистанция поворота", 3.0f, 1.0f, 6.0f, 0.1f);
+    private final ModeSetting aimMode = new ModeSetting(this, "Режим поворота", "Обычный", "Обычный", "Во время удара");
+    private final ModeSetting bypassMode = new ModeSetting(this, "Режим обхода", "Обычный", "Distance");
+    private final SliderSetting rotateTick = new SliderSetting(this, "Тики поворота", 5, 1, 10, 1.0f).setVisible(() -> aimMode.is("Во время удара"));
+    private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
     private final SliderSetting aimRange = new SliderSetting(this, "Дистанция поворота", 4.5f, 2, 8, 0.1f);
     private final MultiBooleanSetting targetType = new MultiBooleanSetting(this, "Типы целей",
             BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
@@ -55,7 +59,7 @@ public class AuraModule extends Module {
     );
 
     private Entity currentTarget;
-    private int aimTicks = 0;
+    private float aimTicks = 0;
 
     @Override
     public void onEnable() {
@@ -94,7 +98,7 @@ public class AuraModule extends Module {
         updateCurrentTarget();
 
         if (currentTarget != null) {
-            if (rotationMode.is("Во время удара")) {
+            if (aimMode.is("Во время удара")) {
                 if (aimTicks > 0) {
                     aimTicks--;
                 }
@@ -109,7 +113,7 @@ public class AuraModule extends Module {
                     AttackSettings settings = new AttackSettings(attackMode, mode, cps.getValue(), auraOptions.get("Отжимать щит").getValue(), auraOptions.get("Проверять еду").getValue(), attackRange.getValue(), auraOptions.get("Авто прыжок").getValue(), auraOptions.get("Сбрасывать спринт").getValue());
 
                     if (AttackManager.canAttack(livingTarget, settings)) {
-                        aimTicks = 5;
+                        aimTicks = rotateTick.getValue();
                     }
                 }
 
@@ -123,7 +127,9 @@ public class AuraModule extends Module {
                 aimAtTarget();
             }
 
-            performAttack();
+            if (mc.crosshairTarget instanceof EntityHitResult result && result.getEntity() == currentTarget) {
+                performAttack();
+            }
 
         } else {
             AimManager.INSTANCE.disable();
@@ -142,7 +148,7 @@ public class AuraModule extends Module {
     private void aimAtTarget() {
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget);
         AimSettings aimSettings = new AimSettings(
-                new AdaptiveSmooth(12f),
+                bypassMode.is("Distance") ? new DistanceMode(0.8f, 2.5f) : new AdaptiveSmooth(12f),
                 auraOptions.get("Синхронизировать взгляд").getValue(),
                 auraOptions.get("Корректировать движения").getValue() || auraOptions.get("Синхронизировать взгляд").getValue(),
                 false
