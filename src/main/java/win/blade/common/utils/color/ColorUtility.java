@@ -78,7 +78,7 @@ public class ColorUtility {
         return pack(r, g, b, (int) (255 * alpha));
     }
 
-    public static int getAlpha(int color) {
-        return (color >> 24) & 0xFF;
-    }
+//    public static int getAlpha(int color) {
+//        return (color >> 24) & 0xFF;
+//    }
 }

@@ -1,11 +1,8 @@
 package win.blade.common.utils.math;
 
+import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.ColorHelper;
-
-public class MathUtility {
-
-import net.minecraft.client.render.Camera;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
@@ -23,18 +20,6 @@ public class MathUtility implements MinecraftInstance {
     public static boolean isHovered(double mouseX, double mouseY, double x, double y, double width, double height) {
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
-    public static void scale(MatrixStack stack,
-                             float x,
-                             float y,
-                             float scale,
-                             Runnable data) {
-
-        stack.push();
-        stack.translate(x, y, 0);
-        stack.scale(scale, scale, 1);
-        stack.translate(-x, -y, 0);
-        data.run();
-        stack.pop();
 
     public static @NotNull Vec3d worldSpaceToScreenSpace(@NotNull Vec3d pos) {
         Camera camera = mc.getEntityRenderDispatcher().camera;
@@ -63,5 +48,4 @@ public class MathUtility implements MinecraftInstance {
 
         return Math.max(1f, 1000 / distance) * (size / 30.0f) / (fov == 70 ? 1 : fov / 70.0f);
     }
-
 }

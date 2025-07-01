@@ -84,7 +84,7 @@ public class AnimationContext {
         float centerX = x + scaledWidth / 2f;
         float centerY = y + scaledHeight / 2f;
         
-        MathUtility.scale(context.getMatrices(), centerX, centerY, getScale(), renderAction);
+        //MathUtility.scale(context.getMatrices(), centerX, centerY, getScale(), renderAction);
     }
     
     // Применяет альфа к цвету
