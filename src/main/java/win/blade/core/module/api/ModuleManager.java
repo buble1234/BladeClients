@@ -84,6 +84,11 @@ public final class ModuleManager extends HashMap<String,Module> {
         return stream().filter(predicate);
     }
 
+    public <T extends Module> T get(Class<T> t) {
+        return  filter((module) -> module.getClass().equals(t)).map(m -> (T) m)
+                .findFirst().orElse(null);
+    }
+
     public ModuleManager enableAll(Predicate<Module> filter) {
         stream().filter(filter).forEach(m -> m.setEnabled(true));
         return this;
