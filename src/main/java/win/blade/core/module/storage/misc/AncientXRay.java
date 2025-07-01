@@ -43,10 +43,6 @@ public class AncientXRay extends Module {
 
     public Set<BlockPos> positions = ConcurrentHashMap.newKeySet();
 
-    public AncientXRay(){
-    }
-
-
     @EventHandler
     public void key(InputEvents.Keyboard e){
         if(e.getKey() == setting.getValue()) {
@@ -60,7 +56,6 @@ public class AncientXRay extends Module {
                 if (mc.world.getBlockState(pos).getBlock() == Blocks.ANCIENT_DEBRIS) {
 
                     if (isVisible(pos)) {
-//                        mc.gameMode.startDestroyBlock(pos, mc.player.getDirection());
                         if (mc.world.getBlockState(pos).getBlock() == (Blocks.ANCIENT_DEBRIS)) {
                             positions.add(pos);
                         }
