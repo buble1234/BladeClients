@@ -52,6 +52,8 @@ public class Stencil implements MinecraftInstance {
         glEnable(GL_DEPTH_TEST);
     }
 
+}
+
     public static void erase(int ref) {
         glColorMask(true, true, true, true);
         glStencilFunc(GL_NOTEQUAL, ref, 1);
