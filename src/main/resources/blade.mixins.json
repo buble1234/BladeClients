@@ -4,9 +4,14 @@
   "package": "win.blade.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "accessor.MinecraftClientAccessor",
     "minecraft.client.MixinChatInputSuggestor",
     "minecraft.entity.MixinEntity",
     "minecraft.entity.MixinLivingEntity",
+    "minecraft.gui.LoadingScreenMixin",
+    "minecraft.gui.MixinGameMenuScreen",
+    "minecraft.gui.MixinMultiplayerServerListPinger",
+    "minecraft.gui.MixinScreen",
     "minecraft.item.MixinItem",
     "minecraft.network.MixinClientConnection",
     "minecraft.network.MixinClientPlayNetworkHandler",
@@ -14,7 +19,6 @@
   ],
   "client": [
     "MixinMinecraftClient",
-    "accessor.MinecraftClientAccessor",
     "minecraft.client.MixinCamera",
     "minecraft.client.MixinChatScreen",
     "minecraft.client.MixinClientPlayerEntity",

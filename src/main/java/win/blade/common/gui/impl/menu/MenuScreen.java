@@ -38,6 +38,7 @@ public class MenuScreen extends Screen implements AnimationHelp, IMouse {
     @Override
     protected void init() {
         super.init();
+
         isClosing = false;
         alphaAnimation.set(0.0);
         scaleAnimation.set(0.7);

@@ -56,9 +56,18 @@ public record BuiltText(
 		}
 
 		BufferBuilder builder = Tessellator.getInstance().begin(DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-		this.font.applyGlyphs(matrix, builder, this.text, this.size,
-				(this.thickness + this.outlineThickness * 0.5f) * 0.5f * this.size, this.spacing,
-				x, y + this.font.getMetrics().baselineHeight() * this.size, z, this.color);
+
+		String[] lines = this.text.split("\n");
+		float yOffset = y;
+		float lineHeight = this.font.getMetrics().lineHeight() * this.size;
+		float baselineOffset = this.font.getMetrics().baselineHeight() * this.size;
+
+		for (String line : lines) {
+			this.font.applyGlyphs(matrix, builder, line, this.size,
+					(this.thickness + this.outlineThickness * 0.5f) * 0.5f * this.size, this.spacing,
+					x, yOffset + baselineOffset, z, this.color);
+			yOffset += lineHeight;
+		}
 
 		BuiltBuffer builtBuffer = builder.endNullable();
 		if (builtBuffer != null) {

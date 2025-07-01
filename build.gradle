@@ -25,10 +25,6 @@ repositories {
         url = "https://repo.viaversion.com"
     }
     maven {
-        name = "Lenni0451"
-        url = "https://maven.lenni0451.net/everything"
-    }
-    maven {
         name = "OpenCollab"
         url = "https://repo.opencollab.dev/maven-snapshots"
     }
@@ -46,8 +42,6 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    modImplementation "com.viaversion:viafabricplus-api:4.0.5-BACKPORT"
-    modRuntimeOnly "com.viaversion:viafabricplus:4.0.5-BACKPORT"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }

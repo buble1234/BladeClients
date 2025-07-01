@@ -48,6 +48,8 @@ public class ModuleComponent extends WindowComponent {
 
     }
 
+
+
     public void mouseClicked(double mouseX, double mouseY, int button) {
         settingComponent.mouseClicked(mouseX, mouseY, button);
     }

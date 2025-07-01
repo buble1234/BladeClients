@@ -65,16 +65,16 @@ public class UserComponent extends WindowComponent implements IMouse {
 
     @Override
     public void mouseClicked(double mouseX, double mouseY, int button) {
-        float scale = menuScreen.scaleAnimation.get();
-        if (isHover(mouseX, mouseY, x + 85 * scale, y + 10 * scale, 7 * scale, 9 * scale) && isLClick(button)) {
-            if (menuScreen.windowManager.isWindowOpen(InfoWindow.class)) {
-                menuScreen.windowManager.closeAllWindowsOfType(InfoWindow.class);
-            } else {
-                float infoWindowX = menuScreen.width / 2f - (450 * scale) / 2f - (140 * scale) - 10 * scale;
-                float infoWindowY = menuScreen.height / 2f - (270 * scale) / 2f;
-                menuScreen.windowManager.add(new InfoWindow(menuScreen, infoWindowX, infoWindowY, 140, 184));
-            }
-        }
+//        float scale = menuScreen.scaleAnimation.get();
+//        if (isHover(mouseX, mouseY, x + 85 * scale, y + 10 * scale, 7 * scale, 9 * scale) && isLClick(button)) {
+//            if (menuScreen.windowManager.isWindowOpen(InfoWindow.class)) {
+//                menuScreen.windowManager.closeAllWindowsOfType(InfoWindow.class);
+//            } else {
+//                float infoWindowX = menuScreen.width / 2f - (450 * scale) / 2f - (140 * scale) - 10 * scale;
+//                float infoWindowY = menuScreen.height / 2f - (270 * scale) / 2f;
+//                menuScreen.windowManager.add(new InfoWindow(menuScreen, infoWindowX, infoWindowY, 140, 184));
+//            }
+//        }
     }
 
     @Override
