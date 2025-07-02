@@ -6,6 +6,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import win.blade.core.event.impl.input.InputEvents;
+import win.blade.core.event.impl.minecraft.OptionEvents;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.event.impl.player.PlayerActionEvents;
 import win.blade.core.event.impl.render.RenderEvents;
@@ -55,5 +56,9 @@ public class EventHolder {
 
     public static PlayerActionEvents.CloseInventory getCloseInventoryEvent(int id) {
         return new PlayerActionEvents.CloseInventory(id);
+    }
+
+    public static OptionEvents.Gamma getGammaEvent(float gamma) {
+        return new OptionEvents.Gamma(gamma);
     }
 }

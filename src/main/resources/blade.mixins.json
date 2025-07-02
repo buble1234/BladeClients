@@ -35,6 +35,7 @@
     "minecraft.render.MixinGameRenderer",
     "minecraft.render.MixinInGameHud",
     "minecraft.render.MixinInGameOverlayRenderer",
+    "minecraft.render.MixinLightmapTextureManager",
     "minecraft.render.MixinLivingEntityRenderer",
     "minecraft.render.MixinWorldRenderer"
   ],

@@ -23,7 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Дата создания: 20.06.2025, в 14:08:04
  */
 
-@ModuleInfo(name = "PacketDelayer", category = Category.MISC, bind = 258, mode = BindMode.УДЕРЖИВАТЬ)
+@ModuleInfo(name = "PacketDelayer", category = Category.MISC, mode = BindMode.УДЕРЖИВАТЬ)
 public class PacketDelayer extends Module {
     public ModeSetting packetMode = new ModeSetting(this, "Задерживать пакет на", "Ходьбу", "Ходьбу", "Ротацию", "Удар", "Всё вместе");
     public SliderSetting maxHold = new SliderSetting(this, "Максимальное время задержки (сек)", 2f, 0.25f, 10f, 0.05f);
