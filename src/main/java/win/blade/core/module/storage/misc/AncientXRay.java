@@ -146,10 +146,10 @@ public class AncientXRay extends Module {
         Vec3d vec3 = pos.toCenterPos();
 
         double distance = ViewTracer.distanceTo(mc.player, vec3);
-        float scale = (float) MathUtility.getScale(vec3, 0.125 + distance / 128);
+//        float scale = (float) MathUtility.getScale(vec3, 0.125 + distance / 128);
         int size = (int) (12 - (distance / 10));
         Vec3d vec2 = MathUtility.worldSpaceToScreenSpace(vec3);
-        pSize *= scale;
+//        pSize *= scale;
 
         double x = vec2.getX();
         double y = vec2.getY();

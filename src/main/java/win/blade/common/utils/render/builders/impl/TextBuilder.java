@@ -1,10 +1,10 @@
 package win.blade.common.utils.render.builders.impl;
 
+import win.blade.common.utils.other.TextAlign;
 import win.blade.common.utils.render.builders.AbstractBuilder;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.msdf.MsdfFont;
 import win.blade.common.utils.render.renderers.impl.BuiltText;
-
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class TextBuilder extends AbstractBuilder<BuiltText> {
+
 
     private MsdfFont font;
     private String text;
@@ -22,6 +23,7 @@ public final class TextBuilder extends AbstractBuilder<BuiltText> {
     private float spacing;
     private int outlineColor;
     private float outlineThickness;
+    private TextAlign textAlign;
 
     public TextBuilder font(MsdfFont font) {
         this.font = font;
@@ -72,6 +74,12 @@ public final class TextBuilder extends AbstractBuilder<BuiltText> {
         return this;
     }
 
+    public TextBuilder align(TextAlign textAlign) {
+        this.textAlign = textAlign;
+        return this;
+    }
+
+
     @Override
     protected BuiltText _build() {
         return new BuiltText(
@@ -83,7 +91,8 @@ public final class TextBuilder extends AbstractBuilder<BuiltText> {
                 this.smoothness,
                 this.spacing,
                 this.outlineColor,
-                this.outlineThickness
+                this.outlineThickness,
+                this.textAlign
         );
     }
 
@@ -98,6 +107,7 @@ public final class TextBuilder extends AbstractBuilder<BuiltText> {
         this.spacing = 0.0f;
         this.outlineColor = 0;
         this.outlineThickness = 0.0f;
+        this.textAlign = TextAlign.LEFT;
     }
 
     public static float renderWrapped(MsdfFont font, String text, String splitter, float x, float y, float maxWidth, int color, float size) {

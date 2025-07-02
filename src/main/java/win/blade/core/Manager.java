@@ -62,22 +62,6 @@ public class Manager implements MinecraftInstance {
 
     @EventHandler
     public void onUpdate(UpdateEvents.Update e) {
-        if (System.getProperty("user.name").contains("Malon") || System.getProperty("user.name").contains("malon") || System.getProperty("user.name").contains("Melon") || System.getProperty("user.name").contains("melon")) {
-            long currentTime = System.currentTimeMillis();
-            if (!isFreezing) {
-                int randomInterval = 10_000 + random.nextInt(5_001);
-                if (currentTime - lastFreezeTime >= randomInterval) {
-                    isFreezing = true;
-                    try {
-                        Thread.sleep(5_000);
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
-                    lastFreezeTime = currentTime;
-                    isFreezing = false;
-                }
-            }
-        }
         handleKeybinds();
     }
 
