@@ -140,8 +140,8 @@ public class Arrows extends Module {
                 .color(new QuadColorState(-1))
                 .texture(
                         0,0, size, size, mc
-                        .getTextureManager()
-                        .getTexture(arrow)
+                                .getTextureManager()
+                                .getTexture(arrow)
                 )
                 .build()
                 .render(new Matrix4f(), -size / 2, -size / 2);
