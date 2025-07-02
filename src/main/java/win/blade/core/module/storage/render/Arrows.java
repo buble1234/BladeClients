@@ -28,7 +28,7 @@ import win.blade.core.module.api.ModuleInfo;
  * Автор Ieo117
  * Дата создания: 29.06.2025, в 10:07:44
  */
-@ModuleInfo(name = "Pointers", category = Category.RENDER)
+@ModuleInfo(name = "Arrows", category = Category.RENDER)
 public class Arrows extends Module {
     private Identifier arrow;
     private boolean render = false;
