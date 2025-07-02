@@ -50,7 +50,7 @@ public class ModulePanel extends WindowComponent implements AnimationHelp {
 
     private boolean hasActiveBinding() {
         for (ModuleComponent component : allModuleComponents) {
-            if (component.settingComponent.isBinding() || hasBindingInComponent(component) || hasTypingInComponent(component)) {
+            if ( hasBindingInComponent(component) || hasTypingInComponent(component)) {
                 return true;
             }
         }

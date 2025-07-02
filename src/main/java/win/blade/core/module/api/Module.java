@@ -20,6 +20,16 @@ public abstract class Module implements MinecraftInstance {
 
     private List<Setting<?>> settings;
 
+    public String getVisibleName() { return "Module"; }
+
+
+    public Category getCategory() { return this.data.category(); }
+    public boolean isState() { return false; }
+    public  int type;
+    public void switchState() {}
+
+    public java.util.List<win.blade.common.gui.impl.gui.setting.Setting> settings() { return new java.util.ArrayList<>(); }
+
     public List<Setting<?>> getSettings() {
         return settings;
     }

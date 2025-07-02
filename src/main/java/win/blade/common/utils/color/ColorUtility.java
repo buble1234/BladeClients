@@ -31,6 +31,26 @@ public class ColorUtility {
         );
     }
 
+    public static int getRed(int hex) {
+        return hex >> 16 & 255;
+    }
+
+    public static int getGreen(int hex) {
+        return hex >> 8 & 255;
+    }
+
+    public static int getBlue(int hex) {
+        return hex & 255;
+    }
+
+    public static int getAlpha(int hex) {
+        return hex >> 24 & 255;
+    }
+
+    public static int applyOpacity(int color, float opacity) {
+        return ColorHelper.getArgb((int) (getAlpha(color) * opacity / 255), getRed(color), getGreen(color), getBlue(color));
+    }
+
     public static int multDark(int color, float factor) {
         return ColorHelper.getArgb(
                 ColorHelper.getAlpha(color),
@@ -58,7 +78,7 @@ public class ColorUtility {
         return pack(r, g, b, (int) (255 * alpha));
     }
 
-    public static int getAlpha(int color) {
-        return (color >> 24) & 0xFF;
-    }
+//    public static int getAlpha(int color) {
+//        return (color >> 24) & 0xFF;
+//    }
 }

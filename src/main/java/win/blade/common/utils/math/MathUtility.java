@@ -1,6 +1,8 @@
 package win.blade.common.utils.math;
 
 import net.minecraft.client.render.Camera;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
@@ -38,13 +40,12 @@ public class MathUtility implements MinecraftInstance {
         return new Vec3d(target.x / mc.getWindow().getScaleFactor(), (displayHeight - target.y) / mc.getWindow().getScaleFactor(), target.z);
     }
 
-    public static double getScale(Vec3d interpolated, double size){
-        Vec3d cam = mc.gameRenderer.getCamera().getPos();
-        double distance = cam.distanceTo(interpolated);
-
-        double fov = mc.gameRenderer.getFov(mc.gameRenderer.getCamera(), 0, true);
-
-        return Math.max(1f, 1000 / distance) * (size / 30.0f) / (fov == 70 ? 1 : fov / 70.0f);
-    }
-
+//    public static double getScale(Vec3d interpolated, double size){
+//        Vec3d cam = mc.gameRenderer.getCamera().getPos();
+//        double distance = cam.distanceTo(interpolated);
+//
+//        double fov = mc.gameRenderer.getFov(mc.gameRenderer.getCamera(), 0, true);
+//
+//        return Math.max(1f, 1000 / distance) * (size / 30.0f) / (fov == 70 ? 1 : fov / 70.0f);
+//    }
 }

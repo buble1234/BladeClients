@@ -4,7 +4,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
-import ru.blade.common.GuiRender.melon.interfaces.TextAlign;
 import win.blade.common.gui.impl.menu.helpers.TextBox;
 import win.blade.common.gui.impl.menu.panel.Panel;
 import win.blade.common.gui.impl.menu.window.WindowManager;
@@ -13,6 +12,7 @@ import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.AnimationHelp;
 import win.blade.common.utils.math.animation.Easing;
 import win.blade.common.utils.other.IMouse;
+import win.blade.common.utils.other.TextAlign;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
@@ -38,6 +38,7 @@ public class MenuScreen extends Screen implements AnimationHelp, IMouse {
     @Override
     protected void init() {
         super.init();
+
         isClosing = false;
         alphaAnimation.set(0.0);
         scaleAnimation.set(0.7);

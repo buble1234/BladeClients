@@ -1,6 +1,7 @@
-package ru.blade.common.GuiRender.melon.interfaces;
+package win.blade.common.utils.other;
 
 public enum TextAlign {
     LEFT,
-    CENTER
+    CENTER,
+    RIGHT
 }

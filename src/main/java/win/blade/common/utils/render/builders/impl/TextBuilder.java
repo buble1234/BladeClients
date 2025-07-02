@@ -1,10 +1,10 @@
 package win.blade.common.utils.render.builders.impl;
 
+import win.blade.common.utils.other.TextAlign;
 import win.blade.common.utils.render.builders.AbstractBuilder;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.msdf.MsdfFont;
 import win.blade.common.utils.render.renderers.impl.BuiltText;
-
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class TextBuilder extends AbstractBuilder<BuiltText> {
+
 
     private MsdfFont font;
     private String text;
@@ -22,6 +23,7 @@ public final class TextBuilder extends AbstractBuilder<BuiltText> {
     private float spacing;
     private int outlineColor;
     private float outlineThickness;
+    private TextAlign textAlign;
 
     public TextBuilder font(MsdfFont font) {
         this.font = font;
@@ -72,6 +74,12 @@ public final class TextBuilder extends AbstractBuilder<BuiltText> {
         return this;
     }
 
+    public TextBuilder align(TextAlign textAlign) {
+        this.textAlign = textAlign;
+        return this;
+    }
+
+
     @Override
     protected BuiltText _build() {
         return new BuiltText(
@@ -83,7 +91,8 @@ public final class TextBuilder extends AbstractBuilder<BuiltText> {
                 this.smoothness,
                 this.spacing,
                 this.outlineColor,
-                this.outlineThickness
+                this.outlineThickness,
+                this.textAlign
         );
     }
 
@@ -98,6 +107,7 @@ public final class TextBuilder extends AbstractBuilder<BuiltText> {
         this.spacing = 0.0f;
         this.outlineColor = 0;
         this.outlineThickness = 0.0f;
+        this.textAlign = TextAlign.LEFT;
     }
 
     public static float renderWrapped(MsdfFont font, String text, String splitter, float x, float y, float maxWidth, int color, float size) {
@@ -125,38 +135,37 @@ public final class TextBuilder extends AbstractBuilder<BuiltText> {
     }
 
     private static List<String> splitLine(String text, MsdfFont font, float fontSize, float maxWidth, String splitter) {
-        List<String> splitLines = new ArrayList<>();
+        List<String> lines = new ArrayList<>();
         if (text == null || text.trim().isEmpty() || font == null) {
-            return splitLines;
+            return lines;
         }
 
+        String[] words = text.split(" ");
         StringBuilder currentLine = new StringBuilder();
-        float currentLineWidth = 0;
-        float hyphenWidth = font.getWidth(splitter, fontSize);
-        Map<Character, Float> charWidths = new HashMap<>();
+        float spaceWidth = font.getWidth(" ", fontSize);
 
-        for (String line : text.trim().split("\n")) {
-            for (char character : line.toCharArray()) {
-                float charWidth = charWidths.computeIfAbsent(character, c -> font.getWidth(String.valueOf(c), fontSize));
+        for (String word : words) {
+            if (word.isEmpty()) continue;
 
-                if (currentLineWidth + charWidth + hyphenWidth > maxWidth && !currentLine.isEmpty()) {
-                    splitLines.add(currentLine.toString());
-                    currentLine.setLength(0);
-                    currentLineWidth = 0;
-                }
+            float wordWidth = font.getWidth(word, fontSize);
+            float currentLineWidth = font.getWidth(currentLine.toString(), fontSize);
 
-                if (character != ' ' || !currentLine.isEmpty()) {
-                    currentLine.append(character);
-                    currentLineWidth += charWidth;
-                }
-            }
-            if (!currentLine.isEmpty()) {
-                splitLines.add(currentLine.toString());
+            if (!currentLine.isEmpty() && currentLineWidth + spaceWidth + wordWidth > maxWidth) {
+                lines.add(currentLine.toString());
                 currentLine.setLength(0);
-                currentLineWidth = 0;
+            }
+
+            if (currentLine.isEmpty()) {
+                currentLine.append(word);
+            } else {
+                currentLine.append(" ").append(word);
             }
         }
 
-        return splitLines;
+        if (!currentLine.isEmpty()) {
+            lines.add(currentLine.toString());
+        }
+
+        return lines;
     }
 }

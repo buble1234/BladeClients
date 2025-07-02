@@ -28,7 +28,7 @@ import win.blade.core.module.api.ModuleInfo;
  * Автор Ieo117
  * Дата создания: 29.06.2025, в 10:07:44
  */
-@ModuleInfo(name = "Pointers", category = Category.RENDER)
+@ModuleInfo(name = "Arrows", category = Category.RENDER)
 public class Arrows extends Module {
     private Identifier arrow;
     private boolean render = false;
@@ -140,8 +140,8 @@ public class Arrows extends Module {
                 .color(new QuadColorState(-1))
                 .texture(
                         0,0, size, size, mc
-                        .getTextureManager()
-                        .getTexture(arrow)
+                                .getTextureManager()
+                                .getTexture(arrow)
                 )
                 .build()
                 .render(new Matrix4f(), -size / 2, -size / 2);

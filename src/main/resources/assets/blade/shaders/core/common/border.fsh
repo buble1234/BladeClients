@@ -22,8 +22,8 @@ void main() {
     vec2 coord = FragCoord.xy * Size;
     float dist = rdist(center - coord, center - 1.0, Radius);
 
-    float innerAlpha = smoothstep(1.0 - Thickness - Smoothness.x - Smoothness.y,
-        1.0 - Thickness - Smoothness.y, dist);
+    float innerAlpha = smoothstep(2.0 - Thickness - Smoothness.x - Smoothness.y,
+        2.0  - Thickness - Smoothness.y, dist);
 
     float outerAlpha = 1.0 - smoothstep(1.0 - Smoothness.y, 1.0, dist);
 
