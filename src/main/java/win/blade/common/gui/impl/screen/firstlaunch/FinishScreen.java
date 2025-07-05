@@ -66,7 +66,7 @@ public class FinishScreen extends BaseScreen {
         if (currentAlpha < 0.01f) return;
 
         MsdfFont font = FontType.sf_regular.get();
-        float fz = 48f;
+        float fz = 28;
 
         float textX = this.width / 2f;
         float textY = (this.height / 2f) - (fz / 2f);

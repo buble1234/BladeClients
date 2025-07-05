@@ -8,6 +8,7 @@ import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
 import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.msdf.FontType;
+import win.blade.common.utils.render.renderers.impl.BuiltLiquidGlass;
 import win.blade.common.utils.render.renderers.impl.BuiltRectangle;
 import win.blade.common.utils.render.renderers.impl.BuiltText;
 import win.blade.core.event.controllers.EventHandler;
@@ -47,13 +48,21 @@ public class WatermarkModule extends Module implements MinecraftInstance, NonReg
         float textWidth = FontType.biko.get().getWidth(watermarkText, 12f);
         int width = (int) (textWidth + 20);
 
-        BuiltRectangle background = Builder.rectangle()
-                .size(new SizeState(width, height))
-                .color(new QuadColorState(new Color(30, 30, 30, 200)))
-                .radius(new QuadRadiusState(5f, 5f, 5f, 5f))
-                .smoothness(1.0f)
+//        BuiltRectangle background = Builder.rectangle()
+//                .size(new SizeState(width, height))
+//                .color(new QuadColorState(new Color(30, 30, 30, 200)))
+//                .radius(new QuadRadiusState(5f, 5f, 5f, 5f))
+//                .smoothness(1.0f)
+//                .build();
+//        background.render(matrix, x, y);
+
+        BuiltLiquidGlass liquidGlass = Builder.liquidGlassBuilder()
+                .size(new SizeState(200, 200))
+                .blurSize(15.0f)
+                .quality(8.0f)
+                .direction(8.0f)
                 .build();
-        background.render(matrix, x, y);
+        liquidGlass.render(matrix, x, y);
 
         float textX = x + (width - textWidth) / 2.0f - 3;
         float textY = y + height / 2.0f - 7;

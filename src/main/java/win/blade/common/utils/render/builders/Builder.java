@@ -9,6 +9,7 @@ public final class Builder {
     private static final BlurBuilder BLUR_BUILDER = new BlurBuilder();
     private static final TextBuilder TEXT_BUILDER = new TextBuilder();
     private static final BorderBuilder BORDER_BUILDER = new BorderBuilder();
+    private static final LiquidGlassBuilder LIQUID_GLASS_BUILDER = new LiquidGlassBuilder();
 
     public static RectangleBuilder rectangle() {
         return RECTANGLE_BUILDER;
@@ -28,6 +29,10 @@ public final class Builder {
 
     public static BorderBuilder border() {
         return BORDER_BUILDER;
+    }
+
+    public static LiquidGlassBuilder liquidGlassBuilder() {
+        return LIQUID_GLASS_BUILDER;
     }
 
 }

@@ -38,8 +38,11 @@ public class LanguageButton extends ClickableWidget {
         if (alpha < 0.01f) return;
 
         if (isSelected) {
-            Color left = new Color(23, 20, 38, (int)(255 * alpha));
-            Color right = new Color(17, 15, 23, (int)(255 * alpha));
+            Color left = new Color(32, 24, 61, (int)(255 * alpha));
+
+            Color right = new Color(21, 19, 32, (int)(255 * alpha));
+
+
 
             Builder.rectangle()
                     .size(new SizeState(getWidth(), getHeight()))

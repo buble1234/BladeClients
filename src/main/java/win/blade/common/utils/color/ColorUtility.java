@@ -78,6 +78,39 @@ public class ColorUtility {
         return pack(r, g, b, (int) (255 * alpha));
     }
 
+    public static Color fromHex(String hex) {
+        if (hex == null) {
+            throw new IllegalArgumentException("Hex строка не может быть нулевой.");
+        }
+
+        if (hex.startsWith("#")) {
+            hex = hex.substring(1);
+        }
+
+        if (hex.length() != 6 && hex.length() != 8) {
+            throw new IllegalArgumentException("Недопустимая длина Hex строки. Должно быть 6 или 8 символов, но была " + hex.length());
+        }
+
+        try {
+            long longValue = Long.parseLong(hex, 16);
+
+            if (hex.length() == 6) {
+                int r = (int) ((longValue >> 16) & 0xFF);
+                int g = (int) ((longValue >> 8) & 0xFF);
+                int b = (int) (longValue & 0xFF);
+                return new Color(r, g, b);
+            } else {
+                int r = (int) ((longValue >> 24) & 0xFF);
+                int g = (int) ((longValue >> 16) & 0xFF);
+                int b = (int) ((longValue >> 8) & 0xFF);
+                int a = (int) (longValue & 0xFF);
+                return new Color(r, g, b, a);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid characters in hex string: \"" + hex + "\"", e);
+        }
+    }
+
 //    public static int getAlpha(int color) {
 //        return (color >> 24) & 0xFF;
 //    }

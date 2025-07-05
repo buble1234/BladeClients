@@ -19,24 +19,36 @@ public abstract class MixinCamera implements MinecraftInstance {
     @Shadow
     protected abstract void setRotation(float yaw, float pitch);
 
-    @Inject(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setPos(DDD)V", shift = At.Shift.AFTER))
+    @Inject(method = "update", at = @At(value = "TAIL"), cancellable = true)
     private void onCameraUpdate(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci) {
         var manager = AimManager.INSTANCE;
         var task = manager.getActiveTask();
 
-        if (task == null || !task.settings().enableViewSync()) return;
+        if (task == null || !task.settings().enableViewSync()) {
+            return;
+        }
 
         if (manager.shouldInterpolate()) {
             ViewDirection current = manager.getCurrentDirection();
             ViewDirection previous = manager.getPreviousDirection();
 
-            float yaw = MathHelper.lerpAngleDegrees(tickDelta, previous.yaw(), current.yaw());
-            float pitch = MathHelper.lerpAngleDegrees(tickDelta, previous.pitch(), current.pitch());
+            float deltaYaw = current.yaw() - previous.yaw();
+            deltaYaw = ((deltaYaw % 360) + 540) % 360 - 180;
 
+            float yaw = previous.yaw() + deltaYaw * tickDelta;
             yaw = MathHelper.wrapDegrees(yaw);
+
+            float pitch = MathHelper.lerp(tickDelta, previous.pitch(), current.pitch());
             pitch = MathHelper.clamp(pitch, -90f, 90f);
 
             setRotation(yaw, pitch);
+
+            if (focusedEntity != null) {
+                focusedEntity.setYaw(yaw);
+                focusedEntity.setPitch(pitch);
+                focusedEntity.prevYaw = yaw;
+                focusedEntity.prevPitch = pitch;
+            }
         }
     }
 }

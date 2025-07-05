@@ -51,7 +51,7 @@ public class ByeScreen extends BaseScreen {
         float currentAlpha = textAlpha.get();
 
         MsdfFont font = FontType.sf_regular.get();
-        float fz = 28;
+        float fz = 32;
 
         float textX = this.width / 2f;
         float textY = (this.height / 2f) - (fz / 2f);

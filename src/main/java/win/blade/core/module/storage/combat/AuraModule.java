@@ -14,6 +14,7 @@ import win.blade.common.utils.aim.core.AimSettings;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.mode.AdaptiveSmooth;
 import win.blade.common.utils.aim.mode.DistanceMode;
+import win.blade.common.utils.aim.point.PointMode;
 import win.blade.common.utils.attack.AttackSettings;
 import win.blade.common.utils.attack.AttackManager;
 import win.blade.common.utils.player.TargetUtility;
@@ -31,6 +32,7 @@ import win.blade.core.module.api.ModuleInfo;
 public class AuraModule extends Module {
 
     private final ModeSetting aimMode = new ModeSetting(this, "Режим поворота", "Обычный", "Обычный", "Во время удара");
+    private final ModeSetting pointMode = new ModeSetting(this, "Точка наведения", "SMART", "CENTER");
     private final ModeSetting bypassMode = new ModeSetting(this, "Режим обхода", "Обычный", "Distance");
     private final SliderSetting rotateTick = new SliderSetting(this, "Тики поворота", 5, 1, 10, 1.0f).setVisible(() -> aimMode.is("Во время удара"));
     private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
@@ -146,9 +148,15 @@ public class AuraModule extends Module {
     }
 
     private void aimAtTarget() {
-        ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget);
+        PointMode selectedPointMode = switch (pointMode.getValue()) {
+            case "CENTER" -> PointMode.CENTER;
+            default -> PointMode.SMART;
+        };
+
+        ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
+
         AimSettings aimSettings = new AimSettings(
-                bypassMode.is("Distance") ? new DistanceMode(0.8f, 2.5f) : new AdaptiveSmooth(12f),
+                bypassMode.is("Distance") ? new DistanceMode(0.1f, 0.1f) : new AdaptiveSmooth(12f),
                 auraOptions.get("Синхронизировать взгляд").getValue(),
                 auraOptions.get("Корректировать движения").getValue() || auraOptions.get("Синхронизировать взгляд").getValue(),
                 false
