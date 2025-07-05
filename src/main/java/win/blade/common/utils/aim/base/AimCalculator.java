@@ -2,8 +2,10 @@ package win.blade.common.utils.aim.base;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
-import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.core.ViewDirection;
+import win.blade.common.utils.aim.manager.AimManager;
+import win.blade.common.utils.aim.point.PointCalculator;
+import win.blade.common.utils.aim.point.PointMode;
 
 import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
@@ -11,17 +13,20 @@ import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
  * Автор: NoCap
  * Дата создания: 18.06.2025
  */
-
 public class AimCalculator {
 
     public static ViewDirection calculateToEntity(Entity entity) {
+        return calculateToEntity(entity, PointMode.CENTER);
+    }
+
+    public static ViewDirection calculateToEntity(Entity entity, PointMode pointMode) {
         var player = mc.player;
         if (player == null) return ViewDirection.ORIGIN;
 
         Vec3d playerPos = player.getCameraPosVec(1.0f);
-        Vec3d entityCenter = entity.getBoundingBox().getCenter();
+        Vec3d targetPoint = PointCalculator.getPoint(entity, pointMode);
 
-        return calculateToPosition(playerPos, entityCenter);
+        return calculateToPosition(playerPos, targetPoint);
     }
 
     public static ViewDirection calculateToPosition(Vec3d from, Vec3d to) {
