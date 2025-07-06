@@ -1,10 +1,8 @@
 package win.blade.common.utils.aim.point.mode;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
 import win.blade.common.utils.aim.point.PointProvider;
 import win.blade.common.utils.math.BoxUtils;
 
@@ -110,23 +108,11 @@ public class SmartPointProvider implements PointProvider {
     private Vec3d findBestVisiblePoint(List<Vec3d> points, Box originalBox, Vec3d eyePos) {
         for (Vec3d point : points) {
             if (BoxUtils.isPointInBox(point, originalBox)) {
-                if (isPointVisible(eyePos, point)) {
+                if (BoxUtils.isPointVisible(eyePos, point)) {
                     return point;
                 }
             }
         }
         return null;
-    }
-
-    private boolean isPointVisible(Vec3d eyePos, Vec3d targetPoint) {
-        RaycastContext context = new RaycastContext(
-                eyePos,
-                targetPoint,
-                RaycastContext.ShapeType.COLLIDER,
-                RaycastContext.FluidHandling.NONE,
-                mc.player
-        );
-
-        return mc.world.raycast(context).getType() == HitResult.Type.MISS;
     }
 }

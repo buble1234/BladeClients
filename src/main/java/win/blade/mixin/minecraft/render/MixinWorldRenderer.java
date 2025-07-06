@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import win.blade.core.Manager;
 import win.blade.core.event.impl.render.RenderCancelEvents;
+import win.blade.core.module.storage.render.ShaderESP;
 
 @Mixin(WorldRenderer.class)
 public class MixinWorldRenderer {
@@ -24,11 +25,14 @@ public class MixinWorldRenderer {
         }
     }
 
-
     private static final Identifier CUSTOM_ENTITY_OUTLINE = Identifier.of("blade", "entity_outline");
 
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/ShaderLoader;loadPostEffect(Lnet/minecraft/util/Identifier;Ljava/util/Set;)Lnet/minecraft/client/gl/PostEffectProcessor;"), index = 0)
     private Identifier modifyEntityOutlineShader(Identifier original) {
-        return CUSTOM_ENTITY_OUTLINE;
+        if (Manager.getModuleManagement().get(ShaderESP.class).isEnabled()) {
+            return CUSTOM_ENTITY_OUTLINE;
+        } else {
+            return original;
+        }
     }
 }

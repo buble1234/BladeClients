@@ -1,7 +1,11 @@
 package win.blade.common.utils.math;
 
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
+
+import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
 /**
  * Автор: NoCap
@@ -38,5 +42,17 @@ public class BoxUtils {
         return point.x >= box.minX && point.x <= box.maxX &&
                 point.y >= box.minY && point.y <= box.maxY &&
                 point.z >= box.minZ && point.z <= box.maxZ;
+    }
+
+    public static boolean isPointVisible(Vec3d eyePos, Vec3d targetPoint) {
+        RaycastContext context = new RaycastContext(
+                eyePos,
+                targetPoint,
+                RaycastContext.ShapeType.COLLIDER,
+                RaycastContext.FluidHandling.NONE,
+                mc.player
+        );
+
+        return mc.world.raycast(context).getType() == HitResult.Type.MISS;
     }
 }
