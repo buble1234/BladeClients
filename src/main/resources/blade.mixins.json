@@ -33,6 +33,7 @@
     "minecraft.input.MixinMouse",
     "minecraft.render.MixinBossBarHud",
     "minecraft.render.MixinGameRenderer",
+    "minecraft.render.MixinHeldItemRenderer",
     "minecraft.render.MixinInGameHud",
     "minecraft.render.MixinInGameOverlayRenderer",
     "minecraft.render.MixinLightmapTextureManager",
