@@ -17,10 +17,10 @@ import win.blade.core.event.impl.render.RenderCancelEvents;
 @Mixin(InGameHud.class)
 public abstract class MixinInGameHud implements MinecraftInstance {
 
-    @Inject(at = @At("HEAD"), method = "render")
-    public void onRenderScreen(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        Manager.EVENT_BUS.post(EventHolder.getScreenRenderEvent(new MatrixStack(), tickCounter.getTickDelta(false), context));
-    }
+//    @Inject(at = @At("HEAD"), method = "render")
+//    public void onRenderScreen(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+//        Manager.EVENT_BUS.post(EventHolder.getScreenRenderEvent(new MatrixStack(), tickCounter.getTickDelta(false), context));
+//    }
 
     @Inject(method = "renderScoreboardSidebar(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/scoreboard/ScoreboardObjective;)V", at = @At(value = "HEAD"), cancellable = true)
     private void onRenderScoreboardSidebar(DrawContext context, ScoreboardObjective objective, CallbackInfo ci) {
