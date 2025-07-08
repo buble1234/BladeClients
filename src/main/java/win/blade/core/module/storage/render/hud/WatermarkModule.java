@@ -57,9 +57,10 @@ public class WatermarkModule extends Module implements MinecraftInstance, NonReg
         background.render(matrix, x, y);
 
         BuiltLiquidGlass liquidGlass = Builder.liquidGlassBuilder()
-                .size(new SizeState(200, 200))
+                .size(new SizeState(900, 900))
                 .blurSize(15.0f)
                 .quality(8.0f)
+                .color(new QuadColorState(new Color(255, 234, 0)))
                 .direction(8.0f)
                 .build();
         liquidGlass.render(matrix, x, y);

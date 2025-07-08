@@ -87,7 +87,7 @@ void main() {
 
     col *= 1.0 - 0.2 * S(PX(80.0), 0.0, Box(st - M + vec2(0.0, PX(40.0)), vec2(PX(50.0))));
 
-    OutColor = vec4(col, icon.x);
+    OutColor = vec4(col, icon.x) * fragColor;
 
     if (OutColor.a < 0.01) {
         discard;

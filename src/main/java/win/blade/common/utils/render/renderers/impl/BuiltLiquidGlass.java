@@ -7,6 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.*;
 import net.minecraft.client.render.*;
 import org.joml.Matrix4f;
+import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.renderers.IRenderer;
 import win.blade.common.utils.resource.ResourceUtility;
@@ -21,10 +22,11 @@ public record BuiltLiquidGlass(
         SizeState size,
         float blurSize,
         float quality,
-        float direction
+        float direction,
+        QuadColorState color
 ) implements IRenderer {
 
-    private static final ShaderProgramKey LIQUID_GLASS_SHADER_KEY = new ShaderProgramKey(ResourceUtility.getShaderIdentifier("common", "liquid_glass"), VertexFormats.POSITION_TEXTURE_COLOR, Defines.EMPTY);
+    private static final ShaderProgramKey LIQUID_GLASS_SHADER_KEY = new ShaderProgramKey(ResourceUtility.getShaderIdentifier("blurs", "liquid_glass"), VertexFormats.POSITION_TEXTURE_COLOR, Defines.EMPTY);
 
     private static final Supplier<SimpleFramebuffer> TEMP_FBO_SUPPLIER = Suppliers.memoize(() -> new SimpleFramebuffer(1920, 1024, false));
     private static final Framebuffer MAIN_FBO = MinecraftClient.getInstance().getFramebuffer();
@@ -63,10 +65,10 @@ public record BuiltLiquidGlass(
 
         BufferBuilder builder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
-        builder.vertex(matrix, x, y, z).texture(0.0f, 0.0f).color(255, 255, 255, 255);
-        builder.vertex(matrix, x, y + height, z).texture(0.0f, 1.0f).color(255, 255, 255, 255);
-        builder.vertex(matrix, x + width, y + height, z).texture(1.0f, 1.0f).color(255, 255, 255, 255);
-        builder.vertex(matrix, x + width, y, z).texture(1.0f, 0.0f).color(255, 255, 255, 255);
+        builder.vertex(matrix, x, y, z).texture(0.0f, 0.0f).color(this.color.color1());
+        builder.vertex(matrix, x, y + height, z).texture(0.0f, 1.0f).color(this.color.color2());
+        builder.vertex(matrix, x + width, y + height, z).texture(1.0f, 1.0f).color(this.color.color3());
+        builder.vertex(matrix, x + width, y, z).texture(1.0f, 0.0f).color(this.color.color4());
 
         BufferRenderer.drawWithGlobalProgram(builder.end());
 
