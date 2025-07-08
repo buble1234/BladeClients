@@ -1,5 +1,5 @@
 
-package win.blade.common.hud.notification;
+package win.blade.common.ui;
 
 public enum NotificationType {
     INFO, SUCCESS, ERROR

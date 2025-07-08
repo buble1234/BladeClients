@@ -1,7 +1,7 @@
 package win.blade.core.module.api;
 
 import win.blade.common.gui.impl.menu.settings.Setting;
-import win.blade.common.hud.notification.NotificationType;
+import win.blade.common.ui.NotificationType;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.Manager;
 
