@@ -13,7 +13,6 @@ import win.blade.common.utils.aim.base.AimCalculator;
 import win.blade.common.utils.aim.core.AimSettings;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.mode.AdaptiveSmooth;
-import win.blade.common.utils.aim.mode.DistanceMode;
 import win.blade.common.utils.aim.point.PointMode;
 import win.blade.common.utils.attack.AttackSettings;
 import win.blade.common.utils.attack.AttackManager;
@@ -31,13 +30,17 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
-    private final ModeSetting aimMode = new ModeSetting(this, "Режим поворота", "Обычный", "Обычный", "Во время удара");
-    private final ModeSetting pointMode = new ModeSetting(this, "Точка наведения", "SMART", "CENTER");
-    private final ModeSetting bypassMode = new ModeSetting(this, "Режим обхода", "Обычный", "Distance");
+    private final ModeSetting aimMode = new ModeSetting(this, "Режим прицеливания", "Постоянный", "Во время удара");
+    private final ModeSetting pointMode = new ModeSetting(this, "Точка прицеливания", "SMART", "CENTER");
+    private final SliderSetting aimRange = new SliderSetting(this, "Дистанция прицеливания", 4.5f, 2.0f, 8.0f, 0.1f);
     private final SliderSetting rotateTick = new SliderSetting(this, "Тики поворота", 5, 1, 10, 1.0f).setVisible(() -> aimMode.is("Во время удара"));
+
     private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
-    private final SliderSetting aimRange = new SliderSetting(this, "Дистанция поворота", 4.5f, 2, 8, 0.1f);
-    private final MultiBooleanSetting targetType = new MultiBooleanSetting(this, "Типы целей",
+    private final ModeSetting pvpMode = new ModeSetting(this, "Режим PvP", "1.9", "1.8");
+    private final SliderSetting cps = new SliderSetting(this, "Скорость атаки", 12, 8, 16, 0.5f).setVisible(() -> pvpMode.is("1.8"));
+    private final ModeSetting criticalMode = new ModeSetting(this, "Критические удары", "None", "Всегда", "Умные");
+
+    private final MultiBooleanSetting targetTypes = new MultiBooleanSetting(this, "Типы целей",
             BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
             BooleanSetting.of("Игроки с бронёй", true).onAction(this::updateTargetTypes),
             BooleanSetting.of("Невидимые игроки", false).onAction(this::updateTargetTypes),
@@ -47,21 +50,16 @@ public class AuraModule extends Module {
             BooleanSetting.of("Жители", false).onAction(this::updateTargetTypes)
     );
 
-    private final ModeSetting pvpMode = new ModeSetting(this, "Режим PvP", "1.9", "1.8", "1.9");
-    private final SliderSetting cps = new SliderSetting(this, "Скорость атаки", 12, 8, 16, 0.5f).setVisible(() -> pvpMode.is("1.8"));
-    private final ModeSetting criticalMode = new ModeSetting(this, "Криты", "None", "None", "Jump", "Adaptive");
-
-    private final MultiBooleanSetting auraOptions = new MultiBooleanSetting(this, "Опции",
+    private final MultiBooleanSetting behaviorOptions = new MultiBooleanSetting(this, "Опции",
             BooleanSetting.of("Корректировать движения", true),
             BooleanSetting.of("Сбрасывать спринт", true),
             BooleanSetting.of("Отжимать щит", true),
             BooleanSetting.of("Проверять еду", true),
-            BooleanSetting.of("Авто прыжок", true),
             BooleanSetting.of("Синхронизировать взгляд", true)
     );
 
     private Entity currentTarget;
-    private float aimTicks = 0;
+    private float aimTicks;
 
     @Override
     public void onEnable() {
@@ -83,7 +81,7 @@ public class AuraModule extends Module {
     }
 
     private void updateTargetTypes() {
-        TargetUtility.updateTargetTypes(targetType);
+        TargetUtility.updateTargetTypes(targetTypes);
         if (currentTarget != null && !TargetUtility.isValidTarget(currentTarget)) {
             clearTarget();
         }
@@ -99,68 +97,61 @@ public class AuraModule extends Module {
         updateTargetTypes();
         updateCurrentTarget();
 
-        if (currentTarget != null) {
-            if (aimMode.is("Во время удара")) {
-                if (aimTicks > 0) {
-                    aimTicks--;
-                }
-
-                if (currentTarget instanceof LivingEntity livingTarget) {
-                    AttackManager.AttackMode attackMode = pvpMode.is("1.8") ? AttackManager.AttackMode.LEGACY : AttackManager.AttackMode.MODERN;
-                    AttackManager.CriticalMode mode = switch (criticalMode.getValue()) {
-                        case "Jump" -> AttackManager.CriticalMode.JUMP;
-                        case "Adaptive" -> AttackManager.CriticalMode.ADAPTIVE;
-                        default -> AttackManager.CriticalMode.NONE;
-                    };
-                    AttackSettings settings = new AttackSettings(attackMode, mode, cps.getValue(), auraOptions.get("Отжимать щит").getValue(), auraOptions.get("Проверять еду").getValue(), attackRange.getValue(), auraOptions.get("Авто прыжок").getValue(), auraOptions.get("Сбрасывать спринт").getValue());
-
-                    if (AttackManager.canAttack(livingTarget, settings)) {
-                        aimTicks = rotateTick.getValue();
-                    }
-                }
-
-                if (aimTicks > 0) {
-                    aimAtTarget();
-                } else {
-                    AimManager.INSTANCE.disable();
-                }
-
-            } else {
-                aimAtTarget();
-            }
-
-            if (mc.crosshairTarget instanceof EntityHitResult result && result.getEntity() == currentTarget) {
-                performAttack();
-            }
-
-        } else {
+        if (currentTarget == null) {
             AimManager.INSTANCE.disable();
+            return;
+        }
+
+        handleAimLogic();
+        if (mc.crosshairTarget instanceof EntityHitResult result && result.getEntity() == currentTarget) {
+            performAttack();
         }
     }
 
     private void updateCurrentTarget() {
         Entity potentialTarget = TargetUtility.findBestTarget(aimRange.getValue() + attackRange.getValue());
-        if (potentialTarget instanceof LivingEntity && mc.player.distanceTo(potentialTarget) <= aimRange.getValue() + attackRange.getValue() && TargetUtility.isValidTarget(potentialTarget)) {
+        if (potentialTarget instanceof LivingEntity &&
+                mc.player.distanceTo(potentialTarget) <= aimRange.getValue() + attackRange.getValue() &&
+                TargetUtility.isValidTarget(potentialTarget)) {
             currentTarget = potentialTarget;
         } else {
             currentTarget = null;
         }
     }
 
+    private void handleAimLogic() {
+        if (aimMode.is("Во время удара")) {
+            if (aimTicks > 0) {
+                aimTicks--;
+                aimAtTarget();
+            } else {
+                AimManager.INSTANCE.disable();
+            }
+
+            if (currentTarget instanceof LivingEntity livingTarget) {
+                AttackSettings settings = buildAttackSettings();
+                if (AttackManager.canAttack(livingTarget, settings)) {
+                    aimTicks = rotateTick.getValue();
+                }
+            }
+        } else {
+            aimAtTarget();
+        }
+    }
+
     private void aimAtTarget() {
-        PointMode selectedPointMode = switch (pointMode.getValue()) {
-            case "CENTER" -> PointMode.CENTER;
-            default -> PointMode.SMART;
-        };
+        PointMode selectedPointMode = pointMode.is("SMART") ? PointMode.SMART : PointMode.CENTER;
 
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
 
         AimSettings aimSettings = new AimSettings(
-                bypassMode.is("Distance") ? new DistanceMode(0.1f, 0.1f) : new AdaptiveSmooth(12f),
-                auraOptions.get("Синхронизировать взгляд").getValue(),
-                auraOptions.get("Корректировать движения").getValue() || auraOptions.get("Синхронизировать взгляд").getValue(),
+                new AdaptiveSmooth(12f),
+                behaviorOptions.get("Синхронизировать взгляд").getValue(),
+                behaviorOptions.get("Корректировать движения").getValue() ||
+                        behaviorOptions.get("Синхронизировать взгляд").getValue(),
                 false
         );
+
         TargetTask smoothTask = aimSettings.buildTask(targetDirection, currentTarget.getPos(), currentTarget);
         AimManager.INSTANCE.execute(smoothTask);
     }
@@ -170,28 +161,31 @@ public class AuraModule extends Module {
             return;
         }
 
-        AttackManager.AttackMode attackMode = pvpMode.is("1.8") ? AttackManager.AttackMode.LEGACY : AttackManager.AttackMode.MODERN;
+        AttackSettings settings = buildAttackSettings();
+        if (AttackManager.canAttack(livingTarget, settings)) {
+            AttackManager.performAttack(livingTarget, settings);
+        }
+    }
 
-        AttackManager.CriticalMode mode = switch (criticalMode.getValue()) {
-            case "Jump" -> AttackManager.CriticalMode.JUMP;
-            case "Adaptive" -> AttackManager.CriticalMode.ADAPTIVE;
+    private AttackSettings buildAttackSettings() {
+        AttackManager.AttackMode attackMode = pvpMode.is("1.8") ?
+                AttackManager.AttackMode.LEGACY : AttackManager.AttackMode.MODERN;
+
+        AttackManager.CriticalMode critical = switch (criticalMode.getValue()) {
+            case "Всегда" -> AttackManager.CriticalMode.ALWAYS;
+            case "Умные" -> AttackManager.CriticalMode.ADAPTIVE;
             default -> AttackManager.CriticalMode.NONE;
         };
 
-        AttackSettings attackSettings = new AttackSettings(
+        return new AttackSettings(
                 attackMode,
-                mode,
+                critical,
                 cps.getValue(),
-                auraOptions.get("Отжимать щит").getValue(),
-                auraOptions.get("Проверять еду").getValue(),
+                behaviorOptions.get("Отжимать щит").getValue(),
+                behaviorOptions.get("Проверять еду").getValue(),
                 attackRange.getValue(),
-                auraOptions.get("Авто прыжок").getValue(),
-                auraOptions.get("Сбрасывать спринт").getValue()
+                behaviorOptions.get("Сбрасывать спринт").getValue()
         );
-
-        if (AttackManager.canAttack(livingTarget, attackSettings)) {
-            AttackManager.performAttack(livingTarget, attackSettings);
-        }
     }
 
     public Entity getCurrentTarget() {

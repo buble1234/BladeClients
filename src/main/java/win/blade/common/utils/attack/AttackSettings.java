@@ -11,7 +11,6 @@ public record AttackSettings(
         boolean unpressShield,
         boolean checkEating,
         double attackRange,
-        boolean autoJump,
         boolean resetSprint
 ) {
 }

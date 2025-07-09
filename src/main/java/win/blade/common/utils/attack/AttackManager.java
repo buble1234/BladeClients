@@ -110,26 +110,17 @@ public class AttackManager implements MinecraftInstance {
         boolean recentlyJumped = timeSinceJump < 200;
 
         if (mode == CriticalMode.JUMP) {
-            if (settings.autoJump() && !recentlyJumped && mc.player.isOnGround()) {
-                mc.player.jump();
-                lastJumpTime = System.currentTimeMillis();
-                return false;
-            }
-            return isPlayerInCriticalState() || (settings.autoJump() && recentlyJumped);
+            return isPlayerInCriticalState() || recentlyJumped;
         } else if (mode == CriticalMode.ADAPTIVE) {
             if (mc.player.input.playerInput.jump() || mc.player.getHealth() < 12.0f) {
-                if (settings.autoJump() && !recentlyJumped && mc.player.isOnGround()) {
-                    mc.player.jump();
-                    lastJumpTime = System.currentTimeMillis();
-                    return false;
-                }
-                return isPlayerInCriticalState() || (settings.autoJump() && recentlyJumped);
+                return isPlayerInCriticalState() || recentlyJumped;
             }
             return true;
         }
 
         return false;
     }
+
 
     private static boolean isPlayerInCriticalState() {
         if (mc.player.isGliding()) {
