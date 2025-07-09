@@ -55,4 +55,14 @@ public class BoxUtils {
 
         return mc.world.raycast(context).getType() == HitResult.Type.MISS;
     }
+
+    public static boolean isPointVisibleFrom(Vec3d from, Vec3d to) {
+        HitResult result = mc.world.raycast(new RaycastContext(
+                from, to,
+                RaycastContext.ShapeType.OUTLINE,
+                RaycastContext.FluidHandling.NONE,
+                mc.player
+        ));
+        return result.getType() == HitResult.Type.MISS;
+    }
 }

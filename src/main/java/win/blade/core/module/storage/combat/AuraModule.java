@@ -16,6 +16,8 @@ import win.blade.common.utils.aim.mode.AdaptiveSmooth;
 import win.blade.common.utils.aim.point.PointMode;
 import win.blade.common.utils.attack.AttackSettings;
 import win.blade.common.utils.attack.AttackManager;
+import win.blade.common.utils.attack.AttackMode;
+import win.blade.common.utils.attack.CriticalMode;
 import win.blade.common.utils.player.TargetUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
@@ -31,14 +33,13 @@ import win.blade.core.module.api.ModuleInfo;
 public class AuraModule extends Module {
 
     private final ModeSetting aimMode = new ModeSetting(this, "Режим прицеливания", "Постоянный", "Во время удара");
-    private final ModeSetting pointMode = new ModeSetting(this, "Точка прицеливания", "SMART", "CENTER");
+    private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
     private final SliderSetting aimRange = new SliderSetting(this, "Дистанция прицеливания", 4.5f, 2.0f, 8.0f, 0.1f);
     private final SliderSetting rotateTick = new SliderSetting(this, "Тики поворота", 5, 1, 10, 1.0f).setVisible(() -> aimMode.is("Во время удара"));
-
-    private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
     private final ModeSetting pvpMode = new ModeSetting(this, "Режим PvP", "1.9", "1.8");
     private final SliderSetting cps = new SliderSetting(this, "Скорость атаки", 12, 8, 16, 0.5f).setVisible(() -> pvpMode.is("1.8"));
-    private final ModeSetting criticalMode = new ModeSetting(this, "Критические удары", "None", "Всегда", "Умные");
+    private final ModeSetting criticalMode = new ModeSetting(this, "Критические удары", "Всегда", "Умные", "Нету");
+    private final ModeSetting pointMode = new ModeSetting(this, "Точка прицеливания", "Умные", "Центр", "Мульти");
 
     private final MultiBooleanSetting targetTypes = new MultiBooleanSetting(this, "Типы целей",
             BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
@@ -140,15 +141,24 @@ public class AuraModule extends Module {
     }
 
     private void aimAtTarget() {
-        PointMode selectedPointMode = pointMode.is("SMART") ? PointMode.SMART : PointMode.CENTER;
+        PointMode selectedPointMode;
+        switch (pointMode.getValue()) {
+            case "Умные":
+                selectedPointMode = PointMode.SMART;
+                break;
+            case "Мульти":
+                selectedPointMode = PointMode.MULTI;
+                break;
+            default:
+                selectedPointMode = PointMode.CENTER;
+        }
 
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
 
         AimSettings aimSettings = new AimSettings(
                 new AdaptiveSmooth(12f),
                 behaviorOptions.get("Синхронизировать взгляд").getValue(),
-                behaviorOptions.get("Корректировать движения").getValue() ||
-                        behaviorOptions.get("Синхронизировать взгляд").getValue(),
+                behaviorOptions.get("Корректировать движения").getValue() || behaviorOptions.get("Синхронизировать взгляд").getValue(),
                 false
         );
 
@@ -162,19 +172,16 @@ public class AuraModule extends Module {
         }
 
         AttackSettings settings = buildAttackSettings();
-        if (AttackManager.canAttack(livingTarget, settings)) {
-            AttackManager.performAttack(livingTarget, settings);
-        }
+        AttackManager.attack(livingTarget, settings);
     }
 
     private AttackSettings buildAttackSettings() {
-        AttackManager.AttackMode attackMode = pvpMode.is("1.8") ?
-                AttackManager.AttackMode.LEGACY : AttackManager.AttackMode.MODERN;
+        AttackMode attackMode = pvpMode.is("1.8") ? AttackMode.LEGACY : AttackMode.MODERN;
 
-        AttackManager.CriticalMode critical = switch (criticalMode.getValue()) {
-            case "Всегда" -> AttackManager.CriticalMode.ALWAYS;
-            case "Умные" -> AttackManager.CriticalMode.ADAPTIVE;
-            default -> AttackManager.CriticalMode.NONE;
+        CriticalMode critical = switch (criticalMode.getValue()) {
+            case "Всегда" -> CriticalMode.ALWAYS;
+            case "Умные" -> CriticalMode.ADAPTIVE;
+            default -> CriticalMode.NONE;
         };
 
         return new AttackSettings(

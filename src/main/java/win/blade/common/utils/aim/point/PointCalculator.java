@@ -13,6 +13,7 @@ import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 public class PointCalculator {
     private static final PointProvider centerProvider = new CenterPointProvider();
     private static final PointProvider smartProvider = new SmartPointProvider();
+    private static final PointProvider multiProvider = new MultiPointProvider();
 
     public static Vec3d getPoint(Entity entity, PointMode mode) {
         if (mc.player == null) return entity.getBoundingBox().getCenter();
@@ -20,6 +21,7 @@ public class PointCalculator {
         return switch (mode) {
             case CENTER -> centerProvider.getPoint(entity);
             case SMART -> smartProvider.getPoint(entity);
+            case MULTI -> multiProvider.getPoint(entity);
         };
     }
 }
