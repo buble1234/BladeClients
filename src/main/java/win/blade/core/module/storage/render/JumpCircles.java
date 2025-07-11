@@ -6,14 +6,14 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
+import win.blade.common.utils.math.animation.Animation;
+import win.blade.common.utils.math.animation.Easing;
 import win.blade.common.utils.render.builders.impl.BorderBuilder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
 import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.renderers.impl.BuiltBorder;
 import win.blade.core.event.controllers.EventHandler;
-import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.event.impl.player.PlayerActionEvents;
 import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.module.api.Category;
@@ -23,8 +23,6 @@ import win.blade.core.module.api.ModuleInfo;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-
-
 
 /**
  * Автор: NoCap
@@ -38,36 +36,63 @@ public class JumpCircles extends Module {
 
     private final SliderSetting lifetime = new SliderSetting(this, "Время жизни круга в мс.", 2000, 500, 5000, 100);
 
-    private final BooleanSetting deepestLight = new BooleanSetting(this, "Свечение", true);
-
     private final List<Circle> circles = new ArrayList<>();
 
-    private record Circle(Vec3d position, long creationTime) {}
+    private class Circle {
+        private final Vec3d position;
+        private final long creationTime;
+        private final Animation alphaAnimation;
+        private boolean fadingOut = false;
+
+        Circle(Vec3d position) {
+            this.position = position;
+            this.creationTime = System.currentTimeMillis();
+            this.alphaAnimation = new Animation();
+            this.alphaAnimation.run(255, 0.5f, Easing.EASE_OUT_SINE);
+        }
+
+        void update() {
+            alphaAnimation.update();
+
+            long life = System.currentTimeMillis() - creationTime;
+            float maxLifetime = lifetime.getValue();
+            float fadeOutTimeMillis = 0.5f * 1000.0f;
+
+            if (!fadingOut && life > maxLifetime - fadeOutTimeMillis) {
+                fadingOut = true;
+                alphaAnimation.run(0, 0.8f, Easing.EASE_IN_SINE);
+            }
+        }
+
+        boolean isFinished() {
+            return fadingOut && !alphaAnimation.isAnimating();
+        }
+
+        int getAlpha() {
+            return (int) Math.max(0, Math.min(255, alphaAnimation.get()));
+        }
+    }
 
     @EventHandler
     public void onJump(PlayerActionEvents.Jump event) {
         if (mc.player == null || mc.world == null) return;
-        circles.add(new Circle(mc.player.getPos(), System.currentTimeMillis()));
-    }
-
-    @EventHandler
-    public void onUpdate(UpdateEvents.PlayerUpdate event) {
-        if (mc.player == null || mc.world == null) return;
-        if (circles.isEmpty()) return;
-        float maxLifetime = lifetime.getValue() * 100;
-        circles.removeIf(circle -> System.currentTimeMillis() - circle.creationTime > maxLifetime);
+        circles.add(new Circle(mc.player.getPos()));
     }
 
     @EventHandler
     public void onRender3D(RenderEvents.World event) {
-        if (circles.isEmpty() || mc.player == null || mc.world == null) return;
+        if (circles.isEmpty() || mc.player == null) return;
+
+        circles.forEach(Circle::update);
+        circles.removeIf(Circle::isFinished);
 
         MatrixStack matrices = event.getMatrixStack();
         Camera camera = mc.gameRenderer.getCamera();
         Vec3d cameraPos = camera.getPos();
 
         RenderSystem.enableBlend();
-        RenderSystem.blendFunc(770, 771);
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
         RenderSystem.depthMask(false);
 
         matrices.push();
@@ -79,53 +104,31 @@ public class JumpCircles extends Module {
 
         matrices.pop();
         RenderSystem.depthMask(true);
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
     }
 
     private void renderCircle(MatrixStack matrices, Circle circle) {
-        float circleRadiusValue = 1.6f;
-        float alphaPC = 1.0f;
+        int alpha = circle.getAlpha();
+        if (alpha <= 0) return;
 
         matrices.push();
         matrices.translate(circle.position.x, circle.position.y, circle.position.z);
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90.0F));
 
+        Color baseColor = new Color(237, 172, 255);
+        int animatedColor = new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha).getRGB();
+
+        BuiltBorder border = new BorderBuilder()
+                .size(new SizeState(1.6f * 2.0f, 1.6f * 2.0f))
+                .radius(new QuadRadiusState(0.6))
+                .color(new QuadColorState(animatedColor))
+                .smoothness(1f, 0.5f)
+                .thickness(1f)
+                .build();
+
+        border.render(matrices.peek().getPositionMatrix(), -1.6f, -1.6f, 0.0f);
         matrices.pop();
-
-        if (deepestLight.getValue()) {
-            matrices.push();
-            matrices.translate(circle.position.x, circle.position.y, circle.position.z);
-            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90.0F));
-
-            int numLayers = 15;
-            float extMaxY = 0.5f;
-            float immersiveIntense = 0.3f;
-
-            for (int i = 1; i <= numLayers; i++) {
-                float iPC = (float) i / numLayers;
-                float extY = extMaxY * iPC;
-                float aPC = alphaPC * immersiveIntense * (1 - iPC);
-                if (aPC * 255 < 1) continue;
-                int layerAlpha = (int) (255 * aPC);
-                float radiusPost = circleRadiusValue;
-                float layerSide = radiusPost * 2.0f;
-                float layerX = -radiusPost;
-                float layerY = -radiusPost;
-                float layerZ = -extY;
-                int layerColor = new Color(255, 0, 0, layerAlpha).getRGB();
-
-                BuiltBorder layer = new BorderBuilder()
-                        .size(new SizeState(layerSide, layerSide))
-                        .radius(new QuadRadiusState(0.6))
-                        .color(new QuadColorState(layerColor))
-                        .smoothness(1.0f, 1.0f)
-                        .thickness(0.1f)
-                        .build();
-
-                layer.render(matrices.peek().getPositionMatrix(), layerX, layerY, layerZ);
-            }
-
-            matrices.pop();
-        }
     }
 
     @Override
