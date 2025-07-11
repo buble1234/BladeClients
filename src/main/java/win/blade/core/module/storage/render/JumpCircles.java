@@ -34,7 +34,7 @@ import java.util.List;
 )
 public class JumpCircles extends Module {
 
-    private final SliderSetting lifetime = new SliderSetting(this, "Время жизни круга в мс.", 2000, 500, 5000, 100);
+    private final SliderSetting lifetime = new SliderSetting(this, "Время жизни круга в мс.", 2000, 1000, 5000, 100);
 
     private final List<Circle> circles = new ArrayList<>();
 
