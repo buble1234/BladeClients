@@ -3,10 +3,7 @@ package win.blade.core.module.storage.combat;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.hit.EntityHitResult;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
-import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
+import win.blade.common.gui.impl.menu.settings.impl.*;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
 import win.blade.common.utils.aim.base.AimCalculator;
@@ -46,7 +43,7 @@ public class AuraModule extends Module {
             BooleanSetting.of("Животные", false).onAction(this::updateTargetTypes),
             BooleanSetting.of("Жители", false).onAction(this::updateTargetTypes)
     );
-
+    
     private final ModeSetting pvpMode = new ModeSetting(this, "Режим PvP", "1.9", "1.8", "1.9");
     private final SliderSetting cps = new SliderSetting(this, "Скорость атаки", 12, 8, 16, 0.5f).setVisible(() -> pvpMode.is("1.8"));
     private final ModeSetting criticalMode = new ModeSetting(this, "Криты", "None", "None", "Jump", "Adaptive");
