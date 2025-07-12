@@ -1,5 +1,6 @@
 package win.blade.common.utils.attack;
 
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 
 /**
@@ -39,22 +40,24 @@ public enum AttackMode implements MinecraftInstance {
 
         @Override
         public void handleSprintAfterAttack(AttackSettings settings, AttackState state) {
-            if (settings.resetSprint()) {
+            if (settings.resetSprint() && !mc.player.isSprinting()) {
                 long currentTime = System.currentTimeMillis();
-                if (currentTime - state.getLastSprintResetTime() >= 400) {
+                //if (currentTime - state.getLastSprintResetTime() >= 400) {
                     enableSprint();
-                }
+                //}
             }
         }
 
         private void disableSprint() {
             mc.player.setSprinting(false);
-            mc.options.sprintKey.setPressed(false);
+            ClientCommandC2SPacket.Mode mode = ClientCommandC2SPacket.Mode.STOP_SPRINTING;
+            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, mode));
         }
 
         private void enableSprint() {
             mc.player.setSprinting(true);
-            mc.options.sprintKey.setPressed(true);
+            ClientCommandC2SPacket.Mode mode = ClientCommandC2SPacket.Mode.START_SPRINTING;
+            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, mode));
         }
     };
 

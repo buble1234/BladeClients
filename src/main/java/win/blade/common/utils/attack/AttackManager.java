@@ -1,6 +1,7 @@
 package win.blade.common.utils.attack;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.util.Hand;
@@ -52,14 +53,16 @@ public class AttackManager implements MinecraftInstance {
         if (mc.player.isBlocking() && settings.unpressShield()) {
             mc.interactionManager.stopUsingItem(mc.player);
         }
-
+        boolean wasSprint = mc.player.isSprinting();
         settings.attackMode().handleSprintBeforeAttack(settings, state);
 
         sendAttackPackets(target);
 
-        settings.attackMode().handleSprintAfterAttack(settings, state);
+        if (wasSprint != mc.player.isSprinting()) {
+            settings.attackMode().handleSprintAfterAttack(settings, state);
+        }
 
-        state.setLastAttackTime(System.currentTimeMillis());
+        state.setLastAttackTime(System.currentTimeMillis() + 110);
         state.setIsAttacking(false);
     }
 
