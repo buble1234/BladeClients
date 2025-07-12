@@ -1,9 +1,9 @@
-package win.blade.common.hud.notification;
+package win.blade.common.ui;
 
 import net.minecraft.client.gui.DrawContext;
-import win.blade.common.hud.notification.impl.InfoNotification;
-import win.blade.common.hud.notification.impl.SuccessNotification;
-import win.blade.common.hud.notification.impl.ErrorNotification;
+import win.blade.common.ui.impl.InfoNotification;
+import win.blade.common.ui.impl.SuccessNotification;
+import win.blade.common.ui.impl.ErrorNotification;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 

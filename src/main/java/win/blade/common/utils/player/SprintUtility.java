@@ -1,8 +1,10 @@
 package win.blade.common.utils.player;
 
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.util.math.MathHelper;
 import win.blade.common.utils.minecraft.MinecraftInstance;
+import win.blade.common.utils.network.PacketUtility;
 
 /**
  * Автор: NoCap
@@ -76,6 +78,7 @@ public class SprintUtility implements MinecraftInstance {
 
         wasSprinting = mc.player.isSprinting();
         mc.player.setSprinting(false);
+        PacketUtility.sendSprinting(false);
         lastSprintToggle = System.currentTimeMillis();
     }
 
@@ -89,28 +92,10 @@ public class SprintUtility implements MinecraftInstance {
         }
     }
 
-    public static void handleAttackSprint() {
-        if (mc.player == null) return;
-
-        boolean currentlySprinting = mc.player.isSprinting();
-
-        if (currentlySprinting) {
-            wasSprinting = true;
-            mc.player.setSprinting(false);
-
-            if (keepSprint) {
-                mc.execute(() -> {
-                    if (mc.player != null && canSprint() && wasSprinting) {
-                        mc.player.setSprinting(true);
-                    }
-                });
-            }
-        }
-    }
-
     public static void resetSprintAfterAttack() {
         if (keepSprint && wasSprinting && mc.player != null && canSprint()) {
             mc.player.setSprinting(true);
+            PacketUtility.sendSprinting(true);
         }
         wasSprinting = false;
     }

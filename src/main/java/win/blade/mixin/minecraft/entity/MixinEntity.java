@@ -1,5 +1,6 @@
 package win.blade.mixin.minecraft.entity;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -29,6 +30,15 @@ import java.util.Optional;
 public abstract class MixinEntity implements MinecraftInstance {
 
     @Shadow public abstract boolean isFireImmune();
+
+    @ModifyExpressionValue(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isControlledByPlayer()Z"))
+    private boolean fixFallDistance(boolean original) {
+        if ((Object) this == mc.player) {
+            return false;
+        }
+
+        return original;
+    }
 
     @Inject(method = "getRotationVec(F)Lnet/minecraft/util/math/Vec3d;", at = @At("HEAD"), cancellable = true)
     private void onRotationVector(float tickDelta, CallbackInfoReturnable<Vec3d> cir) {

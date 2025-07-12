@@ -64,11 +64,16 @@ public class PlayerUtility implements MinecraftInstance {
     }
 
     public static boolean hasMovementRestrictions() {
+        if (mc.player == null) return false;
         return mc.player.hasStatusEffect(StatusEffects.BLINDNESS)
                 || mc.player.hasStatusEffect(StatusEffects.LEVITATION)
                 || mc.player.isSubmergedInWater()
                 || mc.player.isInLava()
                 || mc.player.isClimbing()
-                || mc.player.isTouchingWater();
+                || mc.player.hasVehicle();
+    }
+
+    public static float getAttackCooldown() {
+        return mc.player != null ? mc.player.getAttackCooldownProgress(0.5f) : 0.0f;
     }
 }

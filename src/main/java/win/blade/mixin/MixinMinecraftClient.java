@@ -11,6 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import win.blade.common.gui.impl.MainScreen;
 import win.blade.common.gui.impl.screen.firstlaunch.FirstlaunchScreen;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
@@ -38,5 +40,12 @@ public class MixinMinecraftClient {
             return new FirstlaunchScreen(screen::close);
         }
         return screen;
+    }
+
+    @Inject(method = "getWindowTitle", at = @At(value = "HEAD"), cancellable = true)
+    private void getWindowTitle(CallbackInfoReturnable<String> cir) {
+        if (!Manager.isPanic()) {
+            cir.setReturnValue("Blade Client v1.0");
+        }
     }
 }

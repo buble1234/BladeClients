@@ -1,6 +1,6 @@
 {
-  "vertex": "blade:core/common/liquid_glass",
-  "fragment": "blade:core/common/liquid_glass",
+  "vertex": "blade:core/blurs/liquid_glass",
+  "fragment": "blade:core/blurs/liquid_glass",
   "samplers": [
     { "name": "Sampler0" }
   ],

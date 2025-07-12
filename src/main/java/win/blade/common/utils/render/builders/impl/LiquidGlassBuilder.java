@@ -1,6 +1,7 @@
 package win.blade.common.utils.render.builders.impl;
 
 import win.blade.common.utils.render.builders.AbstractBuilder;
+import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.renderers.impl.BuiltLiquidGlass;
 
@@ -14,6 +15,7 @@ public final class LiquidGlassBuilder extends AbstractBuilder<BuiltLiquidGlass> 
     private float blurSize = 20.0f;
     private float quality = 10.0f;
     private float direction = 10.0f;
+    private QuadColorState color = QuadColorState.WHITE;
 
     public LiquidGlassBuilder size(SizeState size) {
         this.size = size;
@@ -40,13 +42,19 @@ public final class LiquidGlassBuilder extends AbstractBuilder<BuiltLiquidGlass> 
         return this;
     }
 
+    public LiquidGlassBuilder color(QuadColorState color) {
+        this.color = color;
+        return this;
+    }
+
     @Override
     protected BuiltLiquidGlass _build() {
         return new BuiltLiquidGlass(
                 this.size,
                 this.blurSize,
                 this.quality,
-                this.direction
+                this.direction,
+                this.color
         );
     }
 
@@ -56,5 +64,6 @@ public final class LiquidGlassBuilder extends AbstractBuilder<BuiltLiquidGlass> 
         this.blurSize = 20.0f;
         this.quality = 10.0f;
         this.direction = 10.0f;
+        this.color = QuadColorState.WHITE;
     }
 }

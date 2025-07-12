@@ -1,8 +1,8 @@
-package win.blade.common.hud.notification.impl;
+package win.blade.common.ui.impl;
 
 import net.minecraft.client.gui.DrawContext;
 import org.joml.Matrix4f;
-import win.blade.common.hud.notification.Notification;
+import win.blade.common.ui.Notification;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;

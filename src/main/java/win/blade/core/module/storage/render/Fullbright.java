@@ -22,8 +22,8 @@ import win.blade.core.module.api.ModuleInfo;
 )
 public class Fullbright extends Module {
 
-    private final ModeSetting mode = new ModeSetting(this,"Мод", "Яркость", "Яркость", "Зелье");
-    private final SliderSetting brightness = new SliderSetting(this,"Яркость в режиме Gamma", 15.0f, 1.0f, 20.0f, 0.5f);
+    private final ModeSetting mode = new ModeSetting(this,"Мод", "Яркость", "Зелье");
+    private final SliderSetting brightness = new SliderSetting(this,"Яркость", 15.0f, 1.0f, 20.0f, 0.5f).setVisible(() -> mode.is("Яркость"));
 
     private double oldGamma;
 

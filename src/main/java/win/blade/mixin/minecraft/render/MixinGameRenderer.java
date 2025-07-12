@@ -2,6 +2,7 @@ package win.blade.mixin.minecraft.render;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
@@ -38,6 +39,11 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
         MathUtility.lastProjMat.set(RenderSystem.getProjectionMatrix());
         MathUtility.lastModMat.set(RenderSystem.getModelViewMatrix());
         MathUtility.lastWorldSpaceMatrix.set(newMatStack.peek().getPositionMatrix());
+    }
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;draw()V", ordinal = 1, shift = At.Shift.AFTER))
+    private void hookScreenRender(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci, @Local DrawContext drawContext) {
+        Manager.EVENT_BUS.post(EventHolder.getScreenRenderEvent(drawContext.getMatrices(), tickCounter.getTickDelta(false), drawContext));
     }
 
     // TODO: Не обязательно

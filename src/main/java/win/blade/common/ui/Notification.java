@@ -1,4 +1,4 @@
-package win.blade.common.hud.notification;
+package win.blade.common.ui;
 
 import net.minecraft.client.gui.DrawContext;
 import win.blade.common.utils.math.TimerUtil;
