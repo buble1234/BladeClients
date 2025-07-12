@@ -1,5 +1,6 @@
 package win.blade.common.utils.attack;
 
+import net.minecraft.entity.effect.StatusEffects;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.player.PlayerUtility;
 
@@ -36,6 +37,7 @@ public enum CriticalMode implements MinecraftInstance {
         if (mc.player.isGliding()) {
             return true;
         }
-        return !mc.player.isOnGround() && mc.player.getVelocity().y < 0;
+        return !mc.player.isOnGround() && !mc.player.isInLava() && !mc.player.isSubmergedInWater()
+                && !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) && mc.player.fallDistance > 0;
     }
 }

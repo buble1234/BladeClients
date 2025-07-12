@@ -2,6 +2,9 @@ package win.blade.core.module.storage.combat;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
+import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
 import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
@@ -24,6 +27,8 @@ import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
+
+import static win.blade.common.utils.network.PacketUtility.sendPacket;
 
 /**
  * Автор: NoCap
@@ -104,8 +109,11 @@ public class AuraModule extends Module {
         }
 
         handleAimLogic();
+
         if (mc.crosshairTarget instanceof EntityHitResult result && result.getEntity() == currentTarget) {
-            performAttack();
+            if (currentTarget != null) {
+                performAttack();
+            }
         }
     }
 
@@ -173,6 +181,11 @@ public class AuraModule extends Module {
 
         AttackSettings settings = buildAttackSettings();
         AttackManager.attack(livingTarget, settings);
+    }
+
+    private boolean shouldCrit() {
+        return !mc.player.isOnGround() && !mc.player.isInLava() && !mc.player.isSubmergedInWater()
+                && !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) && mc.player.fallDistance > 0;
     }
 
     private AttackSettings buildAttackSettings() {
