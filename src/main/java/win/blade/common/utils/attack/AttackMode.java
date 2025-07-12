@@ -1,9 +1,6 @@
 package win.blade.common.utils.attack;
 
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import win.blade.common.utils.minecraft.MinecraftInstance;
-
-import static win.blade.common.utils.network.PacketUtility.sendPacket;
 
 /**
  * Автор: NoCap
@@ -29,7 +26,7 @@ public enum AttackMode implements MinecraftInstance {
     MODERN {
         @Override
         public boolean canAttackTiming(AttackSettings settings, AttackState state) {
-            return mc.player.getAttackCooldownProgress(0.5f) >= 1.0f;
+            return mc.player.getAttackCooldownProgress(0.5f) >= 0.9f;
         }
 
         @Override
@@ -53,13 +50,11 @@ public enum AttackMode implements MinecraftInstance {
         private void disableSprint() {
             mc.player.setSprinting(false);
             mc.options.sprintKey.setPressed(false);
-            //sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
         }
 
         private void enableSprint() {
             mc.player.setSprinting(true);
             mc.options.sprintKey.setPressed(true);
-            //sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_SPRINTING));
         }
     };
 
