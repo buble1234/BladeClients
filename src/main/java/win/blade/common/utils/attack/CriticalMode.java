@@ -37,7 +37,6 @@ public enum CriticalMode implements MinecraftInstance {
         if (mc.player.isGliding()) {
             return true;
         }
-        return !mc.player.isOnGround() && !mc.player.isInLava() && !mc.player.isSubmergedInWater()
-                && !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) && mc.player.fallDistance > 0;
+        return !mc.player.isOnGround() && !mc.player.isInLava() && !mc.player.isSubmergedInWater() && !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) && mc.player.fallDistance > 0;
     }
 }
