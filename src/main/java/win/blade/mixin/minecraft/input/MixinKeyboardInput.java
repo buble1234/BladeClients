@@ -59,6 +59,9 @@ public class MixinKeyboardInput implements MinecraftInstance {
         float newX = x * MathHelper.cos(deltaYaw * 0.017453292f) - z * MathHelper.sin(deltaYaw * 0.017453292f);
         float newZ = z * MathHelper.cos(deltaYaw * 0.017453292f) + x * MathHelper.sin(deltaYaw * 0.017453292f);
 
+        newX = (float) Math.round(newX);
+        newZ = (float) Math.round(newZ);
+
         boolean newForward = newZ > 0.0f;
         boolean newBackward = newZ < 0.0f;
         boolean newLeft = newX > 0.0f;
