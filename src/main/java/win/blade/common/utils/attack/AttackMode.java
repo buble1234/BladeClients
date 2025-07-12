@@ -53,13 +53,13 @@ public enum AttackMode implements MinecraftInstance {
         private void disableSprint() {
             mc.player.setSprinting(false);
             mc.options.sprintKey.setPressed(false);
-            sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
+            //sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
         }
 
         private void enableSprint() {
             mc.player.setSprinting(true);
             mc.options.sprintKey.setPressed(true);
-            sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_SPRINTING));
+            //sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_SPRINTING));
         }
     };
 

@@ -66,7 +66,6 @@ public class AttackManager implements MinecraftInstance {
     private static void sendAttackPackets(LivingEntity target) {
         if (mc.getNetworkHandler() != null) {
             mc.interactionManager.attackEntity(mc.player, target);
-            mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
         }
         mc.player.swingHand(PlayerUtility.getAttackHand());
     }
