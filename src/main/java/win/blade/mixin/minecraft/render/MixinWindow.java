@@ -1,4 +1,4 @@
-package win.blade.mixin;
+package win.blade.mixin.minecraft.render;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.texture.NativeImage;
@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import win.blade.core.Manager;
 import win.blade.mixin.accessor.NativeImageAccessor;
 
 import java.io.IOException;
@@ -36,18 +37,17 @@ public class MixinWindow {
 
             NativeImage image = NativeImage.read(iconStream);
             GLFWImage.Buffer buffer = GLFWImage.malloc(1);
+                NativeImageAccessor accessor = (NativeImageAccessor) (Object) image;
+                buffer.position(0);
+                buffer.width(image.getWidth());
+                buffer.height(image.getHeight());
+                buffer.pixels(MemoryUtil.memByteBuffer(accessor.getPointer(), (int) accessor.getSizeBytes()));
 
-            NativeImageAccessor accessor = (NativeImageAccessor) (Object) image;
-            buffer.position(0);
-            buffer.width(image.getWidth());
-            buffer.height(image.getHeight());
-            buffer.pixels(MemoryUtil.memByteBuffer(accessor.getPointer(), (int) accessor.getSizeBytes()));
+                buffer.position(0);
 
-            buffer.position(0);
-            GLFW.glfwSetWindowIcon(this.handle, buffer);
-
-            image.close();
-            buffer.free();
+                GLFW.glfwSetWindowIcon(this.handle, buffer);
+                image.close();
+                buffer.free();
         } catch (IOException e) {
             LogUtils.getLogger().error("Couldn't set custom icon", e);
         }

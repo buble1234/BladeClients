@@ -4,7 +4,6 @@
   "package": "win.blade.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "MixinWindow",
     "accessor.LivingEntityAccessor",
     "accessor.MinecraftClientAccessor",
     "accessor.NativeImageAccessor",
@@ -41,6 +40,7 @@
     "minecraft.render.MixinInGameOverlayRenderer",
     "minecraft.render.MixinLightmapTextureManager",
     "minecraft.render.MixinLivingEntityRenderer",
+    "minecraft.render.MixinWindow",
     "minecraft.render.MixinWorldRenderer"
   ],
   "injectors": {
