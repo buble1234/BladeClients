@@ -62,7 +62,7 @@ public class AttackManager implements MinecraftInstance {
             settings.attackMode().handleSprintAfterAttack(settings, state);
         }
 
-        state.setLastAttackTime(System.currentTimeMillis() + 101);
+        state.setLastAttackTime(System.currentTimeMillis());
         state.setIsAttacking(false);
     }
 
