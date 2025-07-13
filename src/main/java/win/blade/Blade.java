@@ -17,8 +17,7 @@ public class Blade implements ModInitializer {
     @Override
     public void onInitialize() {
         manager.init();
-        //Session newSession = new Session("MagnatYgla", Uuids.getOfflinePlayerUuid("MagnatYgla"), "", Optional.empty(), Optional.empty(), Session.AccountType.MOJANG);
-        Session newSession = new Session("MagikNe4", Uuids.getOfflinePlayerUuid("MagikNe4"), "", Optional.empty(), Optional.empty(), Session.AccountType.MOJANG);
+        Session newSession = new Session("Iore9212", Uuids.getOfflinePlayerUuid("Iore9212"), "", Optional.empty(), Optional.empty(), Session.AccountType.MOJANG);
         try {
             MinecraftUtility.setSession(newSession);
         } catch (AuthenticationException e) {

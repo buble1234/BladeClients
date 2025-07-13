@@ -2,8 +2,6 @@ package win.blade.common.gui.impl.menu.settings.impl;
 
 import win.blade.common.gui.impl.menu.settings.Setting;
 import win.blade.core.module.api.Module;
-import win.blade.common.gui.impl.menu.settings.Setting;
-
 
 import java.util.Arrays;
 import java.util.List;
