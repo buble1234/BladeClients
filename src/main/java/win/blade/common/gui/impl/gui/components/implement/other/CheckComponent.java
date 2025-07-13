@@ -13,6 +13,7 @@ import win.blade.common.utils.render.builders.states.QuadRadiusState;
 import win.blade.common.utils.render.builders.states.SizeState;
 
 import java.awt.Color;
+import java.io.Serializable;
 
 public class CheckComponent extends AbstractComponent {
     private boolean state;
@@ -35,14 +36,14 @@ public class CheckComponent extends AbstractComponent {
                 .peek()
                 .getPositionMatrix();
 
-        int stateColor = state
-                ? 0xFF8187ff
-                : 0x00161725;
+        Color stateColor = state
+                ? new Color(102,60,255)
+                : new Color(28,26,37);
 
         Builder.rectangle()
                 .size(new SizeState(8, 8))
-                .color(new QuadColorState(new Color(stateColor)))
-                .radius(new QuadRadiusState(1))
+                .color(new QuadColorState(new Color(stateColor.getRGB())))
+                .radius(new QuadRadiusState(1.5f))
                 .build()
                 .render(x, y);
 
@@ -50,12 +51,12 @@ public class CheckComponent extends AbstractComponent {
             AbstractTexture checkTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/check.png"));
 
             Builder.texture()
-                    .size(new SizeState(4, 4))
+                    .size(new SizeState(18/2, 18/2))
                     .color(new QuadColorState(Color.WHITE))
                     .texture(0f, 0f, 1f, 1f, checkTexture)
                     .radius(new QuadRadiusState(0f))
                     .build()
-                    .render(x + 2, y + 2);
+                    .render(x -0.3 , y -0.5f);
         }
     }
 

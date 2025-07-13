@@ -25,7 +25,7 @@ public class SearchComponent extends AbstractComponent {
     private int selectionEnd = -1;
     private boolean isTyping = false;
 
-    private final MsdfFont fontRegular = FontType.sf_regular.get();
+    private final MsdfFont fontRegular = FontType.popins_regular.get();
 
     public String getText() {
         return text;
@@ -38,15 +38,15 @@ public class SearchComponent extends AbstractComponent {
                 .peek()
                 .getPositionMatrix();
 
-        width = 80;
+        width = 108;
         height = 15;
 
         Builder.rectangle()
                 .size(new SizeState(width, height))
-                .color(new QuadColorState(new Color(0x54191A28)))
+                .color(new QuadColorState(new Color(28,26,37)))
                 .radius(new QuadRadiusState(6))
                 .build()
-                .render(x, y);
+                .render(x -27, y);
 
         AbstractTexture searchTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/search.png"));
 
@@ -56,7 +56,7 @@ public class SearchComponent extends AbstractComponent {
                 .texture(0f, 0f, 1f, 1f, searchTexture)
                 .radius(new QuadRadiusState(0f))
                 .build()
-                .render(x + width - 12, y + 5);
+                .render(x + width - 40, y + 5);
 
         String displayText = text.equalsIgnoreCase("") && !isTyping ? "Search" : text;
 
@@ -66,10 +66,10 @@ public class SearchComponent extends AbstractComponent {
                 .size(6)
                 .color(new Color(0xFF878894))
                 .build()
-                .render( x + 7, y + 4.5f);
+                .render( x -18, y + 3);
 
         if (isTyping) {
-            float cursorX = x + 7 + fontRegular.getWidth(text.substring(0, cursorPosition), 6);
+            float cursorX = x -18 + fontRegular.getWidth(text.substring(0, cursorPosition), 6);
 
             Builder.rectangle()
                     .size(new SizeState(0.5f, height - 8))
@@ -82,7 +82,7 @@ public class SearchComponent extends AbstractComponent {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (MathUtility.isHovered(mouseX, mouseY, x, y, width, height)) {
+        if (MathUtility.isHovered(mouseX, mouseY, x-40, y, width, height)) {
             cursorPosition = getClickedPosition(mouseX);
             selectionStart = -1;
             selectionEnd = -1;

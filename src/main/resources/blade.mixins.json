@@ -4,8 +4,10 @@
   "package": "win.blade.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "MixinWindow",
     "accessor.LivingEntityAccessor",
     "accessor.MinecraftClientAccessor",
+    "accessor.NativeImageAccessor",
     "accessor.PlayerPositionLookS2CPacketAccessor",
     "minecraft.client.MixinChatInputSuggestor",
     "minecraft.entity.MixinEntity",

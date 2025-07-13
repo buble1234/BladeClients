@@ -21,6 +21,15 @@ public class MathUtility implements MinecraftInstance {
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
 
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
+
     public static @NotNull Vec3d worldSpaceToScreenSpace(@NotNull Vec3d pos) {
         Camera camera = mc.getEntityRenderDispatcher().camera;
         int displayHeight = mc.getWindow().getHeight();
@@ -39,13 +48,4 @@ public class MathUtility implements MinecraftInstance {
 
         return new Vec3d(target.x / mc.getWindow().getScaleFactor(), (displayHeight - target.y) / mc.getWindow().getScaleFactor(), target.z);
     }
-
-//    public static double getScale(Vec3d interpolated, double size){
-//        Vec3d cam = mc.gameRenderer.getCamera().getPos();
-//        double distance = cam.distanceTo(interpolated);
-//
-//        double fov = mc.gameRenderer.getFov(mc.gameRenderer.getCamera(), 0, true);
-//
-//        return Math.max(1f, 1000 / distance) * (size / 30.0f) / (fov == 70 ? 1 : fov / 70.0f);
-//    }
 }

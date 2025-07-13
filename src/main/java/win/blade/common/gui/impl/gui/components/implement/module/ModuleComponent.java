@@ -37,7 +37,7 @@ public class ModuleComponent extends AbstractComponent {
 
     private final Module module;
 
-    private final MsdfFont fontRegular = FontType.sf_regular.get();
+    private final MsdfFont fontRegular = FontType.popins_regular.get();
 
     public ModuleComponent(Module module) {
         this.module = module;
@@ -72,13 +72,22 @@ public class ModuleComponent extends AbstractComponent {
                 .getPositionMatrix();
 
         height = getComponentHeight();
-
+        Builder.rectangle()
+                .size(new SizeState(width, height))
+                .color(new QuadColorState(new Color(21,19,32)))
+                .radius(new QuadRadiusState(6))
+                .build()
+                .render(x, y);
         Builder.rectangle()
                 .size(new SizeState(width, 18))
-                .color(new QuadColorState(new Color(0xFF191a28)))
+                .color(new QuadColorState(new Color(23,19,39)))
                 .radius(new QuadRadiusState(6, 0, 0, 6))
                 .build()
                 .render(x, y);
+
+
+
+
 
         Builder.border()
                 .size(new SizeState(width, height))
@@ -88,15 +97,6 @@ public class ModuleComponent extends AbstractComponent {
                 .build()
                 .render(x, y);
 
-        AbstractTexture icoTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/ico.png"));
-
-        Builder.texture()
-                .size(new SizeState(9, 9))
-                .color(new QuadColorState(Color.WHITE))
-                .texture(0f, 0f, 1f, 1f, icoTexture)
-                .radius(new QuadRadiusState(0f))
-                .build()
-                .render(x + 9, y + 4.5f);
 
         Builder.text()
                 .font(fontRegular)
@@ -104,7 +104,7 @@ public class ModuleComponent extends AbstractComponent {
                 .size(6)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 23, y + 7);
+                .render( x + 11, y + 6);
 
         Builder.text()
                 .font(fontRegular)
@@ -116,7 +116,7 @@ public class ModuleComponent extends AbstractComponent {
 
         Builder.text()
                 .font(fontRegular)
-                .text("Enables the " + module.getVisibleName().toLowerCase() + " feature.")
+                .text("Description")
                 .size(5)
                 .color(new Color(0xFF878894))
                 .build()
@@ -232,19 +232,28 @@ public class ModuleComponent extends AbstractComponent {
         float stringWidth = fontRegular.getWidth(bindName, 5);
 
         Builder.rectangle()
-                .size(new SizeState(stringWidth + 6, 9))
-                .color(new QuadColorState(new Color(0xFF161725)))
-                .radius(new QuadRadiusState(2))
+                .size(new SizeState(stringWidth + 8, 9))
+                .color(new QuadColorState(new Color(28,26,37,255)))
+                .radius(new QuadRadiusState(4))
                 .build()
-                .render(x + width - stringWidth - 15, y + 4.5f);
+                .render(x + width - stringWidth - 16, y + 2.5f);
 
-        int bindingColor = ColorHelper.getArgb(255, 135, 136, 148);
+        Builder.border()
+                .size(new SizeState(stringWidth + 8, 12))
+                .color(new QuadColorState(new Color(255,255,255,15)))
+                .radius(new QuadRadiusState(4))
+                .outlineColor(new QuadColorState(255,255,255,0))
+                .thickness(0.3f)
+                .build()
+                .render(x + width - stringWidth - 16, y + 2.5f);
+
+
 
         Builder.text()
                 .font(fontRegular)
                 .text(bindName)
                 .size(5)
-                .color(new Color(bindingColor))
+                .color(new Color(102,60,255))
                 .build()
                 .render( x + width - 12 - stringWidth, y + 6);
     }

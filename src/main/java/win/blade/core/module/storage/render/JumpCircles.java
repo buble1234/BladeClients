@@ -120,11 +120,11 @@ public class JumpCircles extends Module {
         int animatedColor = new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha).getRGB();
 
         BuiltBorder border = new BorderBuilder()
-                .size(new SizeState(1.6f * 2.0f, 1.6f * 2.0f))
-                .radius(new QuadRadiusState(0.6))
+                .size(new SizeState(1.2 * 2.0f, 1.2 * 2.0f))
+                .radius(new QuadRadiusState(0.2))
                 .color(new QuadColorState(animatedColor))
                 .smoothness(1f, 0.5f)
-                .thickness(1f)
+                .thickness(0.5f)
                 .build();
 
         border.render(matrices.peek().getPositionMatrix(), -1.6f, -1.6f, 0.0f);

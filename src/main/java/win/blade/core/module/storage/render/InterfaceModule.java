@@ -2,8 +2,7 @@ package win.blade.core.module.storage.render;
 
 import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
-import win.blade.common.ui.element.hud.TestElement;
-import win.blade.common.ui.element.hud.WatermarkElement;
+import win.blade.common.ui.element.hud.*;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
@@ -33,8 +32,11 @@ public class InterfaceModule extends Module {
     }
 
     private void setupElements() {
-        interfaceElements.put("Ватермарка", new WatermarkElement());
-        interfaceElements.put("TEST", new TestElement());
+        interfaceElements.put("Ватермарка", new Watermark());
+        interfaceElements.put("Клавиши", new Hotkey());
+        interfaceElements.put("Зелья", new Potions());
+        interfaceElements.put("ТаргетХуд", new TargetHud());
+        interfaceElements.put("Инфо", new InfoHud());
 
         BooleanSetting[] settings = interfaceElements.keySet().stream()
                 .map(name -> BooleanSetting.of(name, true))

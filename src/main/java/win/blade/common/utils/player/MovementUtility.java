@@ -7,11 +7,6 @@ import java.util.stream.Stream;
 
 import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
-/**
- * Автор: NoCap
- * Дата создания: 17.06.2025
- */
-
 public final class MovementUtility {
 
     public static boolean isMoving() {
@@ -32,6 +27,16 @@ public final class MovementUtility {
     }
 
     public static double getSpeed() {
+        if (mc.player == null) return 0.0;
         return Math.hypot(mc.player.getVelocity().x, mc.player.getVelocity().z);
+    }
+
+    public static double getHorizontalSpeed() {
+        if (mc.player == null) return 0.0;
+
+        double dx = mc.player.getX() - mc.player.prevX;
+        double dz = mc.player.getZ() - mc.player.prevZ;
+
+        return Math.sqrt(dx * dx + dz * dz);
     }
 }

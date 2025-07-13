@@ -20,7 +20,7 @@ import java.awt.Color;
 public class BackgroundComponent extends AbstractComponent {
     private MenuScreen menuScreen;
 
-    private final MsdfFont fontBold = FontType.sf_regular.get();
+    private final MsdfFont fontBold = FontType.popins_regular.get();
 
     public BackgroundComponent setMenuScreen(MenuScreen menuScreen) {
         this.menuScreen = menuScreen;
@@ -34,20 +34,30 @@ public class BackgroundComponent extends AbstractComponent {
                 .peek()
                 .getPositionMatrix();
 
-        AbstractTexture backgroundTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/background.png"));
+        AbstractTexture back = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/backgr.png"));
 
         Builder.texture()
                 .size(new SizeState(width, height))
                 .color(new QuadColorState(Color.WHITE))
-                .texture(0f, 0f, 1f, 1f, backgroundTexture)
-                .radius(new QuadRadiusState(0f))
+                .texture(0f, 0f, 1f, 1f, back)
+                .radius(new QuadRadiusState(9))
                 .build()
                 .render(x, y);
 
-        AbstractTexture logoTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/small_logo.png"));
+
+        Builder.border()
+                .size(new SizeState(width, height))
+                .color(new QuadColorState(new Color(170, 160, 200, 25)))
+                .radius(new QuadRadiusState(9))
+                .outlineColor(new QuadColorState(255,255,255,0))
+                .thickness(1)
+                .build()
+                .render(x, y);
+
+        AbstractTexture logoTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/logo.png"));
 
         Builder.texture()
-                .size(new SizeState(58, 11))
+                .size(new SizeState(111/2, 25/2))
                 .color(new QuadColorState(Color.WHITE))
                 .texture(0f, 0f, 1f, 1f, logoTexture)
                 .radius(new QuadRadiusState(0f))
@@ -57,9 +67,9 @@ public class BackgroundComponent extends AbstractComponent {
         Builder.text()
                 .font(fontBold)
                 .text(menuScreen.category.getName())
-                .size(8)
+                .size(6)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 95, y + 13);
+                .render( x + 95, y + 10);
     }
 }

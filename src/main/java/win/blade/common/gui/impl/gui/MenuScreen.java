@@ -43,7 +43,6 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                 Arrays.asList(
                         backgroundComponent,
                         userComponent,
-                        languageComponent,
                         searchComponent,
                         categoryContainerComponent
                 )
@@ -87,7 +86,6 @@ public class MenuScreen extends Screen implements MinecraftInstance {
         userComponent.setMenuScreen(this)
                 .position(this.x, this.y + this.height);
 
-        languageComponent.position(this.x + 261, this.y + 6);
         searchComponent.position(this.x + 300, this.y + 6);
         categoryContainerComponent.position(this.x, this.y);
 
