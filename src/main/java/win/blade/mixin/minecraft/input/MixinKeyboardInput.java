@@ -24,7 +24,7 @@ public class MixinKeyboardInput implements MinecraftInstance {
         ViewDirection aimDirection = aimManager.getCurrentDirection();
         TargetTask task = aimManager.getActiveTask();
 
-        if (task == null || aimDirection == null || player == null || !task.settings().enableMovementFix()) {
+        if (task == null || aimDirection == null || player == null || !task.settings().enableMovementFix() || !task.settings().enableSilentAim()) {
             return;
         }
 

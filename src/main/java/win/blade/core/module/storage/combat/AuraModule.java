@@ -61,6 +61,8 @@ public class AuraModule extends Module {
             BooleanSetting.of("Синхронизировать взгляд", true).setVisible(() -> !aimMode.is("Нету"))
     );
 
+    private final ModeSetting moveMode = new ModeSetting(this, "Режим коррекции движений", "Слабая", "Сильная", "Нету").setVisible(() -> !aimMode.is("Нету"));
+
     private Entity currentTarget;
     private float aimTicks;
 
@@ -165,11 +167,26 @@ public class AuraModule extends Module {
 
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
 
+        boolean enableViewSync = behaviorOptions.get("Синхронизировать взгляд").getValue();
+        boolean enableMovementCorrection = false;
+        boolean enableSilent = false;
+
+        if (moveMode.is("Слабая")) {
+            enableMovementCorrection = true;
+            enableSilent = true;
+        } else if (moveMode.is("Сильная")) {
+            enableMovementCorrection = true;
+            enableSilent = false;
+        } else if (moveMode.is("Нету")) {
+            enableMovementCorrection = false;
+            enableSilent = false;
+        }
+
         AimSettings aimSettings = new AimSettings(
                 new AdaptiveSmooth(12f),
-                behaviorOptions.get("Синхронизировать взгляд").getValue(),
-                behaviorOptions.get("Корректировать движения").getValue() || behaviorOptions.get("Синхронизировать взгляд").getValue(),
-                false
+                enableViewSync,
+                enableMovementCorrection,
+                enableSilent
         );
 
         TargetTask smoothTask = aimSettings.buildTask(targetDirection, currentTarget.getPos(), currentTarget);
