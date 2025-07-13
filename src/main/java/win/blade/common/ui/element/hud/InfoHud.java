@@ -69,7 +69,7 @@ public class InfoHud extends Module implements MinecraftInstance, NonRegistrable
         public void renderContent(DrawContext context) {
 
             if (arrowTexture == null) {
-                arrowTexture = mc.getTextureManager().getTexture(Identifier.of("blade", "textures/arrpwL2.png"));
+                arrowTexture = mc.getTextureManager().getTexture(Identifier.of("blade", "textures/arrpwl2.png"));
             }
 
             Matrix4f matrix = context.getMatrices()
