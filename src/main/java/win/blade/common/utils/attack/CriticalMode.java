@@ -20,14 +20,14 @@ public enum CriticalMode implements MinecraftInstance {
     ALWAYS {
         @Override
         public boolean canCritical(AttackSettings settings, AttackState state) {
-            return isPlayerInCriticalState() || (System.currentTimeMillis() - state.getLastJumpTime() < 200);
+            return isPlayerInCriticalState() || mc.player.isSubmergedInWater() || mc.player.isInSwimmingPose() || (System.currentTimeMillis() - state.getLastJumpTime() < 200);
         }
     },
     ADAPTIVE {
         @Override
         public boolean canCritical(AttackSettings settings, AttackState state) {
             if (mc.player.input.playerInput.jump() || mc.player.getHealth() < 12.0f) {
-                return isPlayerInCriticalState() || (System.currentTimeMillis() - state.getLastJumpTime() < 200);
+                return isPlayerInCriticalState() || mc.player.isSubmergedInWater() || mc.player.isInSwimmingPose() || (System.currentTimeMillis() - state.getLastJumpTime() < 200);
             }
             return true;
         }
