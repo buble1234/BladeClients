@@ -34,7 +34,7 @@ import static win.blade.common.utils.network.PacketUtility.sendPacket;
 @ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
-    private final ModeSetting aimMode = new ModeSetting(this, "Режим прицеливания", "Постоянный", "Во время удара", "Нету");
+    public final ModeSetting aimMode = new ModeSetting(this, "Режим прицеливания", "Постоянный", "Во время удара", "Нету");
     private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
     private final SliderSetting aimRange = new SliderSetting(this, "Дистанция прицеливания", 4.5f, 2.0f, 8.0f, 0.1f).setVisible(() -> !aimMode.is("Нету"));
     private final SliderSetting rotateTick = new SliderSetting(this, "Тики поворота", 5, 1, 10, 1.0f).setVisible(() -> aimMode.is("Во время удара"));
@@ -58,7 +58,8 @@ public class AuraModule extends Module {
             BooleanSetting.of("Сбрасывать спринт", true),
             BooleanSetting.of("Отжимать щит", true),
             BooleanSetting.of("Проверять еду", true),
-            BooleanSetting.of("Синхронизировать взгляд", true).setVisible(() -> !aimMode.is("Нету"))
+            BooleanSetting.of("Синхронизировать взгляд", true).setVisible(() -> !aimMode.is("Нету")),
+            BooleanSetting.of("Фокусировать одну цель", false)
     );
 
     private final ModeSetting moveMode = new ModeSetting(this, "Режим коррекции движений", "Слабая", "Сильная", "Нету").setVisible(() -> !aimMode.is("Нету"));
@@ -117,10 +118,15 @@ public class AuraModule extends Module {
     }
 
     private void updateCurrentTarget() {
-        Entity potentialTarget = TargetUtility.findBestTarget(aimRange.getValue() + attackRange.getValue());
-        if (potentialTarget instanceof LivingEntity &&
-                mc.player.distanceTo(potentialTarget) <= aimRange.getValue() + attackRange.getValue() &&
-                TargetUtility.isValidTarget(potentialTarget)) {
+        boolean focusTarget = behaviorOptions.get("Фокусировать одну цель").getValue();
+        float totalRange = aimRange.getValue() + attackRange.getValue();
+
+        if (focusTarget && currentTarget != null && currentTarget.isAlive() && mc.player.distanceTo(currentTarget) <= totalRange && TargetUtility.isValidTarget(currentTarget)) {
+            return;
+        }
+
+        Entity potentialTarget = TargetUtility.findBestTarget(totalRange);
+        if (potentialTarget instanceof LivingEntity && TargetUtility.isValidTarget(potentialTarget)) {
             currentTarget = potentialTarget;
         } else {
             currentTarget = null;
