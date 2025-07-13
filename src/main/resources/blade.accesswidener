@@ -26,3 +26,4 @@ accessible method net/minecraft/network/packet/c2s/play/PlayerInteractEntityC2SP
 accessible method net/minecraft/client/world/ClientWorld getPendingUpdateManager ()Lnet/minecraft/client/network/PendingUpdateManager;
 accessible method net/minecraft/client/render/entity/LivingEntityRenderer getRenderLayer (Lnet/minecraft/entity/LivingEntity;ZZZ)Lnet/minecraft/client/render/RenderLayer;
 accessible method net/minecraft/entity/LivingEntity getHandSwingDuration ()I
+accessible method net/minecraft/client/input/KeyboardInput getMovementMultiplier (ZZ)F

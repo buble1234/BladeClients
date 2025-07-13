@@ -1,6 +1,7 @@
 package win.blade.common.utils.attack;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.util.Hand;
@@ -52,12 +53,14 @@ public class AttackManager implements MinecraftInstance {
         if (mc.player.isBlocking() && settings.unpressShield()) {
             mc.interactionManager.stopUsingItem(mc.player);
         }
-
+        boolean wasSprint = mc.player.isSprinting();
         settings.attackMode().handleSprintBeforeAttack(settings, state);
 
         sendAttackPackets(target);
 
-        settings.attackMode().handleSprintAfterAttack(settings, state);
+        if (wasSprint != mc.player.isSprinting()) {
+            settings.attackMode().handleSprintAfterAttack(settings, state);
+        }
 
         state.setLastAttackTime(System.currentTimeMillis());
         state.setIsAttacking(false);
@@ -65,11 +68,8 @@ public class AttackManager implements MinecraftInstance {
 
     private static void sendAttackPackets(LivingEntity target) {
         if (mc.getNetworkHandler() != null) {
-            mc.getNetworkHandler().sendPacket(PlayerInteractEntityC2SPacket.attack(target, mc.player.isSneaking()));
-            mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+            mc.interactionManager.attackEntity(mc.player, target);
         }
-        //mc.player.attack(target);
-        mc.player.resetLastAttackedTicks();
         mc.player.swingHand(PlayerUtility.getAttackHand());
     }
 

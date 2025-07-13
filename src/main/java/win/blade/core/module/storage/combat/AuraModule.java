@@ -2,11 +2,11 @@ package win.blade.core.module.storage.combat;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
+import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
-import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
+import win.blade.common.gui.impl.menu.settings.impl.*;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
 import win.blade.common.utils.aim.base.AimCalculator;
@@ -25,6 +25,8 @@ import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
+import static win.blade.common.utils.network.PacketUtility.sendPacket;
+
 /**
  * Автор: NoCap
  * Дата создания: 28.06.2025
@@ -32,14 +34,14 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
-    private final ModeSetting aimMode = new ModeSetting(this, "Режим прицеливания", "Постоянный", "Во время удара");
+    public final ModeSetting aimMode = new ModeSetting(this, "Режим прицеливания", "Постоянный", "Во время удара", "Нету");
     private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
-    private final SliderSetting aimRange = new SliderSetting(this, "Дистанция прицеливания", 4.5f, 2.0f, 8.0f, 0.1f);
+    private final SliderSetting aimRange = new SliderSetting(this, "Дистанция прицеливания", 4.5f, 2.0f, 8.0f, 0.1f).setVisible(() -> !aimMode.is("Нету"));
     private final SliderSetting rotateTick = new SliderSetting(this, "Тики поворота", 5, 1, 10, 1.0f).setVisible(() -> aimMode.is("Во время удара"));
     private final ModeSetting pvpMode = new ModeSetting(this, "Режим PvP", "1.9", "1.8");
     private final SliderSetting cps = new SliderSetting(this, "Скорость атаки", 12, 8, 16, 0.5f).setVisible(() -> pvpMode.is("1.8"));
     private final ModeSetting criticalMode = new ModeSetting(this, "Критические удары", "Всегда", "Умные", "Нету");
-    private final ModeSetting pointMode = new ModeSetting(this, "Точка прицеливания", "Умные", "Центр", "Мульти");
+    private final ModeSetting pointMode = new ModeSetting(this, "Точка прицеливания", "Умные", "Центр", "Мульти").setVisible(() -> !aimMode.is("Нету"));
 
     private final MultiBooleanSetting targetTypes = new MultiBooleanSetting(this, "Типы целей",
             BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
@@ -52,12 +54,15 @@ public class AuraModule extends Module {
     );
 
     private final MultiBooleanSetting behaviorOptions = new MultiBooleanSetting(this, "Опции",
-            BooleanSetting.of("Корректировать движения", true),
+            BooleanSetting.of("Корректировать движения", true).setVisible(() -> !aimMode.is("Нету")),
             BooleanSetting.of("Сбрасывать спринт", true),
             BooleanSetting.of("Отжимать щит", true),
             BooleanSetting.of("Проверять еду", true),
-            BooleanSetting.of("Синхронизировать взгляд", true)
+            BooleanSetting.of("Синхронизировать взгляд", true).setVisible(() -> !aimMode.is("Нету")),
+            BooleanSetting.of("Фокусировать одну цель", false)
     );
+
+    private final ModeSetting moveMode = new ModeSetting(this, "Режим коррекции движений", "Слабая", "Сильная", "Нету").setVisible(() -> !aimMode.is("Нету"));
 
     private Entity currentTarget;
     private float aimTicks;
@@ -104,16 +109,24 @@ public class AuraModule extends Module {
         }
 
         handleAimLogic();
+
         if (mc.crosshairTarget instanceof EntityHitResult result && result.getEntity() == currentTarget) {
-            performAttack();
+            if (currentTarget != null) {
+                performAttack();
+            }
         }
     }
 
     private void updateCurrentTarget() {
-        Entity potentialTarget = TargetUtility.findBestTarget(aimRange.getValue() + attackRange.getValue());
-        if (potentialTarget instanceof LivingEntity &&
-                mc.player.distanceTo(potentialTarget) <= aimRange.getValue() + attackRange.getValue() &&
-                TargetUtility.isValidTarget(potentialTarget)) {
+        boolean focusTarget = behaviorOptions.get("Фокусировать одну цель").getValue();
+        float totalRange = aimRange.getValue() + attackRange.getValue();
+
+        if (focusTarget && currentTarget != null && currentTarget.isAlive() && mc.player.distanceTo(currentTarget) <= totalRange && TargetUtility.isValidTarget(currentTarget)) {
+            return;
+        }
+
+        Entity potentialTarget = TargetUtility.findBestTarget(totalRange);
+        if (potentialTarget instanceof LivingEntity && TargetUtility.isValidTarget(potentialTarget)) {
             currentTarget = potentialTarget;
         } else {
             currentTarget = null;
@@ -121,6 +134,11 @@ public class AuraModule extends Module {
     }
 
     private void handleAimLogic() {
+        if (aimMode.is("Нету")) {
+            AimManager.INSTANCE.disable();
+            return;
+        }
+
         if (aimMode.is("Во время удара")) {
             if (aimTicks > 0) {
                 aimTicks--;
@@ -155,11 +173,26 @@ public class AuraModule extends Module {
 
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
 
+        boolean enableViewSync = behaviorOptions.get("Синхронизировать взгляд").getValue();
+        boolean enableMovementCorrection = false;
+        boolean enableSilent = false;
+
+        if (moveMode.is("Слабая")) {
+            enableMovementCorrection = true;
+            enableSilent = true;
+        } else if (moveMode.is("Сильная")) {
+            enableMovementCorrection = true;
+            enableSilent = false;
+        } else if (moveMode.is("Нету")) {
+            enableMovementCorrection = false;
+            enableSilent = false;
+        }
+
         AimSettings aimSettings = new AimSettings(
                 new AdaptiveSmooth(12f),
-                behaviorOptions.get("Синхронизировать взгляд").getValue(),
-                behaviorOptions.get("Корректировать движения").getValue() || behaviorOptions.get("Синхронизировать взгляд").getValue(),
-                false
+                enableViewSync,
+                enableMovementCorrection,
+                enableSilent
         );
 
         TargetTask smoothTask = aimSettings.buildTask(targetDirection, currentTarget.getPos(), currentTarget);
@@ -173,6 +206,11 @@ public class AuraModule extends Module {
 
         AttackSettings settings = buildAttackSettings();
         AttackManager.attack(livingTarget, settings);
+    }
+
+    private boolean shouldCrit() {
+        return !mc.player.isOnGround() && !mc.player.isInLava() && !mc.player.isSubmergedInWater()
+                && !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) && mc.player.fallDistance > 0;
     }
 
     private AttackSettings buildAttackSettings() {

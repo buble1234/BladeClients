@@ -23,6 +23,7 @@ public class MainScreen extends BaseScreen {
         super(Text.of(""));
     }
 
+    AccountScreen accountScreen = new AccountScreen();
     @Override
     protected void init() {
         super.init();
@@ -32,7 +33,7 @@ public class MainScreen extends BaseScreen {
 
         this.addDrawableChild(new Button(centerX - 130, centerY - 68, 249, 32, Text.of("Singleplayer"), () -> mc.setScreen(new SingleplayerScreen())));
         this.addDrawableChild(new Button(centerX - 130, centerY - 32, 249, 32, Text.of("Multiplayer"), () -> mc.setScreen(new MultiplayerScreen())));
-        this.addDrawableChild(new Button(centerX - 130, centerY + 4, 249, 32, Text.of("Accounts"), () -> mc.setScreen(new AccountScreen())));
+        this.addDrawableChild(new Button(centerX - 130, centerY + 4, 249, 32, Text.of("Accounts"), () -> mc.setScreen(accountScreen)));
         this.addDrawableChild(new Button(centerX - 130, centerY + 40, 121, 32, Text.of("Options"), () -> mc.setScreen(new OptionsScreen(this, mc.options))));
         this.addDrawableChild(new Button(centerX - 2, centerY + 40, 121, 32, Text.of("Quit"), () -> MinecraftClient.getInstance().scheduleStop()));
     }

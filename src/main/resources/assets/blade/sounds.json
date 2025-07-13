@@ -1,0 +1,12 @@
+{
+  "module_enable": {
+    "sounds": [
+      "blade:module_enable"
+    ]
+  },
+  "module_disable": {
+    "sounds": [
+      "blade:module_disable"
+    ]
+  }
+}

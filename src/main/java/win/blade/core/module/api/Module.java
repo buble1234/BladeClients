@@ -3,6 +3,7 @@ package win.blade.core.module.api;
 import win.blade.common.gui.impl.menu.settings.Setting;
 import win.blade.common.ui.NotificationType;
 import win.blade.common.utils.minecraft.MinecraftInstance;
+import win.blade.common.utils.other.SoundUtility;
 import win.blade.core.Manager;
 
 import java.util.ArrayList;
@@ -53,10 +54,12 @@ public abstract class Module implements MinecraftInstance {
 
         if (enabled) {
             Manager.EVENT_BUS.subscribe(this);
+            SoundUtility.playSound(SoundUtility.SoundType.MODULE_ENABLE);
             onEnable();
         } else {
             Manager.EVENT_BUS.unsubscribe(this);
             onDisable();
+            SoundUtility.playSound(SoundUtility.SoundType.MODULE_DISABLE);
         }
 
         status(enabled);

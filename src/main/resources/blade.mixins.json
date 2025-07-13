@@ -11,6 +11,7 @@
     "accessor.PlayerPositionLookS2CPacketAccessor",
     "minecraft.client.MixinChatInputSuggestor",
     "minecraft.entity.MixinEntity",
+    "minecraft.entity.MixinFireWorkEntity",
     "minecraft.entity.MixinLivingEntity",
     "minecraft.gui.LoadingScreenMixin",
     "minecraft.gui.MixinGameMenuScreen",
