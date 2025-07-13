@@ -34,14 +34,14 @@ import static win.blade.common.utils.network.PacketUtility.sendPacket;
 @ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
-    private final ModeSetting aimMode = new ModeSetting(this, "Режим прицеливания", "Постоянный", "Во время удара");
+    private final ModeSetting aimMode = new ModeSetting(this, "Режим прицеливания", "Постоянный", "Во время удара", "Нету");
     private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
-    private final SliderSetting aimRange = new SliderSetting(this, "Дистанция прицеливания", 4.5f, 2.0f, 8.0f, 0.1f);
+    private final SliderSetting aimRange = new SliderSetting(this, "Дистанция прицеливания", 4.5f, 2.0f, 8.0f, 0.1f).setVisible(() -> !aimMode.is("Нету"));
     private final SliderSetting rotateTick = new SliderSetting(this, "Тики поворота", 5, 1, 10, 1.0f).setVisible(() -> aimMode.is("Во время удара"));
     private final ModeSetting pvpMode = new ModeSetting(this, "Режим PvP", "1.9", "1.8");
     private final SliderSetting cps = new SliderSetting(this, "Скорость атаки", 12, 8, 16, 0.5f).setVisible(() -> pvpMode.is("1.8"));
     private final ModeSetting criticalMode = new ModeSetting(this, "Критические удары", "Всегда", "Умные", "Нету");
-    private final ModeSetting pointMode = new ModeSetting(this, "Точка прицеливания", "Умные", "Центр", "Мульти");
+    private final ModeSetting pointMode = new ModeSetting(this, "Точка прицеливания", "Умные", "Центр", "Мульти").setVisible(() -> !aimMode.is("Нету"));
 
     private final MultiBooleanSetting targetTypes = new MultiBooleanSetting(this, "Типы целей",
             BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
@@ -54,11 +54,11 @@ public class AuraModule extends Module {
     );
 
     private final MultiBooleanSetting behaviorOptions = new MultiBooleanSetting(this, "Опции",
-            BooleanSetting.of("Корректировать движения", true),
+            BooleanSetting.of("Корректировать движения", true).setVisible(() -> !aimMode.is("Нету")),
             BooleanSetting.of("Сбрасывать спринт", true),
             BooleanSetting.of("Отжимать щит", true),
             BooleanSetting.of("Проверять еду", true),
-            BooleanSetting.of("Синхронизировать взгляд", true)
+            BooleanSetting.of("Синхронизировать взгляд", true).setVisible(() -> !aimMode.is("Нету"))
     );
 
     private Entity currentTarget;
@@ -126,6 +126,11 @@ public class AuraModule extends Module {
     }
 
     private void handleAimLogic() {
+        if (aimMode.is("Нету")) {
+            AimManager.INSTANCE.disable();
+            return;
+        }
+
         if (aimMode.is("Во время удара")) {
             if (aimTicks > 0) {
                 aimTicks--;
