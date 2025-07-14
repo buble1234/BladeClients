@@ -3,8 +3,6 @@ package win.blade.core.module.storage.combat;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
 import win.blade.common.gui.impl.menu.settings.impl.*;
 import win.blade.common.utils.aim.manager.AimManager;
@@ -24,8 +22,6 @@ import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
-
-import static win.blade.common.utils.network.PacketUtility.sendPacket;
 
 /**
  * Автор: NoCap
@@ -63,6 +59,8 @@ public class AuraModule extends Module {
     );
 
     private final ModeSetting moveMode = new ModeSetting(this, "Режим коррекции движений", "Слабая", "Сильная", "Нету").setVisible(() -> !aimMode.is("Нету"));
+
+    private final ModeSetting sortMode = new ModeSetting(this, "Сортировка целей", "Дистанция", "Здоровье", "Броня", "Поле зрения", "Общая");
 
     private Entity currentTarget;
     private float aimTicks;
@@ -125,8 +123,8 @@ public class AuraModule extends Module {
             return;
         }
 
-        Entity potentialTarget = TargetUtility.findBestTarget(totalRange);
-        if (potentialTarget instanceof LivingEntity && TargetUtility.isValidTarget(potentialTarget)) {
+        LivingEntity potentialTarget = TargetUtility.findBestTarget(totalRange, sortMode.getValue());
+        if (potentialTarget != null && TargetUtility.isValidTarget(potentialTarget)) {
             currentTarget = potentialTarget;
         } else {
             currentTarget = null;

@@ -7,9 +7,11 @@ import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,12 +85,13 @@ public class TargetUtility implements MinecraftInstance {
         return false;
     }
 
-    public static List<Entity> getValidTargets(double maxTargetDistance) {
+    public static List<LivingEntity> getValidTargets(double maxTargetDistance) {
         if (mc.player == null || mc.world == null) return List.of();
         Box searchArea = mc.player.getBoundingBox().expand(maxTargetDistance);
         return mc.world.getOtherEntities(mc.player, searchArea)
                 .stream()
                 .filter(TargetUtility::isValidTarget)
+                .map(entity -> (LivingEntity) entity)
                 .collect(Collectors.toList());
     }
 
@@ -111,14 +114,41 @@ public class TargetUtility implements MinecraftInstance {
         setSelectedTypes(newSelectedTypes);
     }
 
-    public static Entity findBestTarget(float range) {
+    public static LivingEntity findBestTarget(float range, String sortMode) {
         if (mc.player == null || mc.world == null) return null;
 
-        List<Entity> potentialTargets = getValidTargets(range);
+        List<LivingEntity> potentialTargets = getValidTargets(range);
+
+        Comparator<LivingEntity> comparator;
+        switch (sortMode) {
+            case "Здоровье":
+                comparator = Comparator.comparing(LivingEntity::getHealth);
+                break;
+            case "Броня":
+                comparator = Comparator.comparing(LivingEntity::getArmor);
+                break;
+            case "Поле зрения":
+                comparator = Comparator.comparing(TargetUtility::getFOVAngle);
+                break;
+            case "Общая":
+                comparator = Comparator.comparing(LivingEntity::getHealth)
+                        .thenComparing(LivingEntity::getArmor)
+                        .thenComparing(e -> mc.player.distanceTo(e));
+                break;
+            default:
+                comparator = Comparator.comparing(e -> mc.player.distanceTo(e));
+        }
 
         return potentialTargets.stream()
                 .filter(entity -> entity.isAlive() && !entity.isSpectator())
-                .min((e1, e2) -> Double.compare(mc.player.distanceTo(e1), mc.player.distanceTo(e2)))
+                .min(comparator)
                 .orElse(null);
+    }
+
+    private static float getFOVAngle(LivingEntity e) {
+        double difX = e.getX() - mc.player.getX();
+        double difZ = e.getZ() - mc.player.getZ();
+        float yaw = (float) MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(difZ, difX)) - 90.0);
+        return Math.abs(yaw - MathHelper.wrapDegrees(mc.player.getYaw()));
     }
 }
