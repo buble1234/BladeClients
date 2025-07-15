@@ -58,6 +58,7 @@ public class Watermark extends Module implements MinecraftInstance, NonRegistrab
             wUIElement.onMouse(event);
         }
     }
+
     private class wUIElement extends InteractiveUIElement {
 
         private AbstractTexture arrowTexture = null;

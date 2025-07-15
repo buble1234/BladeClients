@@ -20,6 +20,7 @@ public class BoxUtils {
         double height = originalBox.getLengthY();
         double depth = originalBox.getLengthZ();
 
+
         double shrinkX = Math.max(width * (1.0 - SHRINK_FACTOR) / 2.0, MIN_SHRINK_FACTOR);
         double shrinkY = Math.max(height * (1.0 - SHRINK_FACTOR) / 2.0, MIN_SHRINK_FACTOR);
         double shrinkZ = Math.max(depth * (1.0 - SHRINK_FACTOR) / 2.0, MIN_SHRINK_FACTOR);

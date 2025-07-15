@@ -18,6 +18,6 @@ public class MenuModule extends Module {
     @Override
     public void onEnable() {
         mc.setScreen(new MenuScreen());
-        this.setEnabled(false);
+        this.toggleWithoutNotification(false);
     }
 }

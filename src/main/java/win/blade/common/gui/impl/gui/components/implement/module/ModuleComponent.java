@@ -123,7 +123,7 @@ public class ModuleComponent extends AbstractComponent {
                 .render( x + 9, y + 32);
 
         ((CheckComponent) checkComponent.position(x + width - 16, y + 28))
-                .setRunnable(module::toggle)
+                .setRunnable(() -> module.toggleWithoutNotification(!module.isEnabled()))
                 .setState(module.isEnabled())
                 .render(context, mouseX, mouseY, delta);
 
