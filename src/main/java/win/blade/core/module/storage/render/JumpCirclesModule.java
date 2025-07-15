@@ -32,7 +32,7 @@ import java.util.List;
         name = "JumpCircles",
         category = Category.RENDER
 )
-public class JumpCircles extends Module {
+public class JumpCirclesModule extends Module {
 
     private final SliderSetting lifetime = new SliderSetting(this, "Время жизни круга в мс.", 2000, 1000, 5000, 100);
 
