@@ -53,6 +53,7 @@ public class AuraModule extends Module {
             BooleanSetting.of("Корректировать движения", true).setVisible(() -> !aimMode.is("Нету")),
             BooleanSetting.of("Сбрасывать спринт", true),
             BooleanSetting.of("Отжимать щит", true),
+            BooleanSetting.of("Ломать щит", true),
             BooleanSetting.of("Проверять еду", true),
             BooleanSetting.of("Синхронизировать взгляд", true).setVisible(() -> !aimMode.is("Нету")),
             BooleanSetting.of("Фокусировать одну цель", false)
@@ -227,7 +228,8 @@ public class AuraModule extends Module {
                 behaviorOptions.get("Отжимать щит").getValue(),
                 behaviorOptions.get("Проверять еду").getValue(),
                 attackRange.getValue(),
-                behaviorOptions.get("Сбрасывать спринт").getValue()
+                behaviorOptions.get("Сбрасывать спринт").getValue(),
+                true
         );
     }
 

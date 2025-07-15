@@ -11,5 +11,6 @@ public record AttackSettings(
         boolean unpressShield,
         boolean checkEating,
         double attackRange,
-        boolean resetSprint
+        boolean resetSprint,
+        boolean shieldBreaker
 ) {}

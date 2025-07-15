@@ -17,8 +17,8 @@ public class NoRenderModule extends Module {
 
     private final MultiBooleanSetting options = new MultiBooleanSetting(this, "Удалять",
             BooleanSetting.of("Оверлей огня", true),
-            BooleanSetting.of("Линию босса", true),
-            BooleanSetting.of("Таблицу", true),
+            BooleanSetting.of("Линию босса", false),
+            BooleanSetting.of("Таблицу", false),
             BooleanSetting.of("Тряску камеры", true),
             BooleanSetting.of("Плохие эффекты", true),
             BooleanSetting.of("Погоду", true),

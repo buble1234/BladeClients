@@ -1,10 +1,6 @@
 package win.blade.common.utils.attack;
 
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
-import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
-import net.minecraft.util.Hand;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.player.PlayerUtility;
 
@@ -49,6 +45,11 @@ public class AttackManager implements MinecraftInstance {
         if (!canAttack(target, settings)) return;
 
         state.setIsAttacking(true);
+
+        if (settings.shieldBreaker() && ShieldBreaker.breakShield(target, settings)) {
+            state.setIsAttacking(false);
+            return;
+        }
 
         if (mc.player.isBlocking() && settings.unpressShield()) {
             mc.interactionManager.stopUsingItem(mc.player);
