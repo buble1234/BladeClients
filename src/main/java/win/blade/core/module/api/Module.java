@@ -72,8 +72,10 @@ public abstract class Module implements MinecraftInstance {
         enabled = value;
 
         if(value){
+            Manager.EVENT_BUS.subscribe(this);
             onEnable();
         } else {
+            Manager.EVENT_BUS.unsubscribe(this);
             onDisable();
         }
 

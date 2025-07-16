@@ -3,6 +3,7 @@ package win.blade.core;
 import win.blade.common.gui.impl.menu.MenuScreen;
 import win.blade.common.ui.NotificationManager;
 import win.blade.common.utils.config.ConfigManager;
+import win.blade.common.utils.friends.FriendManager;
 import win.blade.core.commands.CommandManager;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
@@ -43,6 +44,7 @@ public class Manager implements MinecraftInstance {
                 (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
 
         ConfigManager.instance = new ConfigManager();
+        FriendManager.instance = new FriendManager();
         commandManager = new CommandManager();
 
         EVENT_BUS.subscribe(this);

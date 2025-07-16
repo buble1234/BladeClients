@@ -4,6 +4,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
+import win.blade.common.utils.other.Result;
 
 import java.awt.*;
 
@@ -35,6 +36,15 @@ public class ChatUtility {
             mc.inGameHud.getChatHud().addMessage(message);
         } else {
             System.out.println(message.getString());
+        }
+    }
+
+
+    public static void printResult(Result<?, ?> result, String success){
+        if(result.isFailure()){
+            add(Text.literal(result.error().toString()).formatted(Formatting.RED));
+        } else {
+            add(Text.literal(success).formatted(Formatting.GREEN));
         }
     }
 
