@@ -66,10 +66,13 @@ public class AuraModule extends Module {
     private Entity currentTarget;
     private float aimTicks;
 
+    private long lastAttackTime = 0;
+
     @Override
     public void onEnable() {
         currentTarget = null;
         aimTicks = 0;
+        lastAttackTime = 0;
         super.onEnable();
     }
 
@@ -120,7 +123,7 @@ public class AuraModule extends Module {
         boolean focusTarget = behaviorOptions.get("Фокусировать одну цель").getValue();
         float totalRange = aimRange.getValue() + attackRange.getValue();
 
-        if (focusTarget && currentTarget != null && currentTarget.isAlive() && mc.player.distanceTo(currentTarget) <= totalRange && TargetUtility.isValidTarget(currentTarget)) {
+        if (focusTarget && currentTarget != null && currentTarget.isAlive() && mc.player.distanceTo(currentTarget) <= totalRange && TargetUtility.isValidTarget((currentTarget))) {
             return;
         }
 
@@ -140,8 +143,8 @@ public class AuraModule extends Module {
 
         if (aimMode.is("Во время удара")) {
             if (aimTicks > 0) {
-                aimTicks--;
                 aimAtTarget();
+                aimTicks--;
             } else {
                 AimManager.INSTANCE.disable();
             }
@@ -187,8 +190,13 @@ public class AuraModule extends Module {
             enableSilent = false;
         }
 
+        AdaptiveSmooth smooth = new AdaptiveSmooth(12f, 1.5f);
+        smooth.setLastAttackTime(lastAttackTime);
+        boolean canAttack = AttackManager.canAttack((LivingEntity) currentTarget, buildAttackSettings());
+        smooth.setCanAttack(canAttack);
+
         AimSettings aimSettings = new AimSettings(
-                new AdaptiveSmooth(12f),
+                smooth,
                 enableViewSync,
                 enableMovementCorrection,
                 enableSilent
@@ -205,6 +213,7 @@ public class AuraModule extends Module {
 
         AttackSettings settings = buildAttackSettings();
         AttackManager.attack(livingTarget, settings);
+        lastAttackTime = System.currentTimeMillis();
     }
 
     private boolean shouldCrit() {
