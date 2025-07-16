@@ -9,6 +9,7 @@ import net.minecraft.text.Text;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
@@ -450,5 +451,16 @@ public class ServerUtility {
 
     public static void addCustomServer(String address, ServerInfo serverInfo) {
         KNOWN_SERVERS.put(address.toLowerCase(), serverInfo);
+    }
+
+    public static String isName(String notSolved) {
+        AtomicReference<String> mb = new AtomicReference<>("FATAL ERROR");
+        Objects.requireNonNull(mc.getNetworkHandler()).getListedPlayerListEntries().forEach(player -> {
+            if (notSolved.contains(player.getProfile().getName())) {
+                mb.set(player.getProfile().getName());
+            }
+        });
+
+        return mb.get();
     }
 }
