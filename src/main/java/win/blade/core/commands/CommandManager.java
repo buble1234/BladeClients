@@ -7,6 +7,7 @@ import net.minecraft.command.CommandSource;
 import org.jetbrains.annotations.NotNull;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.system.LayoutUtil;
+import win.blade.core.commands.impl.BlockESPCommand;
 import win.blade.core.commands.impl.ConfigCommand;
 import win.blade.core.commands.impl.HelpCommand;
 
@@ -27,6 +28,7 @@ public class CommandManager implements MinecraftInstance {
     public CommandManager() {
         add(new HelpCommand());
         add(new ConfigCommand());
+        add(new BlockESPCommand());
     }
 
     private void add(@NotNull Command command) {
