@@ -2,6 +2,7 @@ package win.blade.core.module.storage.misc;
 
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
+import win.blade.common.utils.friends.FriendManager;
 import win.blade.common.utils.network.ServerUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.network.PacketEvent;
@@ -33,9 +34,9 @@ public class AutoTpacceptModule extends Module {
                 String playerName = ServerUtility.isName(message);
 
                 if (onlyFriends.getValue()) {
-                    //if (Manager.getFriendManager().isFriend(playerName)) {
+                    if (FriendManager.instance.hasFriend(playerName)) {
                         mc.getNetworkHandler().sendChatCommand("tpaccept " + playerName);
-                    //}
+                    }
                 } else {
                     mc.getNetworkHandler().sendChatCommand("tpaccept " + playerName);
                 }
