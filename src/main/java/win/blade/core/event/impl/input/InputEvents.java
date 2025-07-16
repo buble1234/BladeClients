@@ -1,6 +1,7 @@
 package win.blade.core.event.impl.input;
 
 
+import net.minecraft.screen.slot.SlotActionType;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.Event;
 
@@ -78,6 +79,35 @@ public abstract class InputEvents extends Event {
 
         public double getVertical() {
             return vertical;
+        }
+    }
+
+    public static class ClickSlot extends InputEvents {
+        private final SlotActionType slotActionType;
+        private final int slot, button, id;
+
+        public ClickSlot(SlotActionType slotActionType, int slot, int button, int id) {
+            super();
+            this.slot = slot;
+            this.button = button;
+            this.id = id;
+            this.slotActionType = slotActionType;
+        }
+
+        public SlotActionType getSlotActionType() {
+            return slotActionType;
+        }
+
+        public int getSlot() {
+            return slot;
+        }
+
+        public int getButton() {
+            return button;
+        }
+
+        public int getId() {
+            return id;
         }
     }
 }
