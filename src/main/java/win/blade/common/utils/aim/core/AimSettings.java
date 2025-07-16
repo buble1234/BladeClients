@@ -17,21 +17,21 @@ public record AimSettings(
         boolean enableSilentAim
 ) {
 
-    public static final AimSettings AIM = new AimSettings(
-            new AdaptiveSmooth(12f), false, false, false
-    );
-
-    public static final AimSettings FAIM = new AimSettings(
-            new AdaptiveSmooth(12f), false, true, true
-    );
-
-    public static final AimSettings SAIM = new AimSettings(
-            new AdaptiveSmooth(12f), false, true, true
-    );
-
-    public static final AimSettings VSYNC = new AimSettings(
-            new AdaptiveSmooth(12f), true, false, false
-    );
+//    public static final AimSettings AIM = new AimSettings(
+//            new AdaptiveSmooth(12f), false, false, false
+//    );
+//
+//    public static final AimSettings FAIM = new AimSettings(
+//            new AdaptiveSmooth(12f), false, true, true
+//    );
+//
+//    public static final AimSettings SAIM = new AimSettings(
+//            new AdaptiveSmooth(12f), false, true, true
+//    );
+//
+//    public static final AimSettings VSYNC = new AimSettings(
+//            new AdaptiveSmooth(12f), true, false, false
+//    );
 
     public TargetTask buildTask(ViewDirection direction, Vec3d position, Entity entity) {
         return new TargetTask(direction, position, entity, this);
