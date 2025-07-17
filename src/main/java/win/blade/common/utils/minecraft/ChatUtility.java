@@ -54,4 +54,12 @@ public class ChatUtility {
 
         return prefix.append(Text.literal(" ").formatted(Formatting.RESET)).append(arrow);
     }
+
+    public static void sendChatMessage(String message) {
+        mc.player.networkHandler.sendChatMessage(message);
+    }
+
+    public static void sendGlobalChatMessage(String message) {
+        mc.player.networkHandler.sendChatMessage("!" + message);
+    }
 }
