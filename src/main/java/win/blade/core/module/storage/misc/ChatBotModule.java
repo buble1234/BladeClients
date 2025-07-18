@@ -133,6 +133,7 @@ public class ChatBotModule extends Module {
         if (amount < 5000) {
             mc.player.networkHandler.sendChatCommand("m " + senderName + " Минимальная сумма для игры - " + 5000 + " монет.");
             mc.player.networkHandler.sendChatCommand("pay " + senderName + " " + amount);
+            mc.player.networkHandler.sendChatCommand("pay " + senderName + " " + amount);
             return;
         }
 
@@ -141,6 +142,7 @@ public class ChatBotModule extends Module {
         if (win) {
             int winnings = amount * 2;
             mc.player.networkHandler.sendChatCommand("m " + senderName + " Поздравляем! Вы выиграли!");
+            mc.player.networkHandler.sendChatCommand("pay " + senderName + " " + winnings);
             mc.player.networkHandler.sendChatCommand("pay " + senderName + " " + winnings);
         } else {
             mc.player.networkHandler.sendChatCommand("m " + senderName + " К сожалению, вы проиграли.");
@@ -161,8 +163,10 @@ public class ChatBotModule extends Module {
                     for (Map.Entry<String, Integer> entry : bids.entrySet()) {
                         if (!entry.getKey().equals(currentLeader)) {
                             mc.player.networkHandler.sendChatCommand("pay " + entry.getKey() + " " + entry.getValue());
+                            mc.player.networkHandler.sendChatCommand("pay " + entry.getKey() + " " + entry.getValue());
                         }
                     }
+                    mc.player.networkHandler.sendChatCommand("pay " + currentLeader + " " + (currentMin * 2));
                     mc.player.networkHandler.sendChatCommand("pay " + currentLeader + " " + (currentMin * 2));
                 } else {
                     String msg = "Игра завершена без ставок.";
@@ -230,7 +234,6 @@ public class ChatBotModule extends Module {
 
         if (!gameStarted) {
             mc.player.networkHandler.sendChatCommand("m " + senderName + " Это был фальшстарт! Платеж не засчитан.");
-            mc.player.networkHandler.sendChatCommand("pay " + senderName + " " + amount);
             return;
         }
 
