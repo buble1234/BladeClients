@@ -6,8 +6,6 @@ import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
 /**
@@ -15,92 +13,117 @@ import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
  * Дата создания: 18.06.2025
  */
 
-public record AdaptiveSmooth(float baseSpeed, float acceleration) implements SmoothTransition {
+public class AdaptiveSmooth implements SmoothTransition {
 
-    private static Animation animation = new Animation();
+    private float baseSpeed;
+    private float acceleration;
+    private Easing easing;
+    private float threshold;
+    private boolean useMouseSens;
+    private int spinInterval;
+    private boolean isAttacking;
 
-    private static float animTarget = 25f;
-
-    private static long lastAttackTime;
-
-    private static boolean canAttack;
-
-    private static float yawVel = 0f;
-
-    private static float pitchVel = 0f;
+    private long lastSpin = 0;
+    private boolean inSpin = false;
+    private Animation spinAnim = new Animation();
+    private float lastSpinValue = 0;
 
     public AdaptiveSmooth(float baseSpeed, float acceleration) {
         this.baseSpeed = baseSpeed;
         this.acceleration = acceleration;
-        animation.run(animTarget, 0.2, Easing.EASE_IN_BACK);
+        this.easing = Easing.LINEAR;
+        this.threshold = 0.1f;
+        this.useMouseSens = true;
+        this.spinInterval = 0;
     }
 
-    public void setLastAttackTime(long time) {
-        this.lastAttackTime = time;
+    public void setBaseSpeed(float baseSpeed) {
+        this.baseSpeed = baseSpeed;
     }
 
-    public void setCanAttack(boolean canAttack) {
-        this.canAttack = canAttack;
+    public void setAcceleration(float acceleration) {
+        this.acceleration = acceleration;
+    }
+
+    public void setEasing(Easing easing) {
+        this.easing = easing;
+    }
+
+    public void setThreshold(float threshold) {
+        this.threshold = threshold;
+    }
+
+    public void setUseMouseSens(boolean useMouseSens) {
+        this.useMouseSens = useMouseSens;
+    }
+
+    public void setSpinInterval(int spinInterval) {
+        this.spinInterval = spinInterval;
+    }
+
+    public void setIsAttacking(boolean isAttacking) {
+        this.isAttacking = isAttacking;
     }
 
     @Override
     public ViewDirection interpolate(ViewDirection current, ViewDirection target) {
-        if (animation.isFinished()) {
-            animTarget = -animTarget;
-            animation.run(animTarget, 0.2, Easing.EASE_IN_BACK);
+        long now = System.currentTimeMillis();
+
+        float yaw = current.yaw();
+        float pitch = current.pitch();
+        float targetYaw = target.yaw();
+        float targetPitch = target.pitch();
+
+        float deltaYaw = MathHelper.wrapDegrees(targetYaw - yaw);
+        float deltaPitch = targetPitch - pitch;
+
+        float absDeltaYaw = Math.abs(deltaYaw);
+        float absDeltaPitch = Math.abs(deltaPitch);
+
+        if (absDeltaYaw < threshold && absDeltaPitch < threshold) {
+            return new ViewDirection(MathHelper.wrapDegrees(targetYaw), MathHelper.clamp(targetPitch, -90.0f, 90.0f));
         }
 
-        animation.update();
-
-        float animValue = animation.get();
-
-        boolean shouldRotate = (System.currentTimeMillis() - lastAttackTime > 200 || mc.player.hurtTime > 0);
-        if (!shouldRotate) {
-            yawVel *= 0.8f;
-            pitchVel *= 0.8f;
-            float finalYaw = current.yaw() + yawVel;
-            float finalPitch = current.pitch() + pitchVel;
-            finalPitch = MathHelper.clamp(finalPitch, -90.0f, 90.0f);
-            return new ViewDirection(finalYaw, finalPitch);
+        float factor = baseSpeed / 100f;
+        if (isAttacking) {
+            factor *= acceleration;
         }
 
-        float targetYaw = MathHelper.wrapDegrees(target.yaw());
-        float targetPitch = MathHelper.clamp(target.pitch(), -90.0f, 90.0f);
+        if (useMouseSens) {
+            double sens = mc.options.getMouseSensitivity().getValue();
+            factor *= (float) (sens * 2);
+        }
 
-        float currentYaw = current.yaw();
-        float currentPitch = current.pitch();
+        float yawProgress = 1 - (absDeltaYaw / 180f);
+        float pitchProgress = 1 - (absDeltaPitch / 90f);
 
-        float deltaYaw = MathHelper.wrapDegrees(targetYaw - currentYaw);
-        float deltaPitch = targetPitch - currentPitch;
+        float yawFactor = factor * (float) easing.ease((double) yawProgress);
+        float pitchFactor = factor * (float) easing.ease((double) pitchProgress);
 
-        float maxYawSpeed = ThreadLocalRandom.current().nextFloat(baseSpeed * 8f, baseSpeed * 20f);
-        float maxPitchSpeed = ThreadLocalRandom.current().nextFloat(acceleration * 5f, acceleration * 7f);
+        float newYaw = yaw + deltaYaw * yawFactor;
+        float newPitch = pitch + deltaPitch * pitchFactor;
 
-        float factor = canAttack ? 0.1f : 1f;
+        // 360 maneuver
+        if (spinInterval > 0 && now - lastSpin >= spinInterval * 1000L) {
+            inSpin = true;
+            int spinDir = Math.random() < 0.5 ? 1 : -1;
+            spinAnim.run(360 * spinDir, 0.5, Easing.LINEAR);
+            spinAnim.set(0);
+            lastSpinValue = 0;
+            lastSpin = now;
+        }
 
-        float tempYawStep = MathHelper.clamp(deltaYaw, -maxYawSpeed, maxYawSpeed) + (animValue * factor);
-        float tempPitchStep = MathHelper.clamp(deltaPitch, -maxPitchSpeed, maxPitchSpeed);
+        if (inSpin) {
+            spinAnim.update();
+            float currentSpin = spinAnim.get();
+            float extra = currentSpin - lastSpinValue;
+            newYaw += extra;
+            lastSpinValue = currentSpin;
+            if (spinAnim.isFinished()) {
+                inSpin = false;
+            }
+        }
 
-        yawVel = yawVel * 0.7f + tempYawStep * 0.3f;
-        pitchVel = pitchVel * 0.7f + tempPitchStep * 0.3f;
-
-        yawVel = MathHelper.clamp(yawVel, -120.0f, 120.0f);
-        pitchVel = MathHelper.clamp(pitchVel, -30.0f, 30.0f);
-
-        yawVel += ThreadLocalRandom.current().nextFloat(-3.0f, 3.0f);
-        pitchVel += ThreadLocalRandom.current().nextFloat(-1.5f, 1.5f);
-
-        double sens = mc.options.getMouseSensitivity().getValue();
-        float clampedYawStep = (float) (yawVel * sens);
-        float clampedPitchStep = (float) (pitchVel * sens);
-
-        float finalYaw = currentYaw + clampedYawStep;
-        float finalPitch = currentPitch + clampedPitchStep;
-        finalPitch = MathHelper.clamp(finalPitch, -90.0f, 90.0f);
-
-        return new ViewDirection(
-                finalYaw,
-                finalPitch
-        );
+        return new ViewDirection(MathHelper.wrapDegrees(newYaw), MathHelper.clamp(newPitch, -90.0f, 90.0f));
     }
 }
