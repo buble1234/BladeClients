@@ -29,6 +29,7 @@ import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
+import win.blade.common.utils.math.animation.Easing;
 
 /**
  * Автор: NoCap
@@ -70,6 +71,10 @@ public class AuraModule extends Module {
     private final ModeSetting moveMode = new ModeSetting(this, "Режим коррекции движений", "Слабая", "Сильная", "Нету").setVisible(() -> !aimMode.is("Нету"));
 
     private final ModeSetting sortMode = new ModeSetting(this, "Сортировка целей", "Дистанция", "Здоровье", "Броня", "Поле зрения", "Общая");
+
+    private final ModeSetting easing = new ModeSetting(this, "Easing", "LINEAR", "SIGMOID", "EASE_IN_QUAD", "EASE_OUT_QUAD", "EASE_IN_OUT_QUAD", "EASE_IN_CUBIC", "EASE_OUT_CUBIC", "EASE_IN_OUT_CUBIC", "EASE_IN_QUART", "EASE_OUT_QUART", "EASE_IN_OUT_QUART", "EASE_IN_QUINT", "EASE_OUT_QUINT", "EASE_IN_OUT_QUINT", "EASE_IN_SINE", "EASE_OUT_SINE", "EASE_IN_OUT_SINE", "EASE_IN_EXPO", "EASE_OUT_EXPO", "EASE_IN_OUT_EXPO", "EASE_IN_CIRC", "EASE_OUT_CIRC", "EASE_IN_OUT_CIRC", "EASE_IN_BACK", "EASE_OUT_BACK", "EASE_IN_OUT_BACK", "EASE_IN_ELASTIC", "EASE_OUT_ELASTIC", "EASE_IN_OUT_ELASTIC", "EASE_OUT_DECELERATE").setVisible(() -> !aimMode.is("Нету"));
+
+    private final AdaptiveSmooth smooth = new AdaptiveSmooth(12f, 1.5f);
 
     private Entity currentTarget;
     private float aimTicks;
@@ -189,6 +194,14 @@ public class AuraModule extends Module {
 
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
 
+        smooth.setBaseSpeed(30);
+        smooth.setAcceleration(2);
+        smooth.setEasing(Easing.valueOf(easing.getValue()));
+        smooth.setThreshold(5);
+        smooth.setUseMouseSens(true);
+        smooth.setSpinInterval(0);
+        smooth.setIsAttacking(AttackManager.canAttack((LivingEntity) currentTarget, buildAttackSettings()));
+
         boolean enableViewSync = behaviorOptions.get("Синхронизировать взгляд").getValue();
         boolean enableMovementCorrection = false;
         boolean enableSilent = false;
@@ -205,7 +218,7 @@ public class AuraModule extends Module {
         }
 
         AimSettings aimSettings = new AimSettings(
-                new AdaptiveSmooth(12f),
+                smooth,
                 enableViewSync,
                 enableMovementCorrection,
                 enableSilent
