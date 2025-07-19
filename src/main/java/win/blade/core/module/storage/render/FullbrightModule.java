@@ -20,7 +20,7 @@ import win.blade.core.module.api.ModuleInfo;
         desc = "Делает мир ярким",
         category = Category.RENDER
 )
-public class Fullbright extends Module {
+public class FullbrightModule extends Module {
 
     private final ModeSetting mode = new ModeSetting(this,"Мод", "Яркость", "Зелье");
     private final SliderSetting brightness = new SliderSetting(this,"Яркость", 15.0f, 1.0f, 20.0f, 0.5f).setVisible(() -> mode.is("Яркость"));

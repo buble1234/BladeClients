@@ -31,22 +31,24 @@ public abstract class MixinChatInputSuggestor {
 
     @Inject(method = "refresh", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/StringReader;canRead()Z", remap = false), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
     public void refreshHook(CallbackInfo ci, String string, StringReader reader) {
-        String prefix = Manager.getCommandManager().getPrefix();
-        if (reader.canRead(prefix.length()) && reader.getString().startsWith(prefix, reader.getCursor())) {
-            reader.setCursor(reader.getCursor() + prefix.length());
+        if (!Manager.isPanic()) {
+            String prefix = Manager.getCommandManager().getPrefix();
+            if (reader.canRead(prefix.length()) && reader.getString().startsWith(prefix, reader.getCursor())) {
+                reader.setCursor(reader.getCursor() + prefix.length());
 
-            parse = Manager.getCommandManager().getActiveDispatcher().parse(reader, Manager.getCommandManager().getSource());
+                parse = Manager.getCommandManager().getActiveDispatcher().parse(reader, Manager.getCommandManager().getSource());
 
-            final int cursor = textField.getCursor();
+                final int cursor = textField.getCursor();
 
-            if (cursor >= 1 && (window == null || !completingSuggestions)) {
-                pendingSuggestions = Manager.getCommandManager().getActiveDispatcher().getCompletionSuggestions(parse, cursor);
-                pendingSuggestions.thenRun(() -> {
-                    if (pendingSuggestions.isDone()) showCommandSuggestions();
-                });
+                if (cursor >= 1 && (window == null || !completingSuggestions)) {
+                    pendingSuggestions = Manager.getCommandManager().getActiveDispatcher().getCompletionSuggestions(parse, cursor);
+                    pendingSuggestions.thenRun(() -> {
+                        if (pendingSuggestions.isDone()) showCommandSuggestions();
+                    });
+                }
+
+                ci.cancel();
             }
-
-            ci.cancel();
         }
     }
 }

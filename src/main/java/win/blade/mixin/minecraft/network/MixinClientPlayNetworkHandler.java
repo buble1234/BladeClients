@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import win.blade.common.gui.impl.screen.multiplayer.MultiplayerScreen;
 import win.blade.common.utils.system.LayoutUtil;
 import win.blade.core.Manager;
 
@@ -18,31 +17,32 @@ public class MixinClientPlayNetworkHandler {
 
     @Inject(method = "sendChatMessage", at = @At("HEAD"), cancellable = true)
     private void sendChatMessageHook(@NotNull String message, CallbackInfo ci) {
-        String prefix = Manager.getCommandManager().getPrefix();
-        if (message.startsWith(prefix)) {
-            ci.cancel();
+        if (!Manager.isPanic()) {
+            String prefix = Manager.getCommandManager().getPrefix();
+            if (message.startsWith(prefix)) {
+                ci.cancel();
 
-            String commandBody = message.substring(prefix.length());
-            if (commandBody.isEmpty()) {
-                return;
-            }
+                String commandBody = message.substring(prefix.length());
+                if (commandBody.isEmpty()) {
+                    return;
+                }
 
-            String commandName = commandBody.split(" ")[0];
+                String commandName = commandBody.split(" ")[0];
 
-            boolean ruCommand = LayoutUtil.isCyrillic(commandName);
-            boolean ruLayout = LayoutUtil.isRussianLayout();
+                boolean ruCommand = LayoutUtil.isCyrillic(commandName);
+                boolean ruLayout = LayoutUtil.isRussianLayout();
 
-            if (ruCommand == ruLayout) {
-                CommandDispatcher<CommandSource> dispatcher = ruLayout
-                        ? Manager.getCommandManager().getRussian()
-                        : Manager.getCommandManager().getEnglish();
+                if (ruCommand == ruLayout) {
+                    CommandDispatcher<CommandSource> dispatcher = ruLayout
+                            ? Manager.getCommandManager().getRussian()
+                            : Manager.getCommandManager().getEnglish();
 
-                try {
-                    dispatcher.execute(commandBody, Manager.getCommandManager().getSource());
-                } catch (CommandSyntaxException ignored) {
+                    try {
+                        dispatcher.execute(commandBody, Manager.getCommandManager().getSource());
+                    } catch (CommandSyntaxException ignored) {
+                    }
                 }
             }
         }
     }
-
 }

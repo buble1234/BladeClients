@@ -5,6 +5,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.screen.slot.SlotActionType;
 import win.blade.core.event.impl.input.InputEvents;
 import win.blade.core.event.impl.minecraft.OptionEvents;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
@@ -44,6 +45,10 @@ public class EventHolder {
 
     public static InputEvents.MouseScroll getMouseScrollEvent(double horizontal, double vertical) {
         return new InputEvents.MouseScroll(horizontal, vertical);
+    }
+
+    public static InputEvents.ClickSlot getClickSlotEvent(SlotActionType slotActionType, int slot, int button, int id) {
+        return new InputEvents.ClickSlot(slotActionType, slot, button, id);
     }
 
     public static PlayerActionEvents.Attack getAttackEvent(Entity entity, boolean pre) {

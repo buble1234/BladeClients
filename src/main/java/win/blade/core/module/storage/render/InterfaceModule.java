@@ -68,12 +68,12 @@ public class InterfaceModule extends Module {
         interfaceElements.forEach((name, module) -> {
             boolean shouldBeEnabled = elementsSettings.getValue(name);
             if (module.isEnabled() != shouldBeEnabled) {
-                module.setEnabled(shouldBeEnabled);
+                module.toggleWithoutNotification(shouldBeEnabled);
             }
         });
     }
 
     private void disableAllElements() {
-        interfaceElements.values().forEach(module -> module.setEnabled(false));
+        interfaceElements.values().forEach(module -> module.toggleWithoutNotification(false));
     }
 }

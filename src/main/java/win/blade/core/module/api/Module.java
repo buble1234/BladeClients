@@ -66,6 +66,23 @@ public abstract class Module implements MinecraftInstance {
         return this;
     }
 
+    public final Module toggleWithoutNotification(boolean value){
+        if(enabled == value) return this;
+
+        enabled = value;
+
+        if(value){
+            Manager.EVENT_BUS.subscribe(this);
+            onEnable();
+        } else {
+            Manager.EVENT_BUS.unsubscribe(this);
+            onDisable();
+        }
+
+//        status(value);
+        return this;
+    }
+
     public final Module setKeybind(int keybind) {
         this.keybind = keybind;
         return this;

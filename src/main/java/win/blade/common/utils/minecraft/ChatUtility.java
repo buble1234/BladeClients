@@ -4,6 +4,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
+import win.blade.common.utils.other.Result;
 
 import java.awt.*;
 
@@ -38,10 +39,27 @@ public class ChatUtility {
         }
     }
 
+
+    public static void printResult(Result<?, ?> result, String success){
+        if(result.isFailure()){
+            add(Text.literal(result.error().toString()).formatted(Formatting.RED));
+        } else {
+            add(Text.literal(success).formatted(Formatting.GREEN));
+        }
+    }
+
     public static @NotNull MutableText sendClientPrefix() {
         MutableText prefix = Text.literal("[Blade]").formatted(Formatting.WHITE);
         MutableText arrow = Text.literal("➜").formatted(Formatting.WHITE);
 
         return prefix.append(Text.literal(" ").formatted(Formatting.RESET)).append(arrow);
+    }
+
+    public static void sendChatMessage(String message) {
+        mc.player.networkHandler.sendChatMessage(message);
+    }
+
+    public static void sendGlobalChatMessage(String message) {
+        mc.player.networkHandler.sendChatMessage("!" + message);
     }
 }

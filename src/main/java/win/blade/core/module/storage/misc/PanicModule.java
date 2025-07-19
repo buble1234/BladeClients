@@ -9,7 +9,7 @@ import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(name = "Panic", category = Category.MISC)
-public class Panic extends Module {
+public class PanicModule extends Module {
     @Override
     protected void onEnable() {
         Blade.manager.setPanic(true);

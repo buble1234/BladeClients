@@ -33,6 +33,17 @@ public class MultiBooleanSetting extends Setting<Map<String, BooleanSetting>> {
         return settingsMap.values();
     }
 
+    public void setEnabled(String option, Boolean value){
+        var foundOption = settingsMap.get(option);
+
+        if(foundOption != null){
+            foundOption.set(value);
+            settingsMap.put(option, foundOption);
+        } else {
+            System.err.println("No such option!");
+        }
+    }
+
     @Override
     public MultiBooleanSetting setVisible(Supplier<Boolean> value) {
         return (MultiBooleanSetting) super.setVisible(value);

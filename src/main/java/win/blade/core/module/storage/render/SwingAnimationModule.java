@@ -1,6 +1,5 @@
 package win.blade.core.module.storage.render;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -22,7 +21,7 @@ import win.blade.core.module.api.ModuleInfo;
  * Дата создания: 07.07.2025
  */
 @ModuleInfo(name = "SwingAnimation", category = Category.RENDER)
-public class SwingAnimation extends Module {
+public class SwingAnimationModule extends Module {
 
     private final SliderSetting animationSpeed = new SliderSetting(this, "Скорость анимации", 1.0f, 0.5f, 2.0f, 0.1f);
 

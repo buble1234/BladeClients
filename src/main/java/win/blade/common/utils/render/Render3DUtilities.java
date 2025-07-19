@@ -20,10 +20,131 @@ import win.blade.common.utils.minecraft.MinecraftInstance;
 import java.awt.*;
 
 /**
- * Автор Ieo117
+ * Автор Ieo117 && NoCap
  * Дата создания: 26.06.2025, в 19:56:44
  */
-public class Render3DUtilities implements MinecraftInstance{
+public class Render3DUtilities implements MinecraftInstance {
+
+    public static void drawFilledOutlineBox(MatrixStack matrices, Box box, Color color, float lineWidth) {
+        drawFilledBox(matrices, box, color);
+        drawOutline(matrices, box, color, lineWidth);
+    }
+
+    public static void drawFilledBox(MatrixStack matrices, Box box, Color color) {
+        float r = color.getRed() / 255.0f;
+        float g = color.getGreen() / 255.0f;
+        float b = color.getBlue() / 255.0f;
+        float a = color.getAlpha() / 255.0f;
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+        RenderSystem.disableCull();
+        RenderSystem.disableDepthTest();
+
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+        addBoxVertices(bufferBuilder, matrix, box, r, g, b, a);
+
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+
+        RenderSystem.enableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.disableBlend();
+    }
+
+    public static void drawOutline(MatrixStack matrices, Box box, Color color, float lineWidth) {
+        float r = color.getRed() / 255.0f;
+        float g = color.getGreen() / 255.0f;
+        float b = color.getBlue() / 255.0f;
+        float a = color.getAlpha() / 255.0f;
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+        RenderSystem.lineWidth(lineWidth);
+        RenderSystem.disableCull();
+        RenderSystem.disableDepthTest();
+
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+        addOutlineVertices(bufferBuilder, matrix, box, r, g, b, a);
+
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+
+        RenderSystem.lineWidth(1.0F);
+        RenderSystem.enableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.disableBlend();
+    }
+
+    private static void addBoxVertices(BufferBuilder buffer, Matrix4f matrix, Box box, float r, float g, float b, float a) {
+        float minX = (float) box.minX;
+        float minY = (float) box.minY;
+        float minZ = (float) box.minZ;
+        float maxX = (float) box.maxX;
+        float maxY = (float) box.maxY;
+        float maxZ = (float) box.maxZ;
+
+        buffer.vertex(matrix, minX, minY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, minY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, minY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, minX, minY, maxZ).color(r, g, b, a);
+
+        buffer.vertex(matrix, minX, maxY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, minX, maxY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, maxY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, maxY, minZ).color(r, g, b, a);
+
+        buffer.vertex(matrix, minX, minY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, minX, maxY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, maxY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, minY, minZ).color(r, g, b, a);
+
+        buffer.vertex(matrix, minX, minY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, minY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, maxY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, minX, maxY, maxZ).color(r, g, b, a);
+
+        buffer.vertex(matrix, minX, minY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, minX, minY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, minX, maxY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, minX, maxY, minZ).color(r, g, b, a);
+
+        buffer.vertex(matrix, maxX, minY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, maxY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, maxY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, minY, maxZ).color(r, g, b, a);
+    }
+
+    private static void addOutlineVertices(BufferBuilder buffer, Matrix4f matrix, Box box, float r, float g, float b, float a) {
+        float minX = (float) box.minX;
+        float minY = (float) box.minY;
+        float minZ = (float) box.minZ;
+        float maxX = (float) box.maxX;
+        float maxY = (float) box.maxY;
+        float maxZ = (float) box.maxZ;
+
+        buffer.vertex(matrix, minX, minY, minZ).color(r, g, b, a); buffer.vertex(matrix, maxX, minY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, minY, minZ).color(r, g, b, a); buffer.vertex(matrix, maxX, minY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, minY, maxZ).color(r, g, b, a); buffer.vertex(matrix, minX, minY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, minX, minY, maxZ).color(r, g, b, a); buffer.vertex(matrix, minX, minY, minZ).color(r, g, b, a);
+
+        buffer.vertex(matrix, minX, maxY, minZ).color(r, g, b, a); buffer.vertex(matrix, maxX, maxY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, maxY, minZ).color(r, g, b, a); buffer.vertex(matrix, maxX, maxY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, maxY, maxZ).color(r, g, b, a); buffer.vertex(matrix, minX, maxY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, minX, maxY, maxZ).color(r, g, b, a); buffer.vertex(matrix, minX, maxY, minZ).color(r, g, b, a);
+
+        buffer.vertex(matrix, minX, minY, minZ).color(r, g, b, a); buffer.vertex(matrix, minX, maxY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, minY, minZ).color(r, g, b, a); buffer.vertex(matrix, maxX, maxY, minZ).color(r, g, b, a);
+        buffer.vertex(matrix, maxX, minY, maxZ).color(r, g, b, a); buffer.vertex(matrix, maxX, maxY, maxZ).color(r, g, b, a);
+        buffer.vertex(matrix, minX, minY, maxZ).color(r, g, b, a); buffer.vertex(matrix, minX, maxY, maxZ).color(r, g, b, a);
+    }
+
     public static void drawOutline(Box box, int color, float lineWidth){
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();

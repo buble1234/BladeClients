@@ -25,7 +25,7 @@ public class ModuleSetting extends Setting<Boolean> {
 
     @Override
     public ModuleSetting set(Boolean value) {
-        module.setEnabled(value);
+        module.toggleWithoutNotification(value);
         super.set(value);
         return this;
     }

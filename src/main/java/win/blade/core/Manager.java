@@ -2,6 +2,8 @@ package win.blade.core;
 
 import win.blade.common.gui.impl.menu.MenuScreen;
 import win.blade.common.ui.NotificationManager;
+import win.blade.common.utils.config.ConfigManager;
+import win.blade.common.utils.friends.FriendManager;
 import win.blade.core.commands.CommandManager;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
@@ -26,7 +28,7 @@ public class Manager implements MinecraftInstance {
     private static boolean panic;
     public static final ModuleManager moduleManager = new ModuleManager();
     public static final NotificationManager notificationManager = new NotificationManager();
-    public static final CommandManager commandManager = new CommandManager();
+    public static CommandManager commandManager;
 
     private static MenuScreen menuScreen;
 
@@ -40,6 +42,10 @@ public class Manager implements MinecraftInstance {
         setPanic(false);
         EVENT_BUS.registerLambdaFactory("win.blade",
                 (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
+
+        ConfigManager.instance = new ConfigManager();
+        FriendManager.instance = new FriendManager();
+        commandManager = new CommandManager();
 
         EVENT_BUS.subscribe(this);
         EVENT_BUS.subscribe(moduleManager);
