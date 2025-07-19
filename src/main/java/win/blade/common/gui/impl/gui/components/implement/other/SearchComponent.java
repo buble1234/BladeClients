@@ -39,14 +39,14 @@ public class SearchComponent extends AbstractComponent {
                 .getPositionMatrix();
 
         width = 108;
-        height = 15;
+        height = 13.5f;
 
         Builder.rectangle()
                 .size(new SizeState(width, height))
                 .color(new QuadColorState(new Color(28,26,37)))
-                .radius(new QuadRadiusState(6))
+                .radius(new QuadRadiusState(5))
                 .build()
-                .render(x -27, y);
+                .render(x -20, y+2);
 
         AbstractTexture searchTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/search.png"));
 
@@ -56,27 +56,27 @@ public class SearchComponent extends AbstractComponent {
                 .texture(0f, 0f, 1f, 1f, searchTexture)
                 .radius(new QuadRadiusState(0f))
                 .build()
-                .render(x + width - 40, y + 5);
+                .render(x + width - 32, y + 6);
 
         String displayText = text.equalsIgnoreCase("") && !isTyping ? "Search" : text;
 
         Builder.text()
                 .font(fontRegular)
                 .text(displayText)
-                .size(6)
+                .size(5.2f)
                 .color(new Color(0xFF878894))
                 .build()
-                .render( x -18, y + 3);
+                .render( x -14, y + 4.5f);
 
         if (isTyping) {
-            float cursorX = x -18 + fontRegular.getWidth(text.substring(0, cursorPosition), 6);
+            float cursorX = x -14 + fontRegular.getWidth(text.substring(0, cursorPosition), 5.2f);
 
             Builder.rectangle()
                     .size(new SizeState(0.5f, height - 8))
                     .color(new QuadColorState(Color.WHITE))
                     .radius(new QuadRadiusState(0f))
                     .build()
-                    .render(cursorX, y + 4);
+                    .render(cursorX, y + 6);
         }
     }
 

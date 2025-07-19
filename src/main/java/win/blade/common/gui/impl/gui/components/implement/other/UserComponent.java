@@ -23,7 +23,7 @@ import java.awt.Color;
 public class UserComponent extends AbstractComponent {
     private MenuScreen menuScreen;
 
-    private final MsdfFont fontRegular = FontType.sf_regular.get();
+    private final MsdfFont fontRegular = FontType.popins_regular.get();
 
     public UserComponent setMenuScreen(MenuScreen menuScreen) {
         this.menuScreen = menuScreen;
@@ -39,33 +39,33 @@ public class UserComponent extends AbstractComponent {
 
         Builder.rectangle()
                 .size(new SizeState(15, 15))
-                .color(new QuadColorState(Color.WHITE))
-                .radius(new QuadRadiusState(7))
+                .color(new QuadColorState(new Color(255,255,255,25)))
+                .radius(new QuadRadiusState(5))
                 .build()
-                .render(x + 6, y - 25);
+                .render(x + 6, y - 24);
 
         Builder.rectangle()
-                .size(new SizeState(6, 6))
-                .color(new QuadColorState(new Color(0xFF26c68c)))
-                .radius(new QuadRadiusState(3))
+                .size(new SizeState(5.5f, 5.5f))
+                .color(new QuadColorState(new Color(92,219,80)))
+                .radius(new QuadRadiusState(2))
                 .build()
-                .render(x + 15.5f, y - 15.5f);
+                .render(x + 15.5f, y - 14.5f);
 
         Builder.text()
                 .font(fontRegular)
-                .text("username")
+                .text("cutthroat")
                 .size(6)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 25, y - 21);
+                .render( x + 25, y - 24);
 
         Builder.text()
                 .font(fontRegular)
-                .text("09.05.2024")
+                .text("Developer")
                 .size(5)
-                .color(new Color(0xFF8187FF))
+                .color(new Color(140,136,154))
                 .build()
-                .render( x + 25, y - 14.5f);
+                .render( x + 25, y - 16.5f);
 
         AbstractTexture settingsTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/settings.png"));
 
@@ -77,15 +77,6 @@ public class UserComponent extends AbstractComponent {
                 .build()
                 .render(x + 72, y - 20);
 
-        AbstractTexture paletteTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/palette.png"));
-
-        Builder.texture()
-                .size(new SizeState(7, 7))
-                .color(new QuadColorState(new Color(0xFFafb0bc)))
-                .texture(0f, 0f, 1f, 1f, paletteTexture)
-                .radius(new QuadRadiusState(0f))
-                .build()
-                .render(x + 61, y - 20);
     }
 
     @Override

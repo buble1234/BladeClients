@@ -66,6 +66,7 @@ public class ModuleComponent extends AbstractComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        width =142;
         Matrix4f positionMatrix = context
                 .getMatrices()
                 .peek()
@@ -79,7 +80,7 @@ public class ModuleComponent extends AbstractComponent {
                 .build()
                 .render(x, y);
         Builder.rectangle()
-                .size(new SizeState(width, 18))
+                .size(new SizeState(width, 18.5f))
                 .color(new QuadColorState(new Color(23,19,39)))
                 .radius(new QuadRadiusState(6, 0, 0, 6))
                 .build()
@@ -99,12 +100,12 @@ public class ModuleComponent extends AbstractComponent {
 
 
         Builder.text()
-                .font(fontRegular)
+                .font(FontType.popins_medium.get())
                 .text(module.name())
                 .size(6)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 11, y + 6);
+                .render( x + 9.5f, y + 4.5f);
 
         Builder.text()
                 .font(fontRegular)
@@ -255,7 +256,7 @@ public class ModuleComponent extends AbstractComponent {
                 .size(5)
                 .color(new Color(102,60,255))
                 .build()
-                .render( x + width - 12 - stringWidth, y + 6);
+                .render( x + width - 12 - stringWidth, y + 4.5f);
     }
 
     private void spawnWindow(int mouseX, int mouseY) {

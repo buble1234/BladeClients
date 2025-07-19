@@ -118,7 +118,7 @@ public enum Keyboard implements MinecraftInstance {
     MOUSE_MIDDLE("СКМ", 2),
     MOUSE_4("MOUSE4", 3),
     MOUSE_5("MOUSE5", 4),
-    KEY_NONE("NONE", -1);
+    KEY_NONE("N/A", -1);
 
     private final String name;
     private final int key;

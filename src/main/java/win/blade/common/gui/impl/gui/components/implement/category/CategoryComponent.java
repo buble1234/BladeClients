@@ -8,7 +8,6 @@ import net.minecraft.util.math.MathHelper;
 import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.MenuScreen;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
-
 import win.blade.common.gui.impl.gui.components.implement.module.ModuleComponent;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
@@ -31,8 +30,7 @@ public class CategoryComponent extends AbstractComponent {
     private final Category category;
     private final MenuScreen menuScreen;
 
-    private final MsdfFont fontBold = FontType.sf_regular.get();
-
+    private final MsdfFont fontBold = FontType.popins_regular.get();
     public CategoryComponent(Category category, MenuScreen menuScreen) {
         this.category = category;
         this.menuScreen = menuScreen;
@@ -71,10 +69,10 @@ public class CategoryComponent extends AbstractComponent {
             ModuleComponent component = moduleComponents.get(i);
 
             if (shouldRenderComponent(component)) {
-                int componentHeight = component.getComponentHeight() + 9;
+                int componentHeight = (int) (component.getComponentHeight() + 6.5f);
 
-                component.x = menuScreen.x + 95 + (column * (columnWidth + 10));
-                component.y = (float) (menuScreen.y + 39 + offsets[column] - componentHeight + smoothedScroll);
+                component.x = menuScreen.x + 95 + (column * (columnWidth + 14));
+                component.y = (float) (menuScreen.y + 30 + offsets[column] - componentHeight + smoothedScroll);
                 component.width = columnWidth;
 
                 component.render(context, mouseX, mouseY, delta);
@@ -177,43 +175,44 @@ public class CategoryComponent extends AbstractComponent {
     }
 
     private void drawCategoryTab(DrawContext context, Matrix4f positionMatrix) {
-        AbstractTexture tabTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/tab.png"));
+        AbstractTexture tabTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/active.png"));
 
         if (menuScreen.category == this.category) {
             Builder.texture()
-                    .size(new SizeState(width, height))
+                    .size(new SizeState(132/2, 36/2))
                     .color(new QuadColorState(Color.WHITE))
                     .texture(0f, 0f, 1f, 1f, tabTexture)
-                    .radius(new QuadRadiusState(4))
+                    .radius(new QuadRadiusState(0f))
                     .build()
-                    .render(x, y);
+                    .render(x+2, y-4.5f );
+
+            Builder.border()
+                    .size(new SizeState(132/2,36/2))
+                    .color(new QuadColorState(new Color(255,255,255,15)))
+                    .radius(new QuadRadiusState(4))
+                    .outlineColor(new QuadColorState(255,255,255,0))
+                    .thickness(0.3f)
+                    .build()
+                    .render(x+2, y-4.5f);
         }
 
-        String textureName = "textures/"
-                + category.getName().toLowerCase()
-                + ".png";
 
-        AbstractTexture categoryTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", textureName));
 
-        Builder.texture()
-                .size(new SizeState(9, 9))
-                .color(new QuadColorState(Color.WHITE))
-                .texture(0f, 0f, 1f, 1f, categoryTexture)
-                .radius(new QuadRadiusState(0f))
+        Builder.text()
+                .font(FontType.icon.get())
+                .text(category.getIcon())
+                .size(7)
+                .color(new Color(102,60,255))
                 .build()
-                .render(x + 7, y + 4);
-
-        int selectColor = menuScreen.category == category
-                ? 0xFF8187FF
-                : 0xFFD4D6E1;
+                .render(x + 10, y );
 
         Builder.text()
                 .font(fontBold)
                 .text(category.getName())
                 .size(6)
-                .color(new Color(selectColor))
+                .color(new Color(-1))
                 .build()
-                .render( x + 22, y + 6.3f);
+                .render( x + 22, y );
     }
 
     private int[] calculateOffsets() {

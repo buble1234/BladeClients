@@ -40,7 +40,7 @@ public class BackgroundComponent extends AbstractComponent {
                 .size(new SizeState(width, height))
                 .color(new QuadColorState(Color.WHITE))
                 .texture(0f, 0f, 1f, 1f, back)
-                .radius(new QuadRadiusState(9))
+                .radius(new QuadRadiusState(12))
                 .build()
                 .render(x, y);
 
