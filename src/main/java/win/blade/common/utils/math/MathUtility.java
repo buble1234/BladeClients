@@ -2,8 +2,15 @@ package win.blade.common.utils.math;
 
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -47,5 +54,37 @@ public class MathUtility implements MinecraftInstance {
         matrixProj.mul(matrixModel).project(transformedCoordinates.x(), transformedCoordinates.y(), transformedCoordinates.z(), viewport, target);
 
         return new Vec3d(target.x / mc.getWindow().getScaleFactor(), (displayHeight - target.y) / mc.getWindow().getScaleFactor(), target.z);
+    }
+
+    public static boolean canRaytraceToTarget(Entity target, float maxDistance, boolean ignoreBlocks) {
+        if (target == null || mc.player == null) {
+            return false;
+        }
+
+        Vec3d eyePos = mc.player.getEyePos();
+        Vec3d targetCenter = target.getBoundingBox().getCenter();
+        Vec3d direction = targetCenter.subtract(eyePos).normalize();
+        Vec3d endPoint = eyePos.add(direction.multiply(maxDistance));
+
+        double blockHitDistanceSq = maxDistance * maxDistance;
+        BlockHitResult blockHitResult = null;
+
+        if (!ignoreBlocks) {
+            blockHitResult = mc.world.raycast(new RaycastContext(eyePos, endPoint, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, mc.player));
+            if (blockHitResult != null && blockHitResult.getType() == HitResult.Type.BLOCK) {
+                blockHitDistanceSq = eyePos.squaredDistanceTo(blockHitResult.getPos());
+            }
+        } else {
+        }
+
+        Box entitySearchBox = mc.player.getBoundingBox().stretch(direction.multiply(maxDistance)).expand(1.0, 1.0, 1.0);
+        EntityHitResult entityHitResult = ProjectileUtil.raycast(mc.player, eyePos, endPoint, entitySearchBox, e -> !e.isSpectator() && e.canHit() && e == target, maxDistance * maxDistance);
+
+        if (entityHitResult != null && entityHitResult.getEntity() == target) {
+            double entityHitDistanceSq = eyePos.squaredDistanceTo(entityHitResult.getPos());
+            return entityHitDistanceSq < blockHitDistanceSq;
+        }
+
+        return false;
     }
 }

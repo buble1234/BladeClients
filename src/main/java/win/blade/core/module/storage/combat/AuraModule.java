@@ -3,7 +3,13 @@ package win.blade.core.module.storage.combat;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 import win.blade.common.gui.impl.menu.settings.impl.*;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
@@ -16,6 +22,7 @@ import win.blade.common.utils.attack.AttackSettings;
 import win.blade.common.utils.attack.AttackManager;
 import win.blade.common.utils.attack.AttackMode;
 import win.blade.common.utils.attack.CriticalMode;
+import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.player.TargetUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
@@ -52,6 +59,7 @@ public class AuraModule extends Module {
     private final MultiBooleanSetting behaviorOptions = new MultiBooleanSetting(this, "Опции",
             BooleanSetting.of("Корректировать движения", true).setVisible(() -> !aimMode.is("Нету")),
             BooleanSetting.of("Сбрасывать спринт", true),
+            BooleanSetting.of("Бить сквозь блоки", false),
             BooleanSetting.of("Отжимать щит", true),
             BooleanSetting.of("Ломать щит", true),
             BooleanSetting.of("Проверять еду", true),
@@ -66,13 +74,10 @@ public class AuraModule extends Module {
     private Entity currentTarget;
     private float aimTicks;
 
-    private long lastAttackTime = 0;
-
     @Override
     public void onEnable() {
         currentTarget = null;
         aimTicks = 0;
-        lastAttackTime = 0;
         super.onEnable();
     }
 
@@ -112,10 +117,19 @@ public class AuraModule extends Module {
 
         handleAimLogic();
 
-        if (mc.crosshairTarget instanceof EntityHitResult result && result.getEntity() == currentTarget) {
-            if (currentTarget != null) {
-                performAttack();
+        boolean hitThroughBlocks = behaviorOptions.get("Бить сквозь блоки").getValue();
+        boolean attackConditionMet = false;
+
+        if (hitThroughBlocks) {
+            attackConditionMet = MathUtility.canRaytraceToTarget(currentTarget, attackRange.getValue(), true);
+        } else {
+            if (mc.crosshairTarget instanceof EntityHitResult result && result.getEntity() == currentTarget) {
+                attackConditionMet = true;
             }
+        }
+
+        if (attackConditionMet) {
+            performAttack();
         }
     }
 
@@ -123,7 +137,7 @@ public class AuraModule extends Module {
         boolean focusTarget = behaviorOptions.get("Фокусировать одну цель").getValue();
         float totalRange = aimRange.getValue() + attackRange.getValue();
 
-        if (focusTarget && currentTarget != null && currentTarget.isAlive() && mc.player.distanceTo(currentTarget) <= totalRange && TargetUtility.isValidTarget((currentTarget))) {
+        if (focusTarget && currentTarget != null && currentTarget.isAlive() && mc.player.distanceTo(currentTarget) <= totalRange && TargetUtility.isValidTarget(currentTarget)) {
             return;
         }
 
@@ -143,8 +157,8 @@ public class AuraModule extends Module {
 
         if (aimMode.is("Во время удара")) {
             if (aimTicks > 0) {
-                aimAtTarget();
                 aimTicks--;
+                aimAtTarget();
             } else {
                 AimManager.INSTANCE.disable();
             }
@@ -190,13 +204,8 @@ public class AuraModule extends Module {
             enableSilent = false;
         }
 
-        AdaptiveSmooth smooth = new AdaptiveSmooth(12f, 1.5f);
-        smooth.setLastAttackTime(lastAttackTime);
-        boolean canAttack = AttackManager.canAttack((LivingEntity) currentTarget, buildAttackSettings());
-        smooth.setCanAttack(canAttack);
-
         AimSettings aimSettings = new AimSettings(
-                smooth,
+                new AdaptiveSmooth(12f),
                 enableViewSync,
                 enableMovementCorrection,
                 enableSilent
@@ -213,7 +222,6 @@ public class AuraModule extends Module {
 
         AttackSettings settings = buildAttackSettings();
         AttackManager.attack(livingTarget, settings);
-        lastAttackTime = System.currentTimeMillis();
     }
 
     private boolean shouldCrit() {
