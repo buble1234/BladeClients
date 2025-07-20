@@ -90,7 +90,7 @@ public class AuraModule extends Module {
     private void clearTarget() {
         currentTarget = null;
         aimTicks = 0;
-        AimManager.INSTANCE.disable();
+        AimManager.INSTANCE.disableWithSmooth();
     }
 
     private void updateTargetTypes() {
@@ -111,7 +111,7 @@ public class AuraModule extends Module {
         updateCurrentTarget();
 
         if (currentTarget == null) {
-            AimManager.INSTANCE.disable();
+            AimManager.INSTANCE.disableWithSmooth();
             return;
         }
 
@@ -151,7 +151,7 @@ public class AuraModule extends Module {
 
     private void handleAimLogic() {
         if (aimMode.is("Нету")) {
-            AimManager.INSTANCE.disable();
+            AimManager.INSTANCE.disableWithSmooth();
             return;
         }
 
@@ -160,7 +160,7 @@ public class AuraModule extends Module {
                 aimTicks--;
                 aimAtTarget();
             } else {
-                AimManager.INSTANCE.disable();
+                AimManager.INSTANCE.disableWithSmooth();
             }
 
             if (currentTarget instanceof LivingEntity livingTarget) {

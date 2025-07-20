@@ -1,6 +1,8 @@
 package win.blade.common.utils.aim.manager;
 
+import win.blade.common.utils.aim.core.AimSettings;
 import win.blade.common.utils.aim.core.ViewDirection;
+import win.blade.common.utils.aim.mode.AdaptiveSmooth;
 
 import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
 
@@ -66,6 +68,17 @@ public class AimManager {
         previousDirection = null;
         serverDirection = null;
         tickCounter = 0;
+    }
+
+    public void disableWithSmooth() {
+        if (!isActive || activeTask == null) {
+            disable();
+            return;
+        }
+
+        ViewDirection direction = getPlayerDirection();
+        TargetTask disableTask = new TargetTask(direction, null, null, activeTask.settings());
+        execute(disableTask);
     }
 
     public void forceRotation(ViewDirection direction) {

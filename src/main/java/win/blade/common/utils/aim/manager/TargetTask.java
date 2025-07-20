@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import win.blade.common.utils.aim.core.AimSettings;
 import win.blade.common.utils.aim.core.ViewDirection;
+import win.blade.common.utils.aim.base.AimCalculator;
 
 /**
  * Автор: NoCap
@@ -21,6 +22,9 @@ public record TargetTask(
     }
 
     public boolean isCompleted(ViewDirection currentDirection) {
-        return false;
+        if (targetEntity != null || targetPosition != null) {
+            return false;
+        }
+        return AimCalculator.getAngleDifference(currentDirection, targetDirection) < 0.5;
     }
 }
