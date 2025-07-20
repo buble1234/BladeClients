@@ -159,17 +159,18 @@ public class Esp extends Module {
 
         for (ItemStack item : items) {
             if (item.isEmpty()) continue;
+
+            Builder.rectangle()
+                    .size(new SizeState(8, 8))
+                    .color(new QuadColorState(back))
+                    .build()
+                    .render(posX, posY);
+
             MatrixStack matrices = context.getMatrices();
             matrices.push();
 
             matrices.translate(posX, posY, 0);
             matrices.scale(0.5f, 0.5f, 0.5f);
-
-            Builder.rectangle()
-                    .size(new SizeState(16, 16))
-                    .color(new QuadColorState(back))
-                    .build()
-                    .render(0, 0);
 
             context.drawItem(item, 0, 0);
             context.drawStackOverlay(mc.textRenderer, item, 0, 0, null);
