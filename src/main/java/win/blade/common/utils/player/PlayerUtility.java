@@ -1,5 +1,6 @@
 package win.blade.common.utils.player;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
@@ -7,13 +8,12 @@ import net.minecraft.item.AxeItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
 import net.minecraft.item.TridentItem;
+import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.scoreboard.ScoreboardDisplaySlot;
+import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.util.Hand;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 
-/**
- * Автор: NoCap
- * Дата создания: 28.06.2025
- */
 public class PlayerUtility implements MinecraftInstance {
 
     public static boolean hasArmor(PlayerEntity player) {
@@ -54,13 +54,13 @@ public class PlayerUtility implements MinecraftInstance {
 
     public static boolean isFalling() {
         return !mc.player.isOnGround() &&
-             mc.player.fallDistance > 0 &&
-             mc.player.getVelocity().y < 0 &&
-             !mc.player.isClimbing() &&
-             !mc.player.isSubmergedInWater() &&
-             !mc.player.hasVehicle() &&
-             !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) &&
-             !mc.player.hasStatusEffect(StatusEffects.LEVITATION);
+                mc.player.fallDistance > 0 &&
+                mc.player.getVelocity().y < 0 &&
+                !mc.player.isClimbing() &&
+                !mc.player.isSubmergedInWater() &&
+                !mc.player.hasVehicle() &&
+                !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) &&
+                !mc.player.hasStatusEffect(StatusEffects.LEVITATION);
     }
 
     public static boolean hasMovementRestrictions() {
@@ -75,5 +75,26 @@ public class PlayerUtility implements MinecraftInstance {
 
     public static float getAttackCooldown() {
         return mc.player != null ? mc.player.getAttackCooldownProgress(0.5f) : 0.0f;
+    }
+
+    public static float[] getHealthFromScoreboard(PlayerEntity target) {
+        float hp = target.getHealth() + target.getAbsorptionAmount();
+        float maxHp = target.getMaxHealth();
+        if (isFuntime()) {
+            Scoreboard scoreboard = mc.world.getScoreboard();
+            ScoreboardObjective objective = scoreboard.getObjectiveForSlot(ScoreboardDisplaySlot.BELOW_NAME);
+            if (objective != null && objective.getDisplayName().getString().contains("Здоровья")) {
+                Object2IntMap<ScoreboardObjective> map = scoreboard.getScoreHolderObjectives(target);
+                if (map.containsKey(objective)) {
+                    hp = map.getInt(objective);
+                    maxHp = 20;
+                }
+            }
+        }
+        return new float[]{hp, maxHp};
+    }
+
+    public static boolean isFuntime() {
+        return mc.getCurrentServerEntry() != null && mc.getCurrentServerEntry().address.toLowerCase().contains("funtime");
     }
 }

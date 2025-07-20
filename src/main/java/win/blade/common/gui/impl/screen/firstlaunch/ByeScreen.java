@@ -9,7 +9,6 @@ import win.blade.common.gui.impl.screen.BaseScreen;
 import win.blade.common.utils.math.TimerUtil;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
-import win.blade.common.utils.other.TextAlign;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.msdf.FontType;
@@ -49,40 +48,40 @@ public class ByeScreen extends BaseScreen {
         }
 
         float currentAlpha = textAlpha.get();
+        if (currentAlpha < 0.01f) return;
 
         MsdfFont font = FontType.sf_regular.get();
         float fz = 32;
 
-        float textX = this.width / 2f;
-        float textY = (this.height / 2f) - (fz / 2f);
+        float iSize = 32;
+        float gap = 20f;
 
+        float textWidth = font.getWidth("Приятной игры, боец", fz);
+        float totalWidth = textWidth + gap + iSize;
+
+        float startX = (this.width - totalWidth) / 2f;
+        float textY = (this.height - fz) / 2f;
 
         Builder.text()
                 .font(font)
                 .text("Приятной игры, боец")
                 .size(fz)
                 .color(new Color(1f, 1f, 1f, currentAlpha))
-                .align(TextAlign.CENTER)
                 .thickness(0.05f)
                 .build()
-                .render(textX, textY);
+                .render(startX, textY);
 
-
-        float iSize = 32;
-
-        float mainTW = font.getWidth("Приятной игры, боец", fz);
-
-        float generalW = mainTW + 20 + iSize;
-        float mainTX = (this.width - generalW) / 2f;
 
         AbstractTexture iconTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/streng.png"));
+        float iconX = startX + textWidth + gap;
+        float iconY = textY + (fz / 2f) - (iSize / 2f) + 3;
 
         Builder.texture()
                 .size(new SizeState(iSize, iSize))
                 .texture(0.0f, 0.0f, 1.0f, 1.0f, iconTexture)
                 .smoothness(3.0f)
                 .build()
-                .render(mainTX + mainTW + 50, textY + (fz / 2f) - (iSize / 2f) + 3);
+                .render(iconX, iconY);
     }
 
     @Override

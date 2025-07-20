@@ -65,31 +65,34 @@ public class FinishScreen extends BaseScreen {
         float currentAlpha = alphaAnimation.get();
         if (currentAlpha < 0.01f) return;
 
-        MsdfFont font = FontType.sf_regular.get();
+
         float fz = 28;
+        float gap = 12;
 
-        float textX = this.width / 2f;
-        float textY = (this.height / 2f) - (fz / 2f);
+        float mainTextWidth = FontType.sf_regular.get().getWidth("Blade client", fz);
+        float iconTextWidth = FontType.icon2.get().getWidth("a", fz);
 
-        Builder.text()
-                .font(font)
-                .text("Blade client")
-                .size(fz)
-                .color(new Color(1f, 1f, 1f, currentAlpha))
-                .align(TextAlign.CENTER)
-                .thickness(0.05f)
-                .build()
-                .render(textX, textY);
+        float totalWidth = iconTextWidth + gap + mainTextWidth;
+        float startX = (this.width - totalWidth) / 2f;
+        float yPos = (this.height - fz) / 2f;
 
         Builder.text()
                 .font(FontType.icon2.get())
                 .text("a")
                 .size(fz)
                 .color(new Color(102, 60, 255, (int)(currentAlpha * 255)))
-                .align(TextAlign.CENTER)
                 .thickness(0.05f)
                 .build()
-                .render(textX - 140, textY);
+                .render(startX, yPos);
+
+        Builder.text()
+                .font(FontType.sf_regular.get())
+                .text("Blade client")
+                .size(fz)
+                .color(new Color(1f, 1f, 1f, currentAlpha))
+                .thickness(0.05f)
+                .build()
+                .render(startX + iconTextWidth + gap, yPos);
     }
 
     @Override
