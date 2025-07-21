@@ -94,12 +94,17 @@ public class FirstlaunchScreen extends BaseScreen {
 
         if (mAlpha.get() > 0.01f) {
             String mainTextStr = "Доброе утро, " + this.client.getSession().getUsername();
-            var fz = 32;
+            float fz = 32f;
 
             float mainTW = font.getWidth(mainTextStr, fz);
-            AbstractTexture iconTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/hello.png"));
-            var iSize = 32f;
-            float generalW = mainTW + 20 + iSize;
+
+            AbstractTexture iconTexture = MinecraftClient.getInstance()
+                    .getTextureManager()
+                    .getTexture(Identifier.of("blade", "textures/hello.png"));
+            float iSize = 32f;
+            float gap = 25f;
+
+            float generalW = mainTW + gap + iSize;
 
             float mainTX = (this.width - generalW) / 2f;
             float mainTY = (this.height / 2f) - (fz / 2f) + yOffset.get();
@@ -113,16 +118,19 @@ public class FirstlaunchScreen extends BaseScreen {
                     .build()
                     .render(mainTX, mainTY);
 
+            float iconX = mainTX + mainTW + gap;
+            float iconY = mainTY + (fz / 2f) - (iSize / 2f) + 2;
+
             Builder.texture()
                     .size(new SizeState(iSize, iSize))
                     .texture(0.0f, 0.0f, 1.0f, 1.0f, iconTexture)
                     .smoothness(3.0f)
                     .build()
-                    .render(mainTX + mainTW + 20, mainTY + (fz / 2f) - (iSize / 2f) + 2);
+                    .render(iconX, iconY);
 
             if (subAlpha.get() > 0.01f) {
                 float subTSize = 14f;
-                float subX = mainTX + mainTW / 2f;
+                float subX = this.width / 2f;
                 float subY = mainTY + fz + 8;
 
                 Builder.text()

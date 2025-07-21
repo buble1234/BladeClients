@@ -17,6 +17,7 @@ import org.joml.Vector4f;
 import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
 import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.utils.friends.FriendManager;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Collections;
 
-@ModuleInfo(name = "Nametags", category = Category.RENDER)
+@ModuleInfo(name = "Esp", category = Category.RENDER)
 public class Esp extends Module {
 
     private final MultiBooleanSetting checks = new MultiBooleanSetting(this, "Элементы",
@@ -44,6 +45,7 @@ public class Esp extends Module {
 
     private final SliderSetting fontSize = new SliderSetting(this, "Размер шрифта", 8.0f, 6.0f, 12.0f, 0.1f);
     private final BooleanSetting showArmor = new BooleanSetting(this, "Отображать броню", true);
+    private final BooleanSetting funTimeHP = new BooleanSetting(this, "Здоровье на FT", true);
 
     private final Color back = new Color(0, 0, 0, 128);
 
@@ -109,7 +111,7 @@ public class Esp extends Module {
 
     private Text createPlayerTagComponent(PlayerEntity player) {
         MutableText text = Text.literal(player.getNameForScoreboard());
-        float health = player.getHealth() + player.getAbsorptionAmount();
+        float health = funTimeHP.getValue() ? win.blade.common.utils.player.PlayerUtility.getHealthFromScoreboard(player)[0] : player.getHealth() + player.getAbsorptionAmount();
 
         Formatting healthColor = Formatting.RED;
         Formatting WHITE = Formatting.WHITE;
@@ -117,6 +119,10 @@ public class Esp extends Module {
         text.append(Text.literal(" [").formatted(WHITE))
                 .append(Text.literal(String.format("%.0f", health) + " HP").formatted(healthColor))
                 .append(Text.literal("]").formatted(WHITE));
+
+        if (FriendManager.instance.hasFriend(player.getNameForScoreboard())) {
+            text.append(Text.literal(" [F]").formatted(Formatting.GREEN));
+        }
 
         return text;
     }
@@ -153,17 +159,18 @@ public class Esp extends Module {
 
         for (ItemStack item : items) {
             if (item.isEmpty()) continue;
+
+            Builder.rectangle()
+                    .size(new SizeState(8, 8))
+                    .color(new QuadColorState(back))
+                    .build()
+                    .render(posX, posY);
+
             MatrixStack matrices = context.getMatrices();
             matrices.push();
 
             matrices.translate(posX, posY, 0);
             matrices.scale(0.5f, 0.5f, 0.5f);
-
-            Builder.rectangle()
-                    .size(new SizeState(16, 16))
-                    .color(new QuadColorState(back))
-                    .build()
-                    .render(0, 0);
 
             context.drawItem(item, 0, 0);
             context.drawStackOverlay(mc.textRenderer, item, 0, 0, null);

@@ -15,10 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Автор Ieo117
- * Дата создания: 16.07.2025, в 16:35:02
- */
 @SuppressWarnings("all")
 public class FriendManager {
     public static FriendManager instance;
@@ -28,6 +24,7 @@ public class FriendManager {
     public Gson gson;
 
     public FriendManager(){
+        instance = this;
         gson = new GsonBuilder().setPrettyPrinting().create();
         directory = Paths.get(MinecraftInstance.mc.runDirectory.getPath(), "blade", "friends");
         try {
