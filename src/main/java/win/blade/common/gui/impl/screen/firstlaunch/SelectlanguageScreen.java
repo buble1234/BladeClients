@@ -120,7 +120,7 @@ public class SelectlanguageScreen extends BaseScreen {
     @Override
     public void close() {
         if (selectedButton != null) {
-            this.client.setScreen(new ByeScreen());
+            this.client.setScreen(new ByeScreen(ru.isSelected));
         }
     }
 

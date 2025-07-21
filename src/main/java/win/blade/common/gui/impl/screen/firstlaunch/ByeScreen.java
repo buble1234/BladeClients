@@ -20,9 +20,15 @@ public class ByeScreen extends BaseScreen {
     private final Animation textAlpha = new Animation();
     private final TimerUtil timer = new TimerUtil();
     private boolean animationStarted = false;
+    public boolean russian = true;
 
     public ByeScreen() {
         super(Text.of(""));
+    }
+
+    public ByeScreen(boolean isRussian){
+        this();
+        russian = isRussian;
     }
 
     @Override
@@ -56,7 +62,10 @@ public class ByeScreen extends BaseScreen {
         float iSize = 32;
         float gap = 20f;
 
-        float textWidth = font.getWidth("Приятной игры, боец", fz);
+
+        String text = russian ? "Приятной игры, боец" : "Nice game, fighter";
+
+        float textWidth = font.getWidth(text, fz);
         float totalWidth = textWidth + gap + iSize;
 
         float startX = (this.width - totalWidth) / 2f;
@@ -64,7 +73,7 @@ public class ByeScreen extends BaseScreen {
 
         Builder.text()
                 .font(font)
-                .text("Приятной игры, боец")
+                .text(text)
                 .size(fz)
                 .color(new Color(1f, 1f, 1f, currentAlpha))
                 .thickness(0.05f)
