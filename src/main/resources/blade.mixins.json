@@ -19,7 +19,8 @@
     "minecraft.item.MixinItem",
     "minecraft.network.MixinClientConnection",
     "minecraft.network.MixinClientPlayNetworkHandler",
-    "minecraft.other.fluid.MixinFlowableFluid"
+    "minecraft.other.fluid.MixinFlowableFluid",
+    "minecraft.render.MixinEntityRenderer"
   ],
   "client": [
     "MixinMinecraftClient",
