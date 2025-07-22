@@ -102,7 +102,7 @@ public class AuraModule extends Module {
 
     @EventHandler
     public void onUpdate(UpdateEvents.PlayerUpdate event) {
-        if (mc.player == null || mc.world == null || !mc.player.isAlive() || mc.currentScreen != null) {
+        if (mc.player == null || mc.world == null || !mc.player.isAlive()) {
             clearTarget();
             return;
         }

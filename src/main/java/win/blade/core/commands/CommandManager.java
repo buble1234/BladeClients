@@ -7,10 +7,7 @@ import net.minecraft.command.CommandSource;
 import org.jetbrains.annotations.NotNull;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.system.LayoutUtil;
-import win.blade.core.commands.impl.BlockESPCommand;
-import win.blade.core.commands.impl.ConfigCommand;
-import win.blade.core.commands.impl.FriendCommand;
-import win.blade.core.commands.impl.HelpCommand;
+import win.blade.core.commands.impl.*;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -31,6 +28,8 @@ public class CommandManager implements MinecraftInstance {
         add(new ConfigCommand());
         add(new FriendCommand());
         add(new BlockESPCommand());
+        add(new ToggleCommand());
+        add(new BindCommand());
     }
 
     private void add(@NotNull Command command) {
