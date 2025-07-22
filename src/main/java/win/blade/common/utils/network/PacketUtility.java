@@ -3,6 +3,8 @@ package win.blade.common.utils.network;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.minecraft.client.network.PendingUpdateManager;
+import net.minecraft.client.network.SequencedPacketCreator;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.message.LastSeenMessageList;
@@ -56,6 +58,14 @@ public class PacketUtility {
             lastPacketTime.set(System.currentTimeMillis());
         } catch (Exception e) {
             System.err.println("Ошибка отправки пакета: " + e.getMessage());
+        }
+    }
+
+    public static void sendSequentialPacket(SequencedPacketCreator packetCreator) {
+        if (mc.getNetworkHandler() == null || mc.world == null) return;
+        try (PendingUpdateManager pendingUpdateManager = mc.world.getPendingUpdateManager().incrementSequence();) {
+            int i = pendingUpdateManager.getSequence();
+            mc.getNetworkHandler().sendPacket(packetCreator.predict(i));
         }
     }
 
