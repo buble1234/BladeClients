@@ -64,7 +64,7 @@ public class Esp extends Module {
     }
 
     @EventHandler
-    public void onRender2D(RenderEvents.Screen e) {
+    public void onRender2D(RenderEvents.Screen.PRE e) {
         if (mc.options.hudHidden || mc.world == null || mc.player == null) return;
 
         float tick = e.getPartialTicks();

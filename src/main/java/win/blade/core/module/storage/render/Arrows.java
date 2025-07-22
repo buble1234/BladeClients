@@ -50,7 +50,7 @@ public class Arrows extends Module {
     }
 
     @EventHandler
-    public void onRender2D(RenderEvents.Screen e) {
+    public void onRender2D(RenderEvents.Screen.PRE e) {
         if (mc.world == null || mc.player == null) {
             return;
         }

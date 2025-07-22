@@ -40,7 +40,7 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
     }
 
     @EventHandler
-    public void onRenderScreen(RenderEvents.Screen e) {
+    public void onRenderScreen(RenderEvents.Screen.POST e) {
         if (e == null || e.getDrawContext() == null || mc.player == null) {
             return;
         }

@@ -80,7 +80,7 @@ public class JumpCirclesModule extends Module {
     }
 
     @EventHandler
-    public void onRender3D(RenderEvents.World event) {
+    public void onRender3D(RenderEvents.Screen event) {
         if (circles.isEmpty() || mc.player == null) return;
 
         circles.forEach(Circle::update);

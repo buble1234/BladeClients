@@ -57,7 +57,7 @@ public class Manager implements MinecraftInstance {
 
 
     @EventHandler
-    public void onRender(RenderEvents.Screen e) {
+    public void onRender(RenderEvents.Screen.POST e) {
         notificationManager.render(e.getDrawContext());
     }
 

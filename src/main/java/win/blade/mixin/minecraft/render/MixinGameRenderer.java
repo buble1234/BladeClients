@@ -43,7 +43,7 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;draw()V", ordinal = 1, shift = At.Shift.AFTER))
     private void hookScreenRender(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci, @Local DrawContext drawContext) {
-        Manager.EVENT_BUS.post(EventHolder.getScreenRenderEvent(drawContext.getMatrices(), tickCounter.getTickDelta(false), drawContext));
+        Manager.EVENT_BUS.post(EventHolder.getPOSTScreenRenderEvent(drawContext.getMatrices(), tickCounter.getTickDelta(false), drawContext));
     }
 
     @Inject(method = "tiltViewWhenHurt", at = @At("HEAD"), cancellable = true)
