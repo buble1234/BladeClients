@@ -214,12 +214,14 @@ public class FireFly extends Module {
                 GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO
         );
         RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);
     }
 
     private void cleanupRender() {
         RenderSystem.depthMask(true);
         RenderSystem.enableCull();
+        RenderSystem.disableDepthTest();
         RenderSystem.defaultBlendFunc();
     }
 
