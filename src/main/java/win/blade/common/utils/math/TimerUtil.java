@@ -7,8 +7,20 @@ public class TimerUtil {
         reset();
     }
 
+    public static TimerUtil create() {
+        return new TimerUtil();
+    }
+
     public void updateLast() {
         last = System.currentTimeMillis();
+    }
+
+    public void resetTimer() {
+        lastMS = System.currentTimeMillis();
+    }
+
+    public boolean isReached(long time) {
+        return System.currentTimeMillis() - lastMS > time;
     }
 
     public boolean timeElapsed(long ms) {

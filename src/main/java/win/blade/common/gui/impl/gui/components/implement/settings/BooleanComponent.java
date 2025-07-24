@@ -13,7 +13,7 @@ import win.blade.common.utils.render.msdf.MsdfFont;
 
 import java.awt.Color;
 
-public class CheckboxComponent extends AbstractSettingComponent {
+public class BooleanComponent extends AbstractSettingComponent {
     private final CheckComponent checkComponent = new CheckComponent();
     private final SettingComponent settingComponent = new SettingComponent();
 
@@ -21,7 +21,7 @@ public class CheckboxComponent extends AbstractSettingComponent {
     
     private final MsdfFont fontRegular = FontType.sf_regular.get();
 
-    public CheckboxComponent(BooleanSetting setting) {
+    public BooleanComponent(BooleanSetting setting) {
         super(setting);
         this.setting = setting;
     }

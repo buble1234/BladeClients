@@ -1,11 +1,15 @@
 package win.blade.common.gui.impl.gui.components.implement.other;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
+import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
@@ -57,6 +61,8 @@ public class CheckComponent extends AbstractComponent {
                     .radius(new QuadRadiusState(0f))
                     .build()
                     .render(x -0.3 , y -0.5f);
+
+
         }
     }
 
@@ -67,4 +73,7 @@ public class CheckComponent extends AbstractComponent {
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
+
+
+
 }

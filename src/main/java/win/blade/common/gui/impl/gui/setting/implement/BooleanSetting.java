@@ -1,6 +1,7 @@
 package win.blade.common.gui.impl.gui.setting.implement;
 
 import org.lwjgl.glfw.GLFW;
+import win.blade.common.gui.impl.gui.setting.CheckBox;
 import win.blade.common.gui.impl.gui.setting.Setting;
 
 import java.util.function.Supplier;
@@ -44,5 +45,11 @@ public class BooleanSetting extends Setting {
     public BooleanSetting visible(Supplier<Boolean> visible) {
         setVisible(visible);
         return this;
+    }
+
+
+    @Override
+    public BooleanSetting addToBox(CheckBox box) {
+        return (BooleanSetting) super.addToBox(box);
     }
 }

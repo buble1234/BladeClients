@@ -32,6 +32,7 @@
     "minecraft.client.MixinClientPlayerEntity",
     "minecraft.client.MixinClientPlayerInteractionManager",
     "minecraft.entity.MixinPlayerEntity",
+    "minecraft.gui.MixinConfirmScreen",
     "minecraft.gui.MixinTitleScreen",
     "minecraft.gui.widgets.MixinPressableWidget",
     "minecraft.gui.widgets.MixinSliderWidget",

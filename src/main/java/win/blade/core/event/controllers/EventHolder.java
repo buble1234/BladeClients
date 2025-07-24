@@ -27,8 +27,13 @@ public class EventHolder {
     public static UpdateEvents.PlayerUpdate getPlayerUpdateEvent() {
         return new UpdateEvents.PlayerUpdate();
     }
-    public static RenderEvents getScreenRenderEvent(MatrixStack matrixStack, float partialTicks, DrawContext drawContext) {
-        return new RenderEvents.Screen(matrixStack, partialTicks, drawContext);
+
+    public static RenderEvents getPOSTScreenRenderEvent(MatrixStack matrixStack, float partialTicks, DrawContext drawContext) {
+        return new RenderEvents.Screen.POST(matrixStack, partialTicks, drawContext);
+    }
+
+    public static RenderEvents getPREScreenRenderEvent(MatrixStack matrixStack, float partialTicks, DrawContext drawContext) {
+        return new RenderEvents.Screen.PRE(matrixStack, partialTicks, drawContext);
     }
 
     public static RenderEvents getWorldRenderEvent(MatrixStack matrixStack, Camera camera, float partialTicks) {

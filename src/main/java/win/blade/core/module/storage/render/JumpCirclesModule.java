@@ -68,6 +68,10 @@ public class JumpCirclesModule extends Module {
     public void onRender3D(RenderEvents.World event) {
         if (circles.isEmpty()) return;
 
+    public void onRender3D(RenderEvents.Screen event) {
+        if (circles.isEmpty() || mc.player == null) return;
+
+
         circles.removeIf(this::finished);
 
         if (circles.isEmpty()) return;
