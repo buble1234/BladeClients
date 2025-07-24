@@ -7,6 +7,7 @@ import win.blade.common.utils.other.SoundUtility;
 import win.blade.core.Manager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +30,15 @@ public abstract class Module implements MinecraftInstance {
     public  int type;
     public void switchState() {}
 
-    public java.util.List<win.blade.common.gui.impl.gui.setting.Setting> settings() { return new java.util.ArrayList<>(); }
+    List<win.blade.common.gui.impl.gui.setting.Setting> settings2 =  new ArrayList<>();
+
+    public List<win.blade.common.gui.impl.gui.setting.Setting> settings() {
+        return settings2.stream().filter(win.blade.common.gui.impl.gui.setting.Setting::notInBox).toList();
+    }
+
+    public void addSettings(win.blade.common.gui.impl.gui.setting.Setting... settings){
+        settings2.addAll(Arrays.asList(settings));
+    }
 
     public List<Setting<?>> getSettings() {
         return settings;
