@@ -35,13 +35,10 @@ public class ChinaHat extends Module {
             return;
         }
 
-        GL11.glDisable(GL11.GL_LIGHTING);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
         RenderSystem.enableDepthTest();
         RenderSystem.disableCull();
-        RenderSystem.lineWidth(1F);
 
         matrixStack.push();
 
@@ -73,35 +70,15 @@ public class ChinaHat extends Module {
             fanConsumer.vertex(matrix, -MathHelper.sin(i * (float) (Math.PI * 2) / size) * width, 0, MathHelper.cos(i * (float) (Math.PI * 2) / size) * width).color(ColorUtility.applyAlpha(color, alpha));
         }
 
-        RenderLayer lineLayer = RenderLayer.of("chinahat_line",
-                VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.LINE_STRIP, 256, false, true,
-                RenderLayer.MultiPhaseParameters.builder()
-                        .program(RenderLayer.LINES_PROGRAM)
-                        .lineWidth(new RenderPhase.LineWidth(java.util.OptionalDouble.of(1.0)))
-                        .transparency(RenderLayer.TRANSLUCENT_TRANSPARENCY)
-                        .cull(RenderLayer.DISABLE_CULLING)
-                        .build(false));
-
-        VertexConsumer lineConsumer = vertexConsumerProvider.getBuffer(lineLayer);
-        for (int i = 0, size = 360; i <= size; i++) {
-            int color = ColorUtility.fade(i * multiplier);
-            lineConsumer.vertex(matrix, -MathHelper.sin(i * (float) (Math.PI * 2) / size) * width, 0, MathHelper.cos(i * (float) (Math.PI * 2) / size) * width).color(ColorUtility.applyAlpha(color, alpha));
-        }
-        int color0 = ColorUtility.fade(0);
-        lineConsumer.vertex(matrix, -MathHelper.sin(0 * (float) (Math.PI * 2) / 360) * width, 0, MathHelper.cos(0 * (float) (Math.PI * 2) / 360) * width).color(ColorUtility.applyAlpha(color0, alpha));
-
         if (vertexConsumerProvider instanceof VertexConsumerProvider.Immediate) {
             ((VertexConsumerProvider.Immediate) vertexConsumerProvider).draw(fanLayer);
-            ((VertexConsumerProvider.Immediate) vertexConsumerProvider).draw(lineLayer);
         }
 
         matrixStack.pop();
 
         RenderSystem.enableCull();
         RenderSystem.enableDepthTest();
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
         RenderSystem.disableBlend();
-        GL11.glEnable(GL11.GL_LIGHTING);
     }
 
 }
