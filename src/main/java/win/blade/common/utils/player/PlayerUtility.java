@@ -1,6 +1,8 @@
 package win.blade.common.utils.player;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.client.render.Frustum;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
@@ -12,7 +14,13 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardDisplaySlot;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import org.joml.Matrix4f;
 import win.blade.common.utils.minecraft.MinecraftInstance;
+import win.blade.mixin.accessor.WorldRendererAccessor;
+
+import javax.swing.*;
 
 public class PlayerUtility implements MinecraftInstance {
 
@@ -96,5 +104,29 @@ public class PlayerUtility implements MinecraftInstance {
 
     public static boolean isFuntime() {
         return mc.getCurrentServerEntry() != null && mc.getCurrentServerEntry().address.toLowerCase().contains("funtime");
+    }
+
+    public static boolean isInView(Box box) {
+        if (mc.worldRenderer == null) {
+            return false;
+        }
+
+        Frustum frustum = ((WorldRendererAccessor) mc.worldRenderer).getFrustum();
+
+        if (frustum == null) {
+            return false;
+        }
+
+        return frustum.isVisible(box);
+    }
+
+    public static boolean isCritical() {
+        if (mc.player == null) return false;
+        return mc.player.fallDistance > 0.0f &&
+                !mc.player.isOnGround() &&
+                !mc.player.isClimbing() &&
+                !mc.player.isSubmergedInWater() &&
+                !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) &&
+                !mc.player.hasVehicle();
     }
 }

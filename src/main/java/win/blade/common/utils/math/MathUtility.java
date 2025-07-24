@@ -87,4 +87,14 @@ public class MathUtility implements MinecraftInstance {
 
         return false;
     }
+
+    public static void lastMatrices(MatrixStack matrixStack, Matrix4f projectionMatrix) {
+        if (projectionMatrix != null) {
+            lastProjMat.set(projectionMatrix);
+        }
+        lastModMat.set(matrixStack.peek().getPositionMatrix());
+        if (projectionMatrix != null) {
+            lastWorldSpaceMatrix.set(projectionMatrix).mul(matrixStack.peek().getPositionMatrix());
+        }
+    }
 }

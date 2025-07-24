@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.AccessibilityOnboardingScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.option.GameOptions;
+import net.minecraft.client.world.ClientWorld;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,6 +17,9 @@ import win.blade.common.gui.impl.MainScreen;
 import win.blade.common.gui.impl.screen.firstlaunch.FirstlaunchScreen;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
+import win.blade.core.event.impl.render.WorldLoadEvent;
+
+import javax.annotation.Nullable;
 
 @Mixin(MinecraftClient.class)
 public class MixinMinecraftClient {
@@ -47,5 +51,10 @@ public class MixinMinecraftClient {
         if (!Manager.isPanic()) {
             cir.setReturnValue("Blade Client v1.0");
         }
+    }
+
+    @Inject(method = "setWorld", at = @At("HEAD"))
+    private void onSetWorld(@Nullable ClientWorld world, CallbackInfo ci) {
+        Manager.EVENT_BUS.post(new WorldLoadEvent());
     }
 }

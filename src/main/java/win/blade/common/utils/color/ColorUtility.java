@@ -21,6 +21,19 @@ public class ColorUtility {
     }
 
 
+    public static int fade(int speed, int index, int first, int second) {
+        int angle = (int) ((System.currentTimeMillis() / speed + index) % 360);
+        angle = angle >= 180 ? 360 - angle : angle;
+        return overCol(first, second, angle / 180f);
+    }
+
+    public static int fade(int index) {
+        int clientColor = pack(196, 24, 24, 255);
+        int darkColor = multDark(clientColor, 0.6f); // пример тёмного варианта, подкорректируй если нужно
+        return fade(5, index, clientColor, darkColor); // speed=5 как пример, в оригинале из Theme.getSpeed()
+    }
+
+
     public static int overCol(int color1, int color2, float factor) {
         float f = MathHelper.clamp(factor, 0.0f, 1.0f);
         return ColorHelper.getArgb(

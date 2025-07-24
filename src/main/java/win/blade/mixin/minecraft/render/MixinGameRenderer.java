@@ -2,9 +2,11 @@ package win.blade.mixin.minecraft.render;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import org.joml.Matrix4f;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -18,6 +20,7 @@ import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
 import win.blade.core.event.impl.render.RenderCancelEvents;
+import win.blade.core.event.impl.render.WorldChangeEvent;
 
 @Mixin(GameRenderer.class)
 public abstract class MixinGameRenderer implements MinecraftInstance {
@@ -54,4 +57,18 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
             ci.cancel();
         }
     }
+
+    @Shadow @Final private MinecraftClient client;
+
+    private ClientWorld lastWorld = null;
+
+    @Inject(method = "render", at = @At("HEAD"))
+    private void onFrameStart(CallbackInfo ci) {
+        if (this.client.world != this.lastWorld) {
+            this.lastWorld = this.client.world;
+
+            Manager.EVENT_BUS.post(new WorldChangeEvent());
+        }
+    }
+
 }
