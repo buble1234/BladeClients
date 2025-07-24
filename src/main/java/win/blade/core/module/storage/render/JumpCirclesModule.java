@@ -66,9 +66,6 @@ public class JumpCirclesModule extends Module {
 
     @EventHandler
     public void onRender3D(RenderEvents.World event) {
-        if (circles.isEmpty()) return;
-
-    public void onRender3D(RenderEvents.Screen event) {
         if (circles.isEmpty() || mc.player == null) return;
 
 
@@ -189,12 +186,12 @@ public class JumpCirclesModule extends Module {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
         RenderSystem.disableCull();
-        RenderSystem.disableDepthTest();
+        RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);
     }
 
     private void cleanupRender() {
-        RenderSystem.enableDepthTest();
+        RenderSystem.disableDepthTest();
         RenderSystem.depthMask(true);
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
