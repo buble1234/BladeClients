@@ -3,7 +3,6 @@ package win.blade.core.module.storage.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.glfw.GLFW;
 
-import win.blade.common.gui.impl.menu.MenuScreen;
 import win.blade.common.gui.impl.screen.casino.CasinoScreen;
 
 import win.blade.common.gui.impl.gui.MenuScreen;
