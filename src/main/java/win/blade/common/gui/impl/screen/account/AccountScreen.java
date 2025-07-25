@@ -1,5 +1,6 @@
 package win.blade.common.gui.impl.screen.account;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -9,7 +10,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Uuids;
 import win.blade.common.gui.button.Button;
+import win.blade.common.gui.impl.gui.components.implement.window.implement.other.AccountEditWindow;
 import win.blade.common.gui.impl.screen.BaseScreen;
+import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftUtility;
 import win.blade.common.utils.render.builders.Builder;
@@ -33,10 +36,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountScreen extends BaseScreen {
     public final List<Account> accountList = new CopyOnWriteArrayList<>();
+    public static AccountScreen instance;
 
     private int windowX;
     private int windowY;
-//    public TextFieldWidget input;
     public Account selected;
 
     public AccountScreen() {
@@ -48,7 +51,9 @@ public class AccountScreen extends BaseScreen {
         }
 
         selected = new Account(mc.getSession().getUsername(), System.currentTimeMillis());
+        instance = this;
     }
+
 
 
     @Override
@@ -86,18 +91,22 @@ public class AccountScreen extends BaseScreen {
     public void close() {
         super.close();
 
+        windowManager.getWindows().clear();
         AccountSaver.save(accountList);
     }
 
     @Override
     protected void renderContent(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+
         Color left = new Color(23, 20, 38, 255);
         Color base = new Color(20, 18, 27, 255);
         Color right = new Color(17, 15, 23, 255);
 
+        var state = new QuadColorState(left, base, right, base);
+
         Builder.rectangle()
                 .size(new SizeState(306, 288))
-                .color(new QuadColorState(left, base, right, base))
+                .color(state)
                 .radius(new QuadRadiusState(10))
                 .build()
                 .render(windowX, windowY);
@@ -111,10 +120,24 @@ public class AccountScreen extends BaseScreen {
                 .render(windowX + 25, windowY + 17);
 
 
-
         int entryH = 50;
         int gap = 5;
         int startY = windowY + 40;
+
+
+        int scissorX = windowX + 15;
+        int scissorY = windowY + 40;
+        int scissorWidth = scissorX + 276;
+        int scissorHeight = scissorY + (5 * (entryH + gap));
+
+        double scale = mc.getWindow().getScaleFactor();
+
+        RenderSystem.enableScissor(
+                (int) (scissorX * scale),
+                (int) (scissorY * scale),
+                (int) (scissorWidth * scale),
+                (int) (scissorHeight * scale)
+        );
 
         for (int i = 0; i < accountList.size(); i++) {
             int entryY = startY + (i * (entryH + gap));
@@ -146,14 +169,6 @@ public class AccountScreen extends BaseScreen {
                     .thickness(0.6f)
                     .build();
             border.render(windowX + 15, entryY);
-
-//            Builder.border()
-//                    .size(new SizeState(276, entryH))
-//                    .outlineColor(new QuadColorState(d))
-//                    .thickness(0.5f)
-//                    .radius(new QuadRadiusState(10))
-//                    .build()
-//                    .render(windowX + 15, entryY);
 
             AbstractTexture customTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/steve.png"));
             BuiltTexture customIcon = Builder.texture()
@@ -208,13 +223,26 @@ public class AccountScreen extends BaseScreen {
                     .build();
             trashing.render( windowX + 270, entryY + 15);
 
-
         }
+        RenderSystem.disableScissor();
 
+        var state2 = new QuadColorState(new Color(23, 20, 38, 0), base, right, new Color(20, 18, 27, 0));
+
+        Builder.rectangle()
+                .size(new SizeState(306, 288 - 125))
+                .color(state2)
+                .radius(new QuadRadiusState(10))
+                .build()
+                .render(windowX, windowY + 125);
+
+
+        windowManager.render(context, mouseX, mouseY, deltaTicks);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if(windowManager.mouseClicked(mouseX, mouseY, button)) return super.mouseClicked(mouseX, mouseY, button);
+
         int startY = windowY + 40;
         int entryH = 50;
         int gap = 5;
@@ -228,6 +256,8 @@ public class AccountScreen extends BaseScreen {
 
                 if(MathUtility.isHovered(mouseX, mouseY, windowX + 270, entryY + 15, 8.5f, 8.5f)){
                     accountList.remove(account);
+                } else if (MathUtility.isHovered(mouseX, mouseY, windowX + 260, entryY + 15.7f, 7, 7)) {
+                    openSettingWindow(account, windowX + 280, entryY + 15);
                 } else {
                     changeAccount(account);
                 }
@@ -239,6 +269,26 @@ public class AccountScreen extends BaseScreen {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if(windowManager.keyPressed(keyCode, scanCode, modifiers)) return true;
+
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        if(windowManager.charTyped(chr, modifiers)) return true;
+
+        return super.charTyped(chr, modifiers);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if(windowManager.mouseReleased(mouseX, mouseY, button)) return true;
+
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
 
     @SuppressWarnings("all")
     public void changeAccount(Account current) {
@@ -254,5 +304,33 @@ public class AccountScreen extends BaseScreen {
         }
 
         AccountSaver.save(accountList);
+    }
+
+    public void openSettingWindow(Account account, float x, float y){
+        var existingWindow = windowManager.findWindow("accountEditor");
+
+        if(existingWindow != null){
+            windowManager.delete(existingWindow);
+        }
+
+        var editWindow = new AccountEditWindow(account)
+                .position(x, y)
+                .size(125, 85)
+                .draggable(true);
+
+        windowManager.add(editWindow);
+    }
+
+    public void replace(Account account, String text){
+        var foundAccount = accountList.stream().filter(acc -> acc.getUsername().equals(account.getUsername())).findFirst().orElse(null);
+
+        if(foundAccount != null){
+            accountList.remove(foundAccount);
+
+            account.setUsername(text);
+
+            accountList.add(account);
+            changeAccount(account);
+        }
     }
 }

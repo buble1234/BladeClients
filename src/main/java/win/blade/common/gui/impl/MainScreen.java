@@ -23,7 +23,7 @@ public class MainScreen extends BaseScreen {
         super(Text.of(""));
     }
 
-    AccountScreen accountScreen = new AccountScreen();
+    public AccountScreen accountScreen = new AccountScreen();
     @Override
     protected void init() {
         super.init();
