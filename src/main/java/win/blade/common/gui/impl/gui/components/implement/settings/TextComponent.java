@@ -87,9 +87,10 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
                 .size(7)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 9, y + 6);
+                .render( x + 9, y + 6 + addJust());
 
-        Builder.text()
+        if(shouldRenderDescription)
+            Builder.text()
                 .font(fontRegular)
                 .text(wrapped)
                 .size(6)

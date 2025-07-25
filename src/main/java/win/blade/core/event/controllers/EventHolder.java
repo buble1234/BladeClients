@@ -44,6 +44,10 @@ public class EventHolder {
         return new InputEvents.Keyboard(key, action);
     }
 
+    public static InputEvents.KeyboardRelease getKeyboardReleaseEvent(int key) {
+        return new InputEvents.KeyboardRelease(key);
+    }
+
     public static InputEvents.Mouse getMouseEvent(int button, int action) {
         return new InputEvents.Mouse(button, action);
     }

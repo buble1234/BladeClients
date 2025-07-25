@@ -1,6 +1,6 @@
 package win.blade.core;
 
-import win.blade.common.gui.impl.menu.MenuScreen;
+import win.blade.common.gui.impl.gui.MenuScreen;
 import win.blade.common.ui.NotificationManager;
 import win.blade.common.utils.config.ConfigManager;
 import win.blade.common.utils.friends.FriendManager;
@@ -8,6 +8,7 @@ import win.blade.core.commands.CommandManager;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.controllers.IEventBus;
+import win.blade.core.event.impl.input.InputEvents;
 import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.BindMode;
@@ -20,17 +21,20 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class Manager implements MinecraftInstance {
 
     public static final IEventBus EVENT_BUS = new EventBus();
+    public static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
     private static boolean panic;
     public static final ModuleManager moduleManager = new ModuleManager();
     public static final NotificationManager notificationManager = new NotificationManager();
     public static CommandManager commandManager;
 
-    private static MenuScreen menuScreen;
+    public static MenuScreen menuScreen;
 
     private final Random random = new Random();
     private boolean isFreezing = false;
@@ -67,6 +71,23 @@ public class Manager implements MinecraftInstance {
         handleKeybinds();
     }
 
+//    @EventHandler
+//    public void keyPressedEvent(InputEvents.Keyboard e){
+//        for (Module module : moduleManager.all()){
+//            if(module.keybind() == -1) continue;
+//
+//            if(module.type == 1){
+//                if(e.getKey() == module.keybind() && e.getAction() == 1){
+//                    module.toggle();
+//                }
+//            } else if (module.type == 0){
+//                if(e.getKey() == module.keybind()){
+//                    module.scheduledToggle(e.getAction() == 1);
+//                }
+//            }
+//        }
+//    }
+
     private void handleKeybinds() {
         if (mc.currentScreen != null) {
             wasKeyPressed.clear();
@@ -81,13 +102,13 @@ public class Manager implements MinecraftInstance {
             boolean isPress = Keyboard.isKeyDown(module.keybind());
             boolean prevPress = wasKeyPressed.getOrDefault(module, false);
 
-            if (module.getBindMode() == BindMode.ПЕРЕКЛЮЧАТЬ) {
+            if (module.type == 1) {
                 if (isPress && !prevPress) {
                     module.toggle();
                 }
-            } else if (module.getBindMode() == BindMode.УДЕРЖИВАТЬ) {
+            } else if (module.type == 0) {
                 if (isPress != module.isEnabled()) {
-                    module.setEnabled(isPress);
+                    module.scheduledToggle(isPress);
                 }
             }
 

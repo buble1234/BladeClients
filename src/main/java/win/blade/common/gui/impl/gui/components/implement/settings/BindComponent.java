@@ -18,7 +18,7 @@ import java.awt.Color;
 public class BindComponent extends AbstractSettingComponent {
     private final BindSetting setting;
     private boolean binding;
-    
+
     private final MsdfFont fontRegular = FontType.sf_regular.get();
 
     public BindComponent(BindSetting setting) {
@@ -37,7 +37,7 @@ public class BindComponent extends AbstractSettingComponent {
         var stringWidth = fontRegular.getWidth(bindName, 6) - 2;
         var wrapped = StringUtil.wrap(setting.getDescription(), (int) (width - stringWidth - 28), 6);
 
-        height = (int) (18 + fontRegular.getFontHeight(fontRegular,6) * (wrapped.split("\n").length - 1));
+        height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
 
         Builder.rectangle()
                 .size(new SizeState(stringWidth + 10, 12))
@@ -56,7 +56,7 @@ public class BindComponent extends AbstractSettingComponent {
                 .size(6)
                 .color(new Color(bindingColor))
                 .build()
-                .render( x + width - 12 - stringWidth - 1, y + 9.5f);
+                .render(x + width - 12 - stringWidth - 1, y + 9.5f);
 
         Builder.text()
                 .font(fontRegular)
@@ -64,16 +64,18 @@ public class BindComponent extends AbstractSettingComponent {
                 .size(7)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 9, y + 6);
+                .render(x + 9, y + 6 + addJust());
 
-        Builder.text()
-                .font(fontRegular)
-                .text(wrapped)
-                .size(6)
-                .color(new Color(0xFF878894))
-                .build()
-                .render( x + 9, y + 15);
+        if (shouldRenderDescription)
+            Builder.text()
+                    .font(fontRegular)
+                    .text(wrapped)
+                    .size(6)
+                    .color(new Color(0xFF878894))
+                    .build()
+                    .render(x + 9, y + 15);
     }
+
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {

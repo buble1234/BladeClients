@@ -1,8 +1,10 @@
 package win.blade.common.gui.impl.gui.components.implement.category;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.texture.AbstractTexture;
+import net.minecraft.client.util.Window;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Matrix4f;
@@ -20,7 +22,7 @@ import win.blade.core.Manager;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +45,7 @@ public class CategoryComponent extends AbstractComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+//        RenderSystem.enableScissor((int) x, (int) y, (int) (x + width), (int) (y + height));
         Matrix4f positionMatrix = context
                 .getMatrices()
                 .peek()
@@ -52,6 +55,11 @@ public class CategoryComponent extends AbstractComponent {
 
         if (menuScreen.category != this.category) {
             boolean searchTextEmpty = menuScreen.getSearchComponent().getText().isEmpty();
+
+            if(searchTextEmpty || (!searchTextEmpty && menuScreen.category != this.category)){
+//                RenderSystem.disableScissor();
+            }
+
             if (searchTextEmpty) {
                 return;
             }
@@ -65,11 +73,26 @@ public class CategoryComponent extends AbstractComponent {
         int column = 0;
         int maxScroll = 0;
 
+        int panelX = menuScreen.x + 95;
+        int panelY = menuScreen.y + 30;
+        int panelWidth = (columnWidth * 2) + 14;
+        int panelHeight = menuScreen.height - 40;
+
+        Window window = mc.getWindow();
+        double scale = window.getScaleFactor();
+
+        RenderSystem.enableScissor(
+                (int)(panelX * scale),
+                (int)(window.getFramebufferHeight() - (panelY + panelHeight) * scale),
+                (int)(panelWidth * scale),
+                (int)(panelHeight * scale)
+        );
+
         for (int i = moduleComponents.size() - 1; i >= 0; i--) {
             ModuleComponent component = moduleComponents.get(i);
 
             if (shouldRenderComponent(component)) {
-                int componentHeight = (int) (component.getComponentHeight() + 6.5f);
+                int componentHeight = (int) (component.getComponentHeight() + 6);
 
                 component.x = menuScreen.x + 95 + (column * (columnWidth + 14));
                 component.y = (float) (menuScreen.y + 30 + offsets[column] - componentHeight + smoothedScroll);
@@ -77,15 +100,17 @@ public class CategoryComponent extends AbstractComponent {
 
                 component.render(context, mouseX, mouseY, delta);
                 offsets[column] -= componentHeight;
-                maxScroll = Math.max(maxScroll, offsets[column]);
+                maxScroll = Math.max(maxScroll + 1, offsets[column]);
 
                 column = (column + 1) % 2;
             }
         }
+        RenderSystem.disableScissor();
 
-        int clamped = MathHelper.clamp(maxScroll - (menuScreen.height / 2 - 50), 0, maxScroll);
+        int clamped = MathHelper.clamp(maxScroll - (menuScreen.height / 2 - 70), 0, maxScroll);
         scroll = MathHelper.clamp(scroll, -clamped, 0);
         smoothedScroll = MathHelper.lerp(0.1F, smoothedScroll, scroll);
+
     }
 
     @Override

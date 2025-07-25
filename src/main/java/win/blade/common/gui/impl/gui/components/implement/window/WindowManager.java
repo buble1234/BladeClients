@@ -1,8 +1,17 @@
 package win.blade.common.gui.impl.gui.components.implement.window;
 
+import it.unimi.dsi.fastutil.doubles.DoubleIterable;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.texture.AbstractTexture;
+import net.minecraft.util.Identifier;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
+import win.blade.common.utils.render.builders.Builder;
+import win.blade.common.utils.render.builders.states.QuadColorState;
+import win.blade.common.utils.render.builders.states.QuadRadiusState;
+import win.blade.common.utils.render.builders.states.SizeState;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,5 +106,40 @@ public class WindowManager extends AbstractComponent {
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         windows.forEach(window -> window.mouseReleased(mouseX, mouseY, button));
         return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    public AbstractWindow findWindow(String windowName){
+        return windows.stream().filter(window -> window.windowName.equalsIgnoreCase(windowName)).findFirst().orElse(null);
+    }
+
+    public static void _renderBackground(float x, float y, float width, float height, float radius, boolean outline, QuadColorState outlineColor){
+        AbstractTexture back = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/backgroundp.png"));
+
+        QuadColorState color = new QuadColorState(
+                new Color(50, 39, 97, 255),
+                new Color(42, 35, 74, 255),
+                new Color(36, 32, 58, 255),
+                new Color(36, 32, 54, 255)
+        );
+
+        if(outline) {
+            Builder.border()
+                    .size(new SizeState(width + 2f, height + 2f))
+                    .color(color)
+                    .radius(new QuadRadiusState(radius))
+                    .outlineColor(color)
+                    .thickness(2)
+                    .build()
+                    .render(x - 1f, y - 1f);
+        }
+
+
+        Builder.texture()
+                .size(new SizeState(width, height))
+                .color(new QuadColorState(Color.WHITE))
+                .texture(0f, 0f, 1f, 1f, back)
+                .radius(new QuadRadiusState(8))
+                .build()
+                .render(x, y);
     }
 }

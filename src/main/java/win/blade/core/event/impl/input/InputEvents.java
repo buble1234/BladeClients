@@ -7,9 +7,6 @@ import win.blade.core.event.controllers.Event;
 
 public abstract class InputEvents extends Event {
 
-    private InputEvents() {
-    }
-
     public static class Keyboard extends InputEvents {
         private final int key;
         private final int action;
@@ -26,6 +23,18 @@ public abstract class InputEvents extends Event {
 
         public int getAction() {
             return action;
+        }
+    }
+
+    public static class KeyboardRelease extends InputEvents{
+        private final int key;
+
+        public KeyboardRelease(int key){
+            this.key = key;
+        }
+
+        public int getKey(){
+            return key;
         }
     }
 

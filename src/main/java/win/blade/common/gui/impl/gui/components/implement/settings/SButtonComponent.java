@@ -25,7 +25,7 @@ public class SButtonComponent extends AbstractSettingComponent {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         var wrapped = StringUtil.wrap(setting.getDescription(), 80, 6);
 
-        height = (int) (18 + fontRegular.getFontHeight(fontRegular,6) * (wrapped.split("\n").length - 1));
+        height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
 
         Builder.text()
                 .font(fontRegular)
@@ -33,15 +33,16 @@ public class SButtonComponent extends AbstractSettingComponent {
                 .size(7)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 9, y + 6);
+                .render(x + 9, y + 6 + addJust());
 
-        Builder.text()
-                .font(fontRegular)
-                .text(wrapped)
-                .size(6)
-                .color(new Color(0xFF878894))
-                .build()
-                .render( x + 9, y + 15);
+        if (shouldRenderDescription)
+            Builder.text()
+                    .font(fontRegular)
+                    .text(wrapped)
+                    .size(6)
+                    .color(new Color(0xFF878894))
+                    .build()
+                    .render(x + 9, y + 15);
 
         ((ButtonComponent) buttonComponent.setText("Click on me")
                 .setRunnable(setting.getRunnable())

@@ -1,5 +1,8 @@
 package win.blade.common.gui.impl.gui.setting;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class Setting {
@@ -7,6 +10,8 @@ public class Setting {
     private String description;
     private Supplier<Boolean> visible;
     private boolean inBox = false;
+
+    private List<Setting> attachments = new ArrayList<>();
 
     public Setting(String name) {
         this.name = name;
@@ -30,7 +35,7 @@ public class Setting {
     }
 
     public String getDescription() {
-        return description;
+        return description.isEmpty() ? "No description" : description;
     }
 
     public Supplier<Boolean> getVisible() {
@@ -41,11 +46,28 @@ public class Setting {
         return inBox;
     }
 
+
     public boolean notInBox(){
         return !isInBox();
+    }
+
+    public Setting withAttachments(Setting... settings){
+        if(settings.length == 0) return this;
+        attachments.addAll(Arrays.asList(settings));
+
+        return this;
+    }
+
+    public boolean hasAttachments(){
+        return !attachments.isEmpty();
+    }
+
+    public List<Setting> getAttachments(){
+        return attachments;
     }
 
     public void setVisible(Supplier<Boolean> visible) {
         this.visible = visible;
     }
+
 }

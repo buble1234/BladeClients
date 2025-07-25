@@ -1,16 +1,13 @@
 package win.blade.common.gui.impl.gui.components.implement.module;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ColorHelper;
 import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.components.implement.other.CheckComponent;
 import win.blade.common.gui.impl.gui.components.implement.other.SettingComponent;
 import win.blade.common.gui.impl.gui.components.implement.settings.AbstractSettingComponent;
 import win.blade.common.gui.impl.gui.components.implement.window.AbstractWindow;
+import win.blade.common.gui.impl.gui.components.implement.window.implement.module.BindWindow;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.module.ModuleBindWindow;
 import win.blade.common.gui.impl.gui.setting.SettingComponentAdder;
 import win.blade.common.utils.keyboard.Keyboard;
@@ -117,7 +114,7 @@ public class ModuleComponent extends AbstractComponent {
 
         Builder.text()
                 .font(fontRegular)
-                .text("Description")
+                .text(module.description())
                 .size(5)
                 .color(new Color(0xFF878894))
                 .build()
@@ -139,10 +136,10 @@ public class ModuleComponent extends AbstractComponent {
         for (int i = components.size() - 1; i >= 0; i--) {
             AbstractSettingComponent component = components.get(i);
 
-            var visible = component.getSetting()
-                    .getVisible();
+//            var visible = component.getSetting()
+//                    .getVisible();
 
-            if (visible != null && !visible.get()) {
+            if (component.isAvailable()) {
                 continue;
             }
 
@@ -152,7 +149,7 @@ public class ModuleComponent extends AbstractComponent {
 
             component.render(context, mouseX, mouseY, delta);
 
-            offset -= component.height;
+            offset -= component.height + 1;
         }
     }
 
@@ -161,6 +158,20 @@ public class ModuleComponent extends AbstractComponent {
 
         checkComponent.mouseClicked(mouseX, mouseY, button);
         settingComponent.mouseClicked(mouseX, mouseY, button);
+
+
+        for (int i = components.size() - 1; i >= 0; i--) {
+            AbstractSettingComponent component = components.get(i);
+            var visible = component.getSetting()
+                    .getVisible();
+            if (visible != null && !visible.get()) {
+                continue;
+            }
+
+            if(component.mouseClicked(mouseX, mouseY, button)){
+                return true;
+            }
+        }
 
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -260,22 +271,23 @@ public class ModuleComponent extends AbstractComponent {
     }
 
     private void spawnWindow(int mouseX, int mouseY) {
-        AbstractWindow existingWindow = null;
-
-        for (AbstractWindow window : windowManager.getWindows()) {
-            if (window instanceof ModuleBindWindow) {
-                existingWindow = window;
-                break;
-            }
-        }
+//        AbstractWindow existingWindow = null;
+//
+//        for (AbstractWindow window : windowManager.getWindows()) {
+//            if (window instanceof ModuleBindWindow) {
+//                existingWindow = window;
+//                break;
+//            }
+//        }
+        var existingWindow = windowManager.findWindow("bindWindow");
 
         if (existingWindow != null) {
             windowManager.delete(existingWindow);
         } else {
-            AbstractWindow moduleBindWindow = new ModuleBindWindow(module)
+            AbstractWindow moduleBindWindow = new BindWindow(module)
                     .position(mouseX + 5, mouseY + 5)
-                    .size(105, 55)
-                    .draggable(false);
+                    .size(105, 73)
+                    .draggable(true);
 
             windowManager.add(moduleBindWindow);
         }

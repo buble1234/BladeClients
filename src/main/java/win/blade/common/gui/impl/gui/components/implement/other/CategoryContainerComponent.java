@@ -1,5 +1,6 @@
 package win.blade.common.gui.impl.gui.components.implement.other;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -33,6 +34,7 @@ public class CategoryContainerComponent extends AbstractComponent implements Min
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         float offset = 0;
+
 
         for (CategoryComponent component : categoryComponents) {
             component.x = x + 6;
