@@ -62,7 +62,7 @@ public abstract class AbstractBindWindow extends AbstractWindow {
 
         Builder.text()
                 .font(fontRegular)
-                .text("Binding module")
+                .text("Binding")
                 .size(7)
                 .color(Color.WHITE)
                 .build()
