@@ -50,4 +50,9 @@ public class ValueSetting extends Setting {
         setVisible(visible);
         return this;
     }
+
+    @Override
+    public ValueSetting withAttachments(Setting... settings) {
+        return (ValueSetting) super.withAttachments(settings);
+    }
 }

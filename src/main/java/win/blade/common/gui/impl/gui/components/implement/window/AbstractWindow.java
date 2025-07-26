@@ -5,6 +5,7 @@ import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.utils.math.MathUtility;
 
 public abstract class AbstractWindow extends AbstractComponent {
+    public String windowName = "";
     public boolean dragging, draggable;
     private int dragX, dragY;
     private boolean closing = false;

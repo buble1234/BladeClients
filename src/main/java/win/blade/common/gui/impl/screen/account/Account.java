@@ -27,6 +27,10 @@ public class Account {
         return username;
     }
 
+    public void setUsername(String newName){
+        this.username = newName;
+    }
+
     public long getCreationDate() {
         return creationDate;
     }

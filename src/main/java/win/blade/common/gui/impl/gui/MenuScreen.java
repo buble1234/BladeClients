@@ -1,5 +1,6 @@
 package win.blade.common.gui.impl.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.Window;
@@ -9,6 +10,8 @@ import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.components.implement.other.*;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.module.InfoWindow;
+import win.blade.common.gui.impl.gui.components.implement.window.implement.settings.PopUpWindow;
+import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.module.api.Category;
@@ -47,6 +50,8 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                         categoryContainerComponent
                 )
         );
+
+
     }
 
     public SearchComponent getSearchComponent() {
@@ -87,6 +92,7 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                 .position(this.x, this.y + this.height);
 
         searchComponent.position(this.x + 300, this.y + 6);
+
         categoryContainerComponent.position(this.x, this.y);
 
         components.forEach(component -> component.render(context, mouseX, mouseY, delta));
@@ -157,6 +163,22 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                 }
             });
             super.close();
+        }
+    }
+
+    public void setNewPopUp(Setting setting, boolean copyLastPos){
+        var window = windowManager.findWindow("popUp");
+        PopUpWindow newWindow = new PopUpWindow(setting).position(mc.getWindow().getScaledWidth() / 2f, mc.getWindow().getScaledHeight() / 2f);
+
+        if(window == null){
+            windowManager.add(newWindow);
+        } else {
+            if(copyLastPos){
+                newWindow.position(window.x, window.y);
+            }
+
+            windowManager.delete(window);
+            windowManager.add(newWindow);
         }
     }
 }

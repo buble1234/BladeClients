@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public abstract class Module implements MinecraftInstance {
 
@@ -19,16 +21,14 @@ public abstract class Module implements MinecraftInstance {
     private boolean enabled = false;
     private int keybind;
     private BindMode bindMode;
+    public long holdDuration = 50;
 
     private List<Setting<?>> settings;
 
     public String getVisibleName() { return "Module"; }
 
-
     public Category getCategory() { return this.data.category(); }
-    public boolean isState() { return false; }
-    public  int type;
-    public void switchState() {}
+    public int type = 1;
 
     List<win.blade.common.gui.impl.gui.setting.Setting> settings2 =  new ArrayList<>();
 
@@ -88,8 +88,13 @@ public abstract class Module implements MinecraftInstance {
             onDisable();
         }
 
-//        status(value);
         return this;
+    }
+
+    public void scheduledToggle(boolean state){
+        Manager.executorService.schedule(() -> {
+            setEnabled(state);
+        }, holdDuration, TimeUnit.MILLISECONDS);
     }
 
     public final Module setKeybind(int keybind) {

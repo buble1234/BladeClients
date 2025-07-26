@@ -4,12 +4,17 @@ import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
 import net.minecraft.util.Hand;
 import org.lwjgl.glfw.GLFW;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
+import win.blade.common.gui.impl.gui.setting.implement.TextSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.common.gui.impl.menu.settings.impl.BindSetting;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
+import win.blade.core.module.api.NonRegistrable;
 
 /**
  * Автор: NoCap
@@ -20,14 +25,31 @@ import win.blade.core.module.api.ModuleInfo;
         category = Category.COMBAT,
         desc = "Кидает под себя заряд ветра"
 )
-public class WindHop extends Module {
+@SuppressWarnings("all")
+public class WindHop extends Module  {
 
     private final BindSetting bind = new BindSetting(this, "Key", GLFW.GLFW_KEY_V);
+
+    private final BooleanSetting bool = new BooleanSetting("CheckBox", "").setValue(true);
+
+    private final ValueSetting valueSetting2 =  new ValueSetting("Slider", "").setMax(100).setMin(10).setValue(20);
+
+    private final TextSetting textSetting = new TextSetting("Input", "").setText("Write here...");
+    private final TextSetting textSetting2 = new TextSetting("asdf", "").setText("Hello world ");
+
+    private final BooleanSetting boolean2 = new BooleanSetting("dsa", "").setValue(true).withAttachments(textSetting2);
+    ValueSetting valueSetting = new ValueSetting("Slider with attachments", "").setMax(10).setMin(0).setValue(2).withAttachments(bool);
+
 
     private int previousSlot = -1;
     private long lastActionTime;
     private boolean wasKeyPressed;
     private boolean shouldThrow;
+
+    public WindHop(){
+
+        addSettings(boolean2, valueSetting);
+    }
 
     @EventHandler
     public void onTick(UpdateEvents.PlayerUpdate event) {

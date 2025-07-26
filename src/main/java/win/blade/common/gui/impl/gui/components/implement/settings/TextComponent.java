@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import win.blade.common.gui.impl.gui.setting.implement.TextSetting;
+import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.other.StringUtil;
@@ -59,10 +60,10 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
 
         Builder.rectangle()
                 .size(new SizeState(rectWidth, rectHeight))
-                .color(new QuadColorState(new Color(0xFF161825)))
-                .radius(new QuadRadiusState(6))
+                .color(new QuadColorState(ColorUtility.fromHex("1C1A25")))
+                .radius(new QuadRadiusState(4))
                 .build()
-                .render(rectX, rectY);
+                .render(rectX, rectY + 1);
 
         int min = setting.getMin();
         int max = setting.getMax();
@@ -74,12 +75,12 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
         AbstractTexture checkTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/check.png"));
         
         Builder.texture()
-                .size(new SizeState(4, 4))
+                .size(new SizeState(10.5F, 10.5F))
                 .color(new QuadColorState(new Color(color)))
                 .texture(0f, 0f, 1f, 1f, checkTexture)
                 .radius(new QuadRadiusState(0f))
                 .build()
-                .render(rectX + rectWidth - 8, rectY + (rectHeight / 2) - 2);
+                .render(rectX + rectWidth - 12.5F, rectY + (rectHeight / 2) - 3.5F);
 
         Builder.text()
                 .font(fontRegular)
@@ -87,9 +88,10 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
                 .size(7)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 9, y + 6);
+                .render( x + 9, y + 6 + addJust());
 
-        Builder.text()
+        if(shouldRenderDescription)
+            Builder.text()
                 .font(fontRegular)
                 .text(wrapped)
                 .size(6)
@@ -108,11 +110,11 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
                 float selectionWidth = selectionXEnd - selectionXStart;
 
                 Builder.rectangle()
-                        .size(new SizeState(selectionWidth, 10.0f))
+                        .size(new SizeState(selectionWidth + 0.5F, 10.0f))
                         .color(new QuadColorState(new Color(0xFF5585E8)))
                         .radius(new QuadRadiusState(0))
                         .build()
-                        .render(selectionXStart, rectY + (rectHeight / 2) - 5.0f);
+                        .render(selectionXStart - 0.5F, rectY + (rectHeight / 2) - 4f);
             }
         }
 
@@ -122,7 +124,7 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
                 .size(6)
                 .color(new Color(typing ? -1 : 0xFF878894))
                 .build()
-                .render( rectX + 3 - xOffset, rectY + (rectHeight / 2) - 1.0f);
+                .render( rectX + 3 - xOffset, rectY + (rectHeight / 2) - 2.5f);
 
         if (!typing && text.isEmpty()) {
             Builder.text()
@@ -131,7 +133,7 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
                     .size(6)
                     .color(new Color(0xFF878894))
                     .build()
-                    .render( rectX + 3, rectY + (rectHeight / 2) - 1.0f);
+                    .render( rectX + 3, rectY + (rectHeight / 2) - 3.5f);
         }
 
         long currentTime = System.currentTimeMillis();
@@ -146,7 +148,7 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
                     .size(6)
                     .color(Color.WHITE)
                     .build()
-                    .render( rectX + 3 - xOffset + cursorX, rectY + (rectHeight / 2) - 1.0f);
+                    .render( rectX + 3 - xOffset + cursorX, rectY + (rectHeight / 2) - 2.5f);
         }
 
         if (dragging) {

@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 public class TextSetting extends Setting {
     private String text;
-    private int min, max;
+    private int min = 0, max = Integer.MAX_VALUE;
 
     public TextSetting(String name, String description) {
         super(name, description);

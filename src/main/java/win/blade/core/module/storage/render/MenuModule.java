@@ -1,8 +1,8 @@
 package win.blade.core.module.storage.render;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.glfw.GLFW;
 
-import win.blade.common.gui.impl.menu.MenuScreen;
 import win.blade.common.gui.impl.screen.casino.CasinoScreen;
 
 import win.blade.core.Manager;
@@ -20,7 +20,10 @@ public class MenuModule extends Module {
 
     @Override
     public void onEnable() {
-        mc.setScreen(new MenuScreen());
+        type = 1;
+        RenderSystem.recordRenderCall(() -> {
+            mc.setScreen(Manager.menuScreen = new MenuScreen());
+        });
         this.toggleWithoutNotification(false);
     }
 }

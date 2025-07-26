@@ -9,6 +9,7 @@ import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
+import win.blade.common.gui.impl.gui.trait.ResizableMovable;
 import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
@@ -31,6 +32,11 @@ public class CheckComponent extends AbstractComponent {
     public CheckComponent setRunnable(Runnable runnable) {
         this.runnable = runnable;
         return this;
+    }
+
+    @Override
+    public CheckComponent position(float x, float y) {
+        return (CheckComponent) super.position(x, y);
     }
 
     @Override

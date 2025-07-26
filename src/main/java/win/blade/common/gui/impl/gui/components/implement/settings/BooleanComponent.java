@@ -29,7 +29,7 @@ public class BooleanComponent extends AbstractSettingComponent {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         String wrapped = StringUtil.wrap(setting.getDescription(), 100, 6);
-        height = (int) (18 + fontRegular.getFontHeight(fontRegular,6) * (wrapped.split("\n").length - 1));
+        height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
 
         Builder.text()
                 .font(fontRegular)
@@ -37,15 +37,16 @@ public class BooleanComponent extends AbstractSettingComponent {
                 .size(7)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 9, y + 6);
+                .render(x + 9, y + 6 + addJust());
 
-        Builder.text()
-                .font(fontRegular)
-                .text(wrapped)
-                .size(6)
-                .color(new Color(0xFF878894))
-                .build()
-                .render( x + 9, y + 15);
+        if (shouldRenderDescription)
+            Builder.text()
+                    .font(fontRegular)
+                    .text(wrapped)
+                    .size(6)
+                    .color(new Color(0xFF878894))
+                    .build()
+                    .render(x + 9, y + 15);
 
         ((CheckComponent) checkComponent.position(x + width - 16, y + 7.5F))
                 .setRunnable(() -> setting.setValue(!setting.getValue()))

@@ -4,6 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
+import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.other.StringUtil;
 import win.blade.common.utils.render.builders.Builder;
@@ -35,24 +36,25 @@ public class ValueComponent extends AbstractSettingComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        super.render(context, mouseX, mouseY, delta);
         Matrix4f positionMatrix = context
                 .getMatrices()
                 .peek()
                 .getPositionMatrix();
 
         String wrapped = StringUtil.wrap(setting.getDescription(), 75, 6);
-        height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
+        height = (int) (20 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
 
         String value = String.valueOf(setting.getValue())
                 .replace(".0", "");
 
-        Builder.text()
-                .font(fontRegular)
-                .text(value)
-                .size(6)
-                .color(new Color(0xFF8187FF))
-                .build()
-                .render(x + width - 9 - fontRegular.getWidth(value, 6), y + 5);
+            Builder.text()
+                    .font(fontRegular)
+                    .text(value)
+                    .size(5.25f)
+                    .color(ColorUtility.fromHex("663CFF"))
+                    .build()
+                    .render(x + width - 9 - fontRegular.getWidth(value, 6), y + 8.5f);
 
         changeValue(
                 getDifference(mouseX)
@@ -64,9 +66,10 @@ public class ValueComponent extends AbstractSettingComponent {
                 .size(7)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render(x + 9, y + 6);
+                .render(x + 9, y + 6 + addJust());
 
-        Builder.text()
+        if(shouldRenderDescription)
+            Builder.text()
                 .font(fontRegular)
                 .text(wrapped)
                 .size(6)
@@ -78,6 +81,9 @@ public class ValueComponent extends AbstractSettingComponent {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         dragging = MathUtility.isHovered(mouseX, mouseY, x + width - SLIDER_WIDTH - 9, y + 13, SLIDER_WIDTH, 4) && button == 0;
+
+        if(dragging) return true;
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -93,16 +99,20 @@ public class ValueComponent extends AbstractSettingComponent {
 
         animation = MathHelper.lerp(0.9F, animation, percentValue);
 
+        attachmentX = x + width - SLIDER_WIDTH - 15;
+        attachmentY = y + 15;
+
+
         Builder.rectangle()
-                .size(new SizeState(SLIDER_WIDTH, 1))
-                .color(new QuadColorState(new Color(0x4D2E2E41, true))) // Цвет с альфа-каналом
+                .size(new SizeState(SLIDER_WIDTH, 2.5))
+                .color(new QuadColorState(new Color(0x4D2E2E41, true)))
                 .radius(new QuadRadiusState(0))
                 .build()
                 .render(x + width - SLIDER_WIDTH - 9, y + 15);
 
         Builder.rectangle()
-                .size(new SizeState((float) animation, 1))
-                .color(new QuadColorState(0xFF8187FF, 0xFF4D5199, 0xFF4D5199, 0xFF8187FF))
+                .size(new SizeState((float) animation, 2.5))
+                .color(new QuadColorState(ColorUtility.fromHex("663CFF")))
                 .radius(new QuadRadiusState(0))
                 .build()
                 .render(x + width - SLIDER_WIDTH - 9, y + 15);
@@ -111,17 +121,17 @@ public class ValueComponent extends AbstractSettingComponent {
 
         Builder.rectangle()
                 .size(new SizeState(6, 6))
-                .color(new QuadColorState(Color.BLACK))
+                .color(new QuadColorState(ColorUtility.fromHex("1C1A25")))
                 .radius(new QuadRadiusState(2))
                 .build()
-                .render(handleX - 3, y + 12.5f);
+                .render(handleX - 3, y + 13.25f);
 
         Builder.rectangle()
                 .size(new SizeState(4, 4))
-                .color(new QuadColorState(new Color(0xFF8187FF)))
+                .color(new QuadColorState(ColorUtility.fromHex("663CFF")))
                 .radius(new QuadRadiusState(1))
                 .build()
-                .render(handleX - 2, y + 13.5f);
+                .render(handleX - 2, y + 14.25f);
 
         return difference;
     }
