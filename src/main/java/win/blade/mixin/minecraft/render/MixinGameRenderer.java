@@ -15,10 +15,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
+import win.blade.core.event.impl.render.FovEvent;
 import win.blade.core.event.impl.render.RenderCancelEvents;
 import win.blade.core.event.impl.render.WorldChangeEvent;
 
@@ -71,4 +73,10 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
         }
     }
 
+    @Inject(method = "getFov", at = @At("RETURN"), cancellable = true)
+    private void onGetFov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Float> cir) {
+        FovEvent event = new FovEvent(cir.getReturnValue());
+        Manager.EVENT_BUS.post(event);
+        cir.setReturnValue(event.getFov());
+    }
 }
