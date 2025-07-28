@@ -11,6 +11,7 @@ import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.MenuScreen;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.components.implement.module.ModuleComponent;
+import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
@@ -75,7 +76,7 @@ public class CategoryComponent extends AbstractComponent {
 
         int panelX = menuScreen.x + 95;
         int panelY = menuScreen.y + 30;
-        int panelWidth = (columnWidth * 2) + 14;
+        int panelWidth = (columnWidth * 2) + 24;
         int panelHeight = menuScreen.height - 40;
 
         Window window = mc.getWindow();
@@ -203,41 +204,43 @@ public class CategoryComponent extends AbstractComponent {
         AbstractTexture tabTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/active.png"));
 
         if (menuScreen.category == this.category) {
-            Builder.texture()
-                    .size(new SizeState(132/2, 36/2))
-                    .color(new QuadColorState(Color.WHITE))
-                    .texture(0f, 0f, 1f, 1f, tabTexture)
-                    .radius(new QuadRadiusState(0f))
-                    .build()
-                    .render(x+2, y-4.5f );
 
-            Builder.border()
-                    .size(new SizeState(132/2,36/2))
-                    .color(new QuadColorState(new Color(255,255,255,15)))
-                    .radius(new QuadRadiusState(4))
-                    .outlineColor(new QuadColorState(255,255,255,0))
-                    .thickness(0.3f)
+            Color transparent = new Color(102, 60, 255, 0);
+            Color violet16 = new Color(102, 60, 255, 41);
+
+            QuadColorState gradient = new QuadColorState(
+                    violet16,
+                    transparent,
+                    transparent,
+                    violet16
+            );
+
+            Builder.rectangle()
+                    .size(new SizeState(66, 20))
+                    .color(gradient)
+                    .radius(new QuadRadiusState(7))
                     .build()
-                    .render(x+2, y-4.5f);
+                    .render(x + 3, y -5);
+
         }
 
 
 
-        Builder.text()
-                .font(FontType.icon.get())
-                .text(category.getIcon())
-                .size(7)
-                .color(new Color(102,60,255))
-                .build()
-                .render(x + 10, y );
+//        Builder.text()
+//                .font(FontType.icon.get())
+//                .text(category.getIcon())
+//                .size(9)
+//                .color(new Color(102,60,255))
+//                .build()
+//                .render(x + 12, y -0.5f );
 
         Builder.text()
                 .font(fontBold)
                 .text(category.getName())
-                .size(6)
-                .color(new Color(-1))
+                .size(5.5f)
+                .color(ColorUtility.fromHex("EEEEEE"))
                 .build()
-                .render( x + 22, y );
+                .render( x + 25.5f, y +0.5f );
     }
 
     private int[] calculateOffsets() {
