@@ -27,7 +27,7 @@ public enum AttackMode implements MinecraftInstance {
     MODERN {
         @Override
         public boolean canAttackTiming(AttackSettings settings, AttackState state) {
-            return mc.player.getAttackCooldownProgress(0.5f) >= 0.9f;
+            return mc.player.getAttackCooldownProgress(0.5f) >= 0.91f;
         }
 
         @Override
