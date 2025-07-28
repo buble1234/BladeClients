@@ -71,11 +71,11 @@ public class PopUpWindow extends AbstractWindow {
 
         Builder.text()
                 .size(7)
-                .font(FontType.sf_regular.get())
+                .font(FontType.popins_medium.get())
                 .text("Settings Popup")
                 .color(ColorUtility.pack(255, 255, 255, (int) (200)))
                 .build()
-                .render(x + 10, y + 7);
+                .render(x + 12, y + 6);
 
         float height = 33;
 

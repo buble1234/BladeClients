@@ -2,10 +2,12 @@ package win.blade.core.module.api;
 
 public enum Category {
     COMBAT("Combat", "O"),
-    MOVE("Movement", "I"),
+    MOVE("Move", "I"),
     PLAYER("Player", "J"),
     RENDER("Render", "L"),
-    MISC("Misc", "C");
+    MISC("Misc", "C"),
+    THEME("Theme", "a");
+
 
 
     private final String name;

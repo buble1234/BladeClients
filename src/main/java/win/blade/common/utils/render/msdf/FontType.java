@@ -16,4 +16,7 @@ public class FontType {
 
     public static final Supplier<MsdfFont> popins_medium = Suppliers.memoize(() -> MsdfFont.builder().atlas("popinsm").data("popinsm").build());
 
+
+    public static final Supplier<MsdfFont> involve_regular = Suppliers.memoize(() -> MsdfFont.builder().atlas("involver").data("involver").build());
+
 }

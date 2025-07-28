@@ -3,6 +3,7 @@ package win.blade.mixin.minecraft.entity;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -21,6 +22,7 @@ import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
 import win.blade.core.Manager;
 import win.blade.core.module.api.ModuleManager;
+import win.blade.core.module.storage.misc.SeeInvisiblesModule;
 import win.blade.core.module.storage.move.NoPushModule;
 import win.blade.core.module.storage.render.ShaderESP;
 
@@ -38,6 +40,21 @@ public abstract class MixinEntity implements MinecraftInstance {
         }
 
         return original;
+    }
+
+    @Inject(method = "isInvisibleTo", at = @At("HEAD"), cancellable = true)
+    private void onIsInvisibleTo(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
+        Entity self = (Entity) (Object) this;
+
+        if (self instanceof ArmorStandEntity) {
+            return;
+        }
+
+        SeeInvisiblesModule seeInvisibles = Manager.getModuleManagement().get(SeeInvisiblesModule.class);
+
+        if (seeInvisibles != null && seeInvisibles.isEnabled()) {
+            cir.setReturnValue(false);
+        }
     }
 
     @Inject(method = "getRotationVec(F)Lnet/minecraft/util/math/Vec3d;", at = @At("HEAD"), cancellable = true)

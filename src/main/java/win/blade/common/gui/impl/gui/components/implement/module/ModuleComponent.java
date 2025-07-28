@@ -10,6 +10,7 @@ import win.blade.common.gui.impl.gui.components.implement.window.AbstractWindow;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.module.BindWindow;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.module.ModuleBindWindow;
 import win.blade.common.gui.impl.gui.setting.SettingComponentAdder;
+import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.keyboard.Keyboard;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
@@ -99,22 +100,22 @@ public class ModuleComponent extends AbstractComponent {
         Builder.text()
                 .font(FontType.popins_medium.get())
                 .text(module.name())
-                .size(6)
+                .size(5.5f)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 9.5f, y + 4.5f);
+                .render( x + 9, y + 5);
 
         Builder.text()
                 .font(fontRegular)
-                .text("Enable")
-                .size(6)
+                .text("Checkbox")
+                .size(5.5f)
                 .color(new Color(0xFFD4D6E1))
                 .build()
                 .render( x + 9, y + 25);
 
         Builder.text()
                 .font(fontRegular)
-                .text(module.description())
+                .text("Description")
                 .size(5)
                 .color(new Color(0xFF878894))
                 .build()
@@ -244,18 +245,9 @@ public class ModuleComponent extends AbstractComponent {
         float stringWidth = fontRegular.getWidth(bindName, 5);
 
         Builder.rectangle()
-                .size(new SizeState(stringWidth + 8, 9))
+                .size(new SizeState(stringWidth + 8, 11.5f))
                 .color(new QuadColorState(new Color(28,26,37,255)))
-                .radius(new QuadRadiusState(4))
-                .build()
-                .render(x + width - stringWidth - 16, y + 2.5f);
-
-        Builder.border()
-                .size(new SizeState(stringWidth + 8, 12))
-                .color(new QuadColorState(new Color(255,255,255,15)))
-                .radius(new QuadRadiusState(4))
-                .outlineColor(new QuadColorState(255,255,255,0))
-                .thickness(0.3f)
+                .radius(new QuadRadiusState(4.5f))
                 .build()
                 .render(x + width - stringWidth - 16, y + 2.5f);
 
@@ -264,10 +256,10 @@ public class ModuleComponent extends AbstractComponent {
         Builder.text()
                 .font(fontRegular)
                 .text(bindName)
-                .size(5)
-                .color(new Color(102,60,255))
+                .size(4.5f)
+                .color(ColorUtility.fromHex("8C889A"))
                 .build()
-                .render( x + width - 12 - stringWidth, y + 4.5f);
+                .render( x + width - 11.5f - stringWidth, y + 5);
     }
 
     private void spawnWindow(int mouseX, int mouseY) {

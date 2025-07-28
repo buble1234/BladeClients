@@ -36,9 +36,6 @@ public class Manager implements MinecraftInstance {
 
     public static MenuScreen menuScreen;
 
-    private final Random random = new Random();
-    private boolean isFreezing = false;
-    private long lastFreezeTime = System.currentTimeMillis();
 
     private final Map<Module, Boolean> wasKeyPressed = new HashMap<>();
 

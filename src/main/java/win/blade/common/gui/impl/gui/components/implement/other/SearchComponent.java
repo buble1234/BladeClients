@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
+import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
@@ -44,9 +45,9 @@ public class SearchComponent extends AbstractComponent {
         Builder.rectangle()
                 .size(new SizeState(width, height))
                 .color(new QuadColorState(new Color(28,26,37)))
-                .radius(new QuadRadiusState(5))
+                .radius(new QuadRadiusState(6))
                 .build()
-                .render(x -20, y+2);
+                .render(x -21, y+1);
 
         AbstractTexture searchTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/search.png"));
 
@@ -56,17 +57,17 @@ public class SearchComponent extends AbstractComponent {
                 .texture(0f, 0f, 1f, 1f, searchTexture)
                 .radius(new QuadRadiusState(0f))
                 .build()
-                .render(x + width - 32, y + 6);
+                .render(x + width - 32, y + 5);
 
         String displayText = text.equalsIgnoreCase("") && !isTyping ? "Search" : text;
 
         Builder.text()
                 .font(fontRegular)
                 .text(displayText)
-                .size(5.2f)
-                .color(new Color(0xFF878894))
+                .size(4.5f)
+                .color(ColorUtility.fromHex("8C889A"))
                 .build()
-                .render( x -14, y + 4.5f);
+                .render( x -13, y + 4);
 
         if (isTyping) {
             float cursorX = x -14 + fontRegular.getWidth(text.substring(0, cursorPosition), 5.2f);
@@ -76,7 +77,7 @@ public class SearchComponent extends AbstractComponent {
                     .color(new QuadColorState(Color.WHITE))
                     .radius(new QuadRadiusState(0f))
                     .build()
-                    .render(cursorX, y + 6);
+                    .render(cursorX, y + 5);
         }
     }
 
