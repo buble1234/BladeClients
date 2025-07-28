@@ -3,9 +3,7 @@ package win.blade.core.module.storage.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.glfw.GLFW;
 
-import win.blade.common.gui.impl.screen.casino.CasinoScreen;
-
-import win.blade.core.Manager;
+import win.blade.common.utils.aim.mode.WebScreen;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
@@ -22,7 +20,7 @@ public class MenuModule extends Module {
     public void onEnable() {
         type = 1;
         RenderSystem.recordRenderCall(() -> {
-            mc.setScreen(Manager.menuScreen = new MenuScreen());
+            mc.setScreen(new WebScreen());
         });
         this.toggleWithoutNotification(false);
     }
