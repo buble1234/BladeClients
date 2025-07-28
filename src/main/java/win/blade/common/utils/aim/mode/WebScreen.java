@@ -33,11 +33,8 @@ public class WebScreen extends Screen {
                 return;
             }
 
-            String htmlContent = BrowserUtility.loadHtmlFromFile("/assets/blade/html/index.html");
-            String encodedHtml = URLEncoder.encode(htmlContent, StandardCharsets.UTF_8);
-            String dataUri = "data:text/html;charset=utf-8," + encodedHtml;
-
-            this.tab = BrowserManager.INSTANCE.createTab(dataUri);
+            String htmlPath = "file:///" + BrowserUtility.getHtmlFilePath("/assets/blade/html/index.html");
+            this.tab = BrowserManager.INSTANCE.createTab(htmlPath);
         }
 
         if (this.tab != null) {
