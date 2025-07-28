@@ -29,6 +29,10 @@ public class MixinGameMenuScreen {
 
     @ModifyArg(method = "addFeedbackAndBugsButtons", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/GameMenuScreen;createUrlButton(Lnet/minecraft/client/gui/screen/Screen;Lnet/minecraft/text/Text;Ljava/net/URI;)Lnet/minecraft/client/gui/widget/ButtonWidget;", ordinal = 0), index = 2)
     private static URI replaceFeedbackLink(URI originalUri) {
+        if (Manager.isPanic()) {
+            return originalUri;
+        }
+
         String link = "https://discord.gg/bladerecode";
         try {
             return new URI(link);
@@ -39,6 +43,10 @@ public class MixinGameMenuScreen {
 
     @ModifyArg(method = "addFeedbackAndBugsButtons", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/GameMenuScreen;createUrlButton(Lnet/minecraft/client/gui/screen/Screen;Lnet/minecraft/text/Text;Ljava/net/URI;)Lnet/minecraft/client/gui/widget/ButtonWidget;", ordinal = 1), index = 2)
     private static URI replaceBugReportLink(URI originalUri) {
+        if (Manager.isPanic()) {
+            return originalUri;
+        }
+
         String link = "https://t.me/bladeclient_tg";
         try {
             return new URI(link);
