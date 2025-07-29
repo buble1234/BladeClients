@@ -173,7 +173,7 @@ public class Hotkey extends Module implements MinecraftInstance, NonRegistrable 
                             .color(-1)
                             .size(itemFontSize)
                             .build();
-                    nameText.render(matrix, getX() + hPadding, curY + (itemH - itemFontSize) / 2f - 1);
+                    nameText.render(matrix, getX() + hPadding, curY + (itemH - itemFontSize) / 2f  - 1.65f);
 
                     float keyW = FontType.popins_regular.get().getWidth(keyStr, itemFontSize);
                     float bW = (6f + 21 + 6f);
@@ -192,7 +192,7 @@ public class Hotkey extends Module implements MinecraftInstance, NonRegistrable 
                             .color(-1)
                             .size(itemFontSize)
                             .build();
-                    keyText.render(matrix, getX() + getWidth() - hPadding - bW + (bW - keyW) / 2f, curY + (itemH - itemFontSize) / 2f - 1);
+                    keyText.render(matrix, getX() + getWidth() - hPadding - bW + (bW - keyW) / 2f, curY + (itemH - itemFontSize) / 2f - 1.65f);
 
                     if (activeModules.indexOf(m) < activeModules.size() - 1) {
                         curY += itemH + gap;
