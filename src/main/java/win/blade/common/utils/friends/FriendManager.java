@@ -95,6 +95,10 @@ public class FriendManager {
 
         List<Friend> loaded = new ArrayList<>();
 
+        if(!file.exists()){
+            return loaded;
+        }
+
         try (FileReader reader = new FileReader(file)) {
             JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
 
