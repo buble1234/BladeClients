@@ -9,6 +9,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Uuids;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RotationAxis;
 import win.blade.common.gui.button.Button;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.other.AccountEditWindow;
 import win.blade.common.gui.impl.screen.BaseScreen;
@@ -110,7 +111,22 @@ public class AccountScreen extends BaseScreen {
 
         Builder.rectangle().size(new SizeState(306, 288)).color(state).radius(new QuadRadiusState(10)).build().render(windowX, windowY);
         Builder.text().font(FontType.sf_regular.get()).text("Alt Manager").color(new Color(255, 255, 255)).size(12).build().render(windowX + 25, windowY + 17);
-        Builder.text().font(FontType.sf_regular.get()).text(">").color(new Color(255, 255, 255)).size(12).build().render(windowX + 25, windowY + 17);
+
+
+        context.getMatrices().push();
+
+        float iconCenterX = windowX + 28f + FontType.sf_regular.get().getWidth("Alt Manager ",12);
+        float iconCenterY = windowY + 28.5f;
+
+        context.getMatrices().translate(iconCenterX, iconCenterY, 0);
+        context.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees(90));
+
+        AbstractTexture arrowdown = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/arrpwl2.png"));
+
+        Builder.texture().size(new SizeState(8,8)).color(new QuadColorState(Color.WHITE)).texture(0f, 0f, 1f, 1f, arrowdown).radius(new QuadRadiusState(0f)).build().render( context.getMatrices().peek().getPositionMatrix(), -8, -8);
+
+        context.getMatrices().pop();
+
 
         int startY = windowY + 40;
         int scissorX = windowX + 15;

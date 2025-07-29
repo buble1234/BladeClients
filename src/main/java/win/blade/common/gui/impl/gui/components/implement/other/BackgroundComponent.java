@@ -88,7 +88,7 @@ public class BackgroundComponent extends AbstractComponent {
 
 
 
-
+//
 //        context.getMatrices().push();
 //
 //        float iconCenterX = x + 116f + 8;
