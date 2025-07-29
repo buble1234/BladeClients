@@ -88,8 +88,8 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                 .position(this.x, this.y)
                 .size(this.width, this.height);
 
-        userComponent.setMenuScreen(this)
-                .position(this.x, this.y + this.height);
+//        userComponent.setMenuScreen(this)
+//                .position(this.x, this.y + this.height);
 
         searchComponent.position(this.x + 300, this.y + 6);
 

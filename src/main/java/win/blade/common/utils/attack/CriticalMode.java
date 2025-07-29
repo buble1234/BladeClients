@@ -26,7 +26,7 @@ public enum CriticalMode implements MinecraftInstance {
     ADAPTIVE {
         @Override
         public boolean canCritical(AttackSettings settings, AttackState state) {
-            if (mc.player.input.playerInput.jump() || mc.player.getHealth() < 12.0f) {
+            if (mc.player.input.playerInput.jump()) {
                 return isPlayerInCriticalState() || mc.player.isSubmergedInWater() || mc.player.isInSwimmingPose() || (System.currentTimeMillis() - state.getLastJumpTime() < 200);
             }
             return true;

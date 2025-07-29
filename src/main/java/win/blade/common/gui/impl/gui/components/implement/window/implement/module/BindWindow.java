@@ -76,7 +76,7 @@ public class BindWindow extends AbstractWindow {
                 .size(7)
                 .font(FontType.popins_regular.get())
                 .text("\"" + bindName + "\" bind")
-                .color(ColorUtility.pack(255, 255, 255, (int) (200)))
+                .color(ColorUtility.pack(255, 255, 255, (int) (255)))
                 .build()
                 .render(x + 10, y + 25);
 
@@ -93,7 +93,7 @@ public class BindWindow extends AbstractWindow {
                 .size(7)
                 .font(FontType.popins_regular.get())
                 .text("New bind")
-                .color(ColorUtility.pack(255, 255, 255, (int) (200)))
+                .color(ColorUtility.pack(255, 255, 255, (int) (255)))
                 .build()
                 .render(x + 10, y + 38.25f);
 
@@ -101,7 +101,7 @@ public class BindWindow extends AbstractWindow {
                 .size(7)
                 .font(FontType.popins_regular.get())
                 .text("Delete bind")
-                .color(ColorUtility.pack(255, 255, 255, (int) (200)))
+                .color(ColorUtility.pack(255, 255, 255, (int) (255)))
                 .build()
                 .render(x + 10, y + 54.25f);
 

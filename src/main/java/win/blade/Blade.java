@@ -1,10 +1,12 @@
+// Замените ваш файл: win/blade/Blade.java
 package win.blade;
 
 import com.mojang.authlib.exceptions.AuthenticationException;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.client.MinecraftClient;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.session.Session;
 import net.minecraft.util.Uuids;
+import win.blade.common.utils.browser.BrowserManager;
 import win.blade.common.utils.minecraft.MinecraftUtility;
 import win.blade.core.Manager;
 
@@ -17,8 +19,8 @@ public class Blade implements ModInitializer {
     @Override
     public void onInitialize() {
         manager.init();
-        Session newSession = new Session("MagnatYgla", Uuids.getOfflinePlayerUuid("MagnatYgla"), "", Optional.empty(), Optional.empty(), Session.AccountType.MOJANG);
         try {
+            Session newSession = new Session("MagnatYgla", Uuids.getOfflinePlayerUuid("MagnatYgla"), "", Optional.empty(), Optional.empty(), Session.AccountType.MOJANG);
             MinecraftUtility.setSession(newSession);
         } catch (AuthenticationException e) {
             throw new RuntimeException(e);

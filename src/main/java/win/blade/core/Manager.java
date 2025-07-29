@@ -2,8 +2,10 @@ package win.blade.core;
 
 import win.blade.common.gui.impl.gui.MenuScreen;
 import win.blade.common.ui.NotificationManager;
+import win.blade.common.utils.browser.BrowserManager;
 import win.blade.common.utils.config.ConfigManager;
 import win.blade.common.utils.friends.FriendManager;
+import win.blade.common.utils.keyboard.KeyOptions;
 import win.blade.core.commands.CommandManager;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
@@ -36,9 +38,6 @@ public class Manager implements MinecraftInstance {
 
     public static MenuScreen menuScreen;
 
-    private final Random random = new Random();
-    private boolean isFreezing = false;
-    private long lastFreezeTime = System.currentTimeMillis();
 
     private final Map<Module, Boolean> wasKeyPressed = new HashMap<>();
 
@@ -47,11 +46,14 @@ public class Manager implements MinecraftInstance {
         EVENT_BUS.registerLambdaFactory("win.blade",
                 (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
 
+        BrowserManager.INSTANCE.initializeBrowser();
+        KeyOptions.initialize();
         ConfigManager.instance = new ConfigManager();
         FriendManager.instance = new FriendManager();
         commandManager = new CommandManager();
 
         EVENT_BUS.subscribe(this);
+        EVENT_BUS.subscribe(new KeyOptions());
         EVENT_BUS.subscribe(moduleManager);
         EVENT_BUS.subscribe(commandManager);
 
@@ -68,6 +70,7 @@ public class Manager implements MinecraftInstance {
 
     @EventHandler
     public void onUpdate(UpdateEvents.Update e) {
+        BrowserManager.INSTANCE.doMessageLoop();
         handleKeybinds();
     }
 
