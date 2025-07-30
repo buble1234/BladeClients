@@ -16,6 +16,7 @@ import win.blade.common.utils.render.msdf.FontType;
 import win.blade.common.utils.render.msdf.MsdfFont;
 
 import java.awt.Color;
+import java.time.LocalDateTime;
 
 public class FirstlaunchScreen extends BaseScreen {
 
@@ -93,7 +94,7 @@ public class FirstlaunchScreen extends BaseScreen {
         MsdfFont font = FontType.sf_regular.get();
 
         if (mAlpha.get() > 0.01f) {
-            String mainTextStr = "Доброе утро, " + this.client.getSession().getUsername();
+            String mainTextStr =  getGreeting() + ", " + this.client.getSession().getUsername();
             float fz = 32f;
 
             float mainTW = font.getWidth(mainTextStr, fz);
@@ -144,6 +145,25 @@ public class FirstlaunchScreen extends BaseScreen {
                         .render(subX, subY);
             }
         }
+    }
+
+    @SuppressWarnings("all")
+    public String getGreeting(){
+        LocalDateTime time = LocalDateTime.now();
+
+        StringBuilder builder = new StringBuilder();
+
+        if(time.getHour() > 22 || time.getHour() < 7){
+            builder.append("Доброй ночи");
+        } else if (time.getHour() >= 7 && time.getHour() <= 12) {
+            builder.append("Доброе утро");
+        } else if (time.getHour() >= 13 && time.getHour() <= 16) {
+            builder.append("Добрый день");
+        } else if(time.getHour() >= 17 && time.getHour() <= 22){
+            builder.append("Добрый вечер");
+        }
+
+        return builder.toString();
     }
 
     @Override
