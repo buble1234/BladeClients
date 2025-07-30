@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 public class GroupSetting extends Setting {
     private boolean value;
     private List<Setting> subSettings = new ArrayList<>();
+    private boolean isToggleable = true;
 
     public GroupSetting(String name, String description) {
         super(name, description);
@@ -20,7 +21,9 @@ public class GroupSetting extends Setting {
     }
 
     public GroupSetting setValue(boolean value) {
-        this.value = value;
+        if (this.isToggleable) {
+            this.value = value;
+        }
         return this;
     }
 
@@ -48,5 +51,14 @@ public class GroupSetting extends Setting {
                 .filter(setting -> setting.getName().equalsIgnoreCase(name))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public boolean isToggleable() {
+        return isToggleable;
+    }
+
+    public GroupSetting setToggleable() {
+        this.isToggleable = false;
+        return this;
     }
 }

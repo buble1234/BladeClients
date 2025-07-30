@@ -1,6 +1,6 @@
 package win.blade.core.module.storage.player;
 
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
@@ -22,7 +22,7 @@ import java.util.List;
 )
 public class AntiAFKModule extends Module {
 
-    private final SliderSetting cooldown = new SliderSetting(this, "Задержка в минутах", 1, 1, 10, 1);
+    private final ValueSetting cooldown = new ValueSetting("Задержка в минутах", "").setValue(2f).range(1f, 10f);
 
     private long lastActionTime = 0;
 

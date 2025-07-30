@@ -2,8 +2,8 @@ package win.blade.core.module.storage.render;
 
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.gui.setting.implement.SelectSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.OptionEvents;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
@@ -14,6 +14,7 @@ import win.blade.core.module.api.ModuleInfo;
 /**
  * Автор: NoCap
  * Дата создания: 02.07.2025
+ * Рефакторинг под новый API: 14.07.2024
  */
 @ModuleInfo(
         name = "Fullbright",
@@ -22,10 +23,18 @@ import win.blade.core.module.api.ModuleInfo;
 )
 public class FullbrightModule extends Module {
 
-    private final ModeSetting mode = new ModeSetting(this,"Мод", "Яркость", "Зелье");
-    private final SliderSetting brightness = new SliderSetting(this,"Яркость", 15.0f, 1.0f, 20.0f, 0.5f).setVisible(() -> mode.is("Яркость"));
+    private final SelectSetting mode = new SelectSetting("Мод", "")
+            .value("Яркость", "Зелье");
+
+    private final ValueSetting brightness = new ValueSetting("Яркость", "")
+            .setValue(15.0f).range(1.0f, 20.0f)
+            .visible(() -> mode.isSelected("Яркость"));
 
     private double oldGamma;
+
+    public FullbrightModule() {
+        addSettings(mode, brightness);
+    }
 
     @Override
     public void onEnable() {
@@ -50,7 +59,7 @@ public class FullbrightModule extends Module {
     public void onUpdate(UpdateEvents.Update e) {
         if (mc.player == null || mc.options == null) return;
 
-        switch (mode.getValue()) {
+        switch (mode.getSelected()) {
             case "Зелье":
                 mc.player.addStatusEffect(new StatusEffectInstance(
                         StatusEffects.NIGHT_VISION,
@@ -72,7 +81,7 @@ public class FullbrightModule extends Module {
 
     @EventHandler
     public void onGamma(OptionEvents.Gamma e) {
-        if (mode.is("Яркость")) {
+        if (mode.isSelected("Яркость")) {
             e.setGamma(brightness.getValue());
         }
     }

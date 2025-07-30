@@ -4,9 +4,9 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
 import win.blade.common.utils.network.PacketUtility;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
@@ -18,47 +18,56 @@ import win.blade.mixin.accessor.MinecraftClientAccessor;
 /**
  * Автор: NoCap
  * Дата создания: 29.06.2025
+ * Рефакторинг под новый API: 14.07.2024
  */
-
 @ModuleInfo(name = "NoDelay",
         category = Category.PLAYER,
         desc = "Убирает задержку на выбранные вещи")
 public class NoDelayModule extends Module {
 
-    private final MultiBooleanSetting delayOptions = new MultiBooleanSetting(this, "Убирать задержку на",
-            BooleanSetting.of("Прыжок", true),
-            BooleanSetting.of("Правый клик", true),
-            BooleanSetting.of("Ломание блоков", true)
+    private final GroupSetting delayOptions = new GroupSetting("Убирать задержку на", "").settings(
+            new BooleanSetting("Прыжок", "").setValue(true),
+            new BooleanSetting("Правый клик", "").setValue(true),
+            new BooleanSetting("Ломание блоков", "").setValue(true)
     );
+
+    public NoDelayModule() {
+        addSettings(delayOptions);
+    }
+
+    private BooleanSetting getBooleanSetting(GroupSetting group, String name) {
+        return (BooleanSetting) group.getSubSetting(name);
+    }
 
     @EventHandler
     public void onUpdate(UpdateEvents.Update updateEvent) {
         if (mc.player == null || mc.world == null || mc.interactionManager == null) return;
-        if (delayOptions.getValue("Прыжок")) {
+
+        if (getBooleanSetting(delayOptions, "Прыжок").getValue()) {
             resetJumpCooldown();
         }
 
-        if (delayOptions.getValue("Правый клик")) {
+        if (getBooleanSetting(delayOptions, "Правый клик").getValue()) {
             resetItemUseCooldown();
         }
 
-        if (delayOptions.getValue("Ломание блоков")) {
+        if (getBooleanSetting(delayOptions, "Ломание блоков").getValue()) {
             resetBlockCooldown();
         }
     }
 
     private void resetJumpCooldown() {
-        if (mc.player == null || mc.world == null || mc.interactionManager == null) return;
+        if (mc.player == null) return;
+
         LivingEntityAccessor livingEntityAccessor = (LivingEntityAccessor) mc.player;
-        if (livingEntityAccessor != null && livingEntityAccessor.getLastJumpCooldown() > 0) {
+        if (livingEntityAccessor.getLastJumpCooldown() > 0) {
             livingEntityAccessor.setLastJumpCooldown(0);
         }
     }
 
     private void resetItemUseCooldown() {
-        if (mc.player == null || mc.world == null || mc.interactionManager == null) return;
         MinecraftClientAccessor minecraftClientAccessor = (MinecraftClientAccessor) mc;
-        if (minecraftClientAccessor != null && minecraftClientAccessor.getItemUseCooldown() > 0) {
+        if (minecraftClientAccessor.getItemUseCooldown() > 0) {
             minecraftClientAccessor.setItemUseCooldown(0);
         }
     }

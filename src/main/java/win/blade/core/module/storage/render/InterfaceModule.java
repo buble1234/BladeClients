@@ -1,7 +1,7 @@
 package win.blade.core.module.storage.render;
 
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
 import win.blade.common.ui.element.hud.*;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
@@ -15,6 +15,7 @@ import java.util.Map;
 /**
  * Автор: NoCap
  * Дата создания: 19.06.2025
+ * Рефакторинг под новый API: 14.07.2024
  */
 
 @ModuleInfo(
@@ -25,10 +26,11 @@ import java.util.Map;
 public class InterfaceModule extends Module {
 
     private final Map<String, Module> interfaceElements = new HashMap<>();
-    private MultiBooleanSetting elementsSettings;
+    private GroupSetting elementsSettings;
 
     public InterfaceModule() {
         setupElements();
+        addSettings(elementsSettings);
     }
 
     private void setupElements() {
@@ -39,10 +41,15 @@ public class InterfaceModule extends Module {
         interfaceElements.put("Инфо", new InfoHud());
 
         BooleanSetting[] settings = interfaceElements.keySet().stream()
-                .map(name -> BooleanSetting.of(name, true))
+                .map(name -> new BooleanSetting(name, "").setValue(true))
                 .toArray(BooleanSetting[]::new);
 
-        elementsSettings = new MultiBooleanSetting(this, "Элементы интерфейса", settings);
+        elementsSettings = new GroupSetting("Элементы интерфейса", "");
+        elementsSettings.settings(settings);
+    }
+
+    private BooleanSetting getBooleanSetting(GroupSetting group, String name) {
+        return (BooleanSetting) group.getSubSetting(name);
     }
 
     @Override
@@ -66,7 +73,7 @@ public class InterfaceModule extends Module {
 
     private void updateElements() {
         interfaceElements.forEach((name, module) -> {
-            boolean shouldBeEnabled = elementsSettings.getValue(name);
+            boolean shouldBeEnabled = getBooleanSetting(elementsSettings, name).getValue();
             if (module.isEnabled() != shouldBeEnabled) {
                 module.toggleWithoutNotification(shouldBeEnabled);
             }

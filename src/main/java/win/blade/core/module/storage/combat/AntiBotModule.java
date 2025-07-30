@@ -5,7 +5,7 @@ import com.sun.jdi.BooleanValue;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Uuids;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
@@ -22,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class AntiBotModule extends Module {
      public static final CopyOnWriteArrayList<PlayerEntity> bots = Lists.newCopyOnWriteArrayList();
 
-    public final BooleanSetting remove = new BooleanSetting(this, "Удалять из мира", false);
+    public final BooleanSetting remove = new BooleanSetting("Удалять из мира", "Удаляет бота из мира").setValue(false);
 
     @Override
     protected void onEnable() {

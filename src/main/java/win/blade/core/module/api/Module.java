@@ -1,6 +1,6 @@
 package win.blade.core.module.api;
 
-import win.blade.common.gui.impl.menu.settings.Setting;
+import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.ui.NotificationType;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.other.SoundUtility;
@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public abstract class Module implements MinecraftInstance {
@@ -23,32 +22,25 @@ public abstract class Module implements MinecraftInstance {
     private BindMode bindMode;
     public long holdDuration = 50;
 
-    private List<Setting<?>> settings;
-
     public String getVisibleName() { return "Module"; }
 
     public Category getCategory() { return this.data.category(); }
     public int type = 1;
 
-    List<win.blade.common.gui.impl.gui.setting.Setting> settings2 =  new ArrayList<>();
+    List<Setting> settings =  new ArrayList<>();
 
-    public List<win.blade.common.gui.impl.gui.setting.Setting> settings() {
-        return settings2.stream().filter(win.blade.common.gui.impl.gui.setting.Setting::notInBox).toList();
+    public List<Setting> settings() {
+        return settings.stream().filter(win.blade.common.gui.impl.gui.setting.Setting::notInBox).toList();
     }
 
-    public void addSettings(win.blade.common.gui.impl.gui.setting.Setting... settings){
-        settings2.addAll(Arrays.asList(settings));
-    }
-
-    public List<Setting<?>> getSettings() {
-        return settings;
+    public void addSettings(Setting... settings){
+        this.settings.addAll(Arrays.asList(settings));
     }
 
     protected Module() {
         var info = Optional.ofNullable(getClass().getAnnotation(ModuleInfo.class)).orElseThrow(() -> new IllegalStateException("Module %s must have @ModuleInfo annotation".formatted(getClass().getSimpleName())));
         this.data = new ModuleData(info.name(), info.category(), info.desc(), info.descKey(), info.bind());
         this.keybind = info.bind();
-        this.settings = new ArrayList<>();
         bindMode = info.mode();
     }
 

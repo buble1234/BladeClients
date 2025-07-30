@@ -1,8 +1,6 @@
 package win.blade.core.module.storage.move;
 
-import org.lwjgl.glfw.GLFW;
-
-import win.blade.common.gui.impl.menu.settings.impl.*;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.utils.player.SprintUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
@@ -18,7 +16,7 @@ import win.blade.core.module.api.ModuleInfo;
 )
 public class AutoSprintModule extends Module {
 
-    private final BooleanSetting keepSprintOption = new BooleanSetting(this, "Сбрасывать спринт", false);
+    private final BooleanSetting keepSprintOption = new BooleanSetting("Сбрасывать спринт", "").setValue(false);
 
     @EventHandler
     public void onTick(UpdateEvents.Update event) {

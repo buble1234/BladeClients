@@ -5,7 +5,7 @@ import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.common.utils.network.PacketUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
@@ -23,14 +23,28 @@ import win.blade.core.module.api.ModuleInfo;
 )
 public class FastBowModule extends Module {
 
-    private final SliderSetting speed = new SliderSetting(this, "Скорость", 10, 1, 10, 1);
+    private final ValueSetting speed = new ValueSetting("Скорость", "")
+            .setValue(10f).range(1f, 10f);
+
+    public FastBowModule() {
+        addSettings(speed);
+    }
 
     @EventHandler
     public void onUpdate(UpdateEvents.PlayerUpdate event) {
-        if ((mc.player.getOffHandStack().getItem() == Items.BOW || mc.player.getMainHandStack().getItem() == Items.BOW) && mc.player.isUsingItem()) {
+        if (mc.player == null || mc.world == null) {
+            return;
+        }
+
+        boolean isHoldingBow = mc.player.getMainHandStack().getItem() == Items.BOW || mc.player.getOffHandStack().getItem() == Items.BOW;
+
+        if (isHoldingBow && mc.player.isUsingItem()) {
             if (mc.player.getItemUseTime() >= speed.getValue()) {
                 PacketUtility.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, mc.player.getHorizontalFacing()));
-                PacketUtility.sendSequentialPacket(id -> new PlayerInteractItemC2SPacket(mc.player.getOffHandStack().getItem() == Items.BOW ? Hand.OFF_HAND : Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
+
+                Hand hand = mc.player.getOffHandStack().getItem() == Items.BOW ? Hand.OFF_HAND : Hand.MAIN_HAND;
+                PacketUtility.sendSequentialPacket(id -> new PlayerInteractItemC2SPacket(hand, id, mc.player.getYaw(), mc.player.getPitch()));
+
                 mc.player.stopUsingItem();
             }
         }

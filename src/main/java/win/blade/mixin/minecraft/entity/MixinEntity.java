@@ -16,6 +16,8 @@ import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+import win.blade.common.gui.impl.gui.setting.Setting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.manager.AimManager;
@@ -74,12 +76,19 @@ public abstract class MixinEntity implements MinecraftInstance {
 
     @ModifyArgs(method = "pushAwayFrom", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;addVelocity(DDD)V"))
     public void onPushAwayFrom(Args args) {
-        Optional<NoPushModule> noPush = Manager.getModuleManagement().find(NoPushModule.class);
-        if (noPush.isPresent() && noPush.get().isEnabled() && noPush.get().options.getValue("Сущностей")) {
-            if ((Object) this == mc.player) {
-                args.set(0, 0.);
-                args.set(1, 0.);
-                args.set(2, 0.);
+        Optional<NoPushModule> noPushOpt = Manager.getModuleManagement().find(NoPushModule.class);
+
+        if (noPushOpt.isPresent() && noPushOpt.get().isEnabled()) {
+            NoPushModule noPush = noPushOpt.get();
+
+            Setting entitySetting = noPush.options.getSubSetting("Сущностей");
+
+            if (entitySetting instanceof BooleanSetting && ((BooleanSetting) entitySetting).getValue()) {
+                if ((Object) this == mc.player) {
+                    args.set(0, 0.0);
+                    args.set(1, 0.0);
+                    args.set(2, 0.0);
+                }
             }
         }
     }

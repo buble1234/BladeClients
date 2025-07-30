@@ -1,7 +1,7 @@
 package win.blade.core.module.storage.misc;
 
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.utils.friends.FriendManager;
 import win.blade.common.utils.network.ServerUtility;
 import win.blade.core.event.controllers.EventHandler;
@@ -21,7 +21,7 @@ import win.blade.core.module.api.ModuleInfo;
 )
 public class AutoTpacceptModule extends Module {
 
-    private final BooleanSetting onlyFriends = new BooleanSetting(this, "Только друзья", false);
+    private final BooleanSetting onlyFriends = new BooleanSetting("Только друзья", "Принимает телепорт только от друзей").setValue(false);
 
     @EventHandler
     public void onPacketReceive(PacketEvent.Receive event) {

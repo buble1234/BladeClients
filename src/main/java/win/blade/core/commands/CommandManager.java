@@ -25,7 +25,7 @@ public class CommandManager implements MinecraftInstance {
 
     public CommandManager() {
         add(new HelpCommand());
-        add(new ConfigCommand());
+        //add(new ConfigCommand());
         add(new FriendCommand());
         add(new BlockESPCommand());
         add(new ToggleCommand());
