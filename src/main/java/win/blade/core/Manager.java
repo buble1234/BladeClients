@@ -3,7 +3,6 @@ package win.blade.core;
 import win.blade.common.gui.impl.gui.MenuScreen;
 import win.blade.common.ui.NotificationManager;
 import win.blade.common.utils.browser.BrowserManager;
-import win.blade.common.utils.config.ConfigManager;
 import win.blade.common.utils.friends.FriendManager;
 import win.blade.common.utils.keyboard.KeyOptions;
 import win.blade.core.commands.CommandManager;
@@ -48,7 +47,7 @@ public class Manager implements MinecraftInstance {
 
         BrowserManager.INSTANCE.initializeBrowser();
         KeyOptions.initialize();
-        ConfigManager.instance = new ConfigManager();
+        //ConfigManager.instance = new ConfigManager();
         FriendManager.instance = new FriendManager();
         commandManager = new CommandManager();
 

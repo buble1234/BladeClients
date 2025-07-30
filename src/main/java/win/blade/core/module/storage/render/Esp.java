@@ -14,9 +14,9 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.common.utils.friends.FriendManager;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
@@ -38,16 +38,29 @@ import java.util.Collections;
 @ModuleInfo(name = "Esp", category = Category.RENDER)
 public class Esp extends Module {
 
-    private final MultiBooleanSetting checks = new MultiBooleanSetting(this, "Элементы",
-            BooleanSetting.of("Игроки", true),
-            BooleanSetting.of("Предметы", false)
+    private final GroupSetting checks = new GroupSetting("Элементы", "").settings(
+            new BooleanSetting("Игроки", "").setValue(true),
+            new BooleanSetting("Предметы", "").setValue(false)
     );
 
-    private final SliderSetting fontSize = new SliderSetting(this, "Размер шрифта", 8.0f, 6.0f, 12.0f, 0.1f);
-    private final BooleanSetting showArmor = new BooleanSetting(this, "Отображать броню", true);
-    private final BooleanSetting funTimeHP = new BooleanSetting(this, "Здоровье на FT", true);
+    private final ValueSetting fontSize = new ValueSetting("Размер шрифта", "")
+            .setValue(8.0f).range(6.0f, 12.0f);
+
+    private final BooleanSetting showArmor = new BooleanSetting("Отображать броню", "")
+            .setValue(true);
+
+    private final BooleanSetting funTimeHP = new BooleanSetting("Здоровье на FT", "")
+            .setValue(true);
 
     private final Color back = new Color(0, 0, 0, 128);
+
+    public Esp() {
+        addSettings(checks, fontSize, showArmor, funTimeHP);
+    }
+
+    private BooleanSetting getBooleanSetting(GroupSetting group, String name) {
+        return (BooleanSetting) group.getSubSetting(name);
+    }
 
     @EventHandler
     public void onRender3D(RenderEvents.World e) {
@@ -88,14 +101,14 @@ public class Esp extends Module {
         Text tagComponent = null;
         float nameWidth = 0;
 
-        if (checks.get("Игроки").getValue() && entity instanceof PlayerEntity player) {
+        if (getBooleanSetting(checks, "Игроки").getValue() && entity instanceof PlayerEntity player) {
             tagComponent = createPlayerTagComponent(player);
             nameWidth = getWidth(tagComponent);
 
             if (showArmor.getValue()) {
                 drawArmor(context, player, x, y, width);
             }
-        } else if (checks.get("Предметы").getValue() && entity instanceof ItemEntity item) {
+        } else if (getBooleanSetting(checks, "Предметы").getValue() && entity instanceof ItemEntity item) {
             MutableText itemTag = item.getStack().getName().copy();
             if (item.getStack().getCount() > 1) {
                 itemTag.append(Text.literal(" " + item.getStack().getCount() + "x").formatted(Formatting.GRAY));
@@ -237,8 +250,8 @@ public class Esp extends Module {
         if (entity.isInvisible()) {
             return false;
         }
-        return (checks.get("Игроки").getValue() && entity instanceof PlayerEntity) ||
-                (checks.get("Предметы").getValue() && entity instanceof ItemEntity);
+        return (getBooleanSetting(checks, "Игроки").getValue() && entity instanceof PlayerEntity) ||
+                (getBooleanSetting(checks, "Предметы").getValue() && entity instanceof ItemEntity);
     }
 
     private float getWidth(Text text) {

@@ -8,13 +8,11 @@ import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
-import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,40 +44,30 @@ public class TargetUtility implements MinecraftInstance {
         if (!(entity instanceof LivingEntity living)) return false;
         if (living.isDead() || !living.isAlive()) return false;
 
-        if (entity instanceof VillagerEntity) {
-            return selectedTypes.contains(TargetType.VILLAGERS);
-        }
-
         if (entity instanceof PlayerEntity player) {
-            boolean hasArmor = PlayerUtility.hasArmor(player);
             boolean isTeammate = PlayerUtility.isTeammate(player);
-            boolean isInvisible = player.isInvisible();
-
             if (isTeammate) {
                 return selectedTypes.contains(TargetType.TEAMMATES);
             }
-
-            if (isInvisible && selectedTypes.contains(TargetType.INVISIBLE_PLAYERS)) {
-                return true;
+            if (player.isInvisible()) {
+                return selectedTypes.contains(TargetType.INVISIBLE_PLAYERS);
             }
-
-            if (hasArmor && selectedTypes.contains(TargetType.ARMORED_PLAYERS)) {
-                return true;
+            boolean hasArmor = PlayerUtility.hasArmor(player);
+            if (hasArmor) {
+                return selectedTypes.contains(TargetType.ARMORED_PLAYERS);
+            } else {
+                return selectedTypes.contains(TargetType.UNARMORED_PLAYERS);
             }
-
-            if (!hasArmor && selectedTypes.contains(TargetType.UNARMORED_PLAYERS)) {
-                return true;
-            }
-
-            return false;
-        }
-
-        if (entity instanceof AnimalEntity) {
-            return selectedTypes.contains(TargetType.ANIMALS);
         }
 
         if (entity instanceof MobEntity) {
             return selectedTypes.contains(TargetType.MOBS);
+        }
+        if (entity instanceof AnimalEntity) {
+            return selectedTypes.contains(TargetType.ANIMALS);
+        }
+        if (entity instanceof VillagerEntity) {
+            return selectedTypes.contains(TargetType.VILLAGERS);
         }
 
         return false;
@@ -95,9 +83,9 @@ public class TargetUtility implements MinecraftInstance {
                 .collect(Collectors.toList());
     }
 
-    public static void updateTargetTypes(MultiBooleanSetting value) {
-        Set<TargetType> newSelectedTypes = value.getValues().stream()
-                .filter(setting -> setting.getValue())
+    public static void updateTargetTypes(GroupSetting targetGroup) {
+        Set<TargetType> newSelectedTypes = targetGroup.getSubSettings().stream()
+                .filter(setting -> setting instanceof BooleanSetting && ((BooleanSetting) setting).getValue())
                 .map(setting -> switch (setting.getName()) {
                     case "Игроки без брони" -> TargetType.UNARMORED_PLAYERS;
                     case "Игроки с бронёй" -> TargetType.ARMORED_PLAYERS;
@@ -108,7 +96,7 @@ public class TargetUtility implements MinecraftInstance {
                     case "Жители" -> TargetType.VILLAGERS;
                     default -> null;
                 })
-                .filter(type -> type != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         setSelectedTypes(newSelectedTypes);
@@ -118,6 +106,9 @@ public class TargetUtility implements MinecraftInstance {
         if (mc.player == null || mc.world == null) return null;
 
         List<LivingEntity> potentialTargets = getValidTargets(range);
+        if (potentialTargets.isEmpty()) {
+            return null;
+        }
 
         Comparator<LivingEntity> comparator;
         switch (sortMode) {
@@ -140,7 +131,6 @@ public class TargetUtility implements MinecraftInstance {
         }
 
         return potentialTargets.stream()
-                .filter(entity -> entity.isAlive() && !entity.isSpectator())
                 .min(comparator)
                 .orElse(null);
     }

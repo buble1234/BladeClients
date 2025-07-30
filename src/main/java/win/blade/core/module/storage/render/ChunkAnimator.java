@@ -1,9 +1,8 @@
 package win.blade.core.module.storage.render;
 
 import net.minecraft.util.math.BlockPos;
-import win.blade.common.gui.impl.menu.settings.impl.ListSetting;
-import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.gui.setting.implement.SelectSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.common.utils.math.ChunkManager;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.render.ChunkPositionEvent;
@@ -15,6 +14,7 @@ import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 import win.blade.core.module.storage.render.chunkanimator.easing.*;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 @ModuleInfo(name = "ChunkAnimator", category = Category.RENDER)
@@ -24,16 +24,19 @@ public class ChunkAnimator extends Module {
 
     private final ChunkManager chunkManager;
 
-    private final SliderSetting animationDuration = new SliderSetting(this, "Длительность анимации", 1000, 100, 5000, 100);
-    private final ListSetting<AnimationMode> animationMode = new ListSetting<>(this, "Режим анимации", AnimationMode.values()).set(AnimationMode.BELOW);
+    private final ValueSetting animationDuration = new ValueSetting("Длительность анимации", "")
+            .setValue(1000f).range(100f, 5000f);
 
-    private final ModeSetting easingMode = new ModeSetting(this, "Режим интерполяции",
-            "Linear", "Quad", "Cubic", "Quart", "Quint", "Expo", "Sine", "Circ", "Back", "Bounce", "Elastic"
-    ).set("Sine");
+    private final SelectSetting animationMode = new SelectSetting("Режим анимации", "")
+            .value(Arrays.stream(AnimationMode.values()).map(AnimationMode::toString).toArray(String[]::new));
+
+    private final SelectSetting easingMode = new SelectSetting("Режим интерполяции", "")
+            .value("Sine", "Linear", "Quad", "Cubic", "Quart", "Quint", "Expo", "Circ", "Back", "Bounce", "Elastic");
 
     public ChunkAnimator() {
         instance = this;
         this.chunkManager = new ChunkManager();
+        addSettings(animationDuration, animationMode, easingMode);
     }
 
     public static ChunkAnimator getInstance() {
@@ -51,6 +54,7 @@ public class ChunkAnimator extends Module {
                 event.getChunkX(), event.getChunkY(), event.getChunkZ()
         ));
     }
+
     @EventHandler
     public void onWorldLoad(WorldLoadEvent event) {
         chunkManager.clear();
@@ -62,23 +66,29 @@ public class ChunkAnimator extends Module {
     }
 
     public float getFunctionValue(final float t, final float b, final float c, final float d) {
-        return switch (Objects.requireNonNull(easingMode.getValue())) {
-            case "Quad" -> Quad.easeOut(t, b, c, d);
-            case "Cubic" -> Cubic.easeOut(t, b, c, d);
-            case "Quart" -> Quart.easeOut(t, b, c, d);
-            case "Quint" -> Quint.easeOut(t, b, c, d);
-            case "Expo" -> Expo.easeOut(t, b, c, d);
-            case "Sine" -> Sine.easeOut(t, b, c, d);
-            case "Circ" -> Circ.easeOut(t, b, c, d);
-            case "Back" -> Back.easeOut(t, b, c, d);
-            case "Bounce" -> Bounce.easeOut(t, b, c, d);
-            case "Elastic" -> Elastic.easeOut(t, b, c, d);
-            default -> Linear.easeOut(t, b, c, d);
-        };
+        switch (Objects.requireNonNull(easingMode.getSelected())) {
+            case "Quad" -> { return Quad.easeOut(t, b, c, d); }
+            case "Cubic" -> { return Cubic.easeOut(t, b, c, d); }
+            case "Quart" -> { return Quart.easeOut(t, b, c, d); }
+            case "Quint" -> { return Quint.easeOut(t, b, c, d); }
+            case "Expo" -> { return Expo.easeOut(t, b, c, d); }
+            case "Sine" -> { return Sine.easeOut(t, b, c, d); }
+            case "Circ" -> { return Circ.easeOut(t, b, c, d); }
+            case "Back" -> { return Back.easeOut(t, b, c, d); }
+            case "Bounce" -> { return Bounce.easeOut(t, b, c, d); }
+            case "Elastic" -> { return Elastic.easeOut(t, b, c, d); }
+            default -> { return Linear.easeOut(t, b, c, d); }
+        }
     }
 
     public AnimationMode getAnimationMode() {
-        return animationMode.getValue();
+        String selectedModeName = animationMode.getSelected();
+        for (AnimationMode mode : AnimationMode.values()) {
+            if (mode.toString().equals(selectedModeName)) {
+                return mode;
+            }
+        }
+        return AnimationMode.BELOW;
     }
 
     public Number getAnimationDuration() {

@@ -12,9 +12,9 @@ import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Heightmap;
 import org.joml.Matrix4f;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.SelectSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.TimerUtil;
 import win.blade.common.utils.math.animation.Animation;
@@ -36,33 +36,31 @@ import java.util.concurrent.ThreadLocalRandom;
 @ModuleInfo(name = "FireFly", category = Category.RENDER)
 public class FireFly extends Module {
 
-    private static FireFly instance;
-
-    public FireFly() {
-        instance = this;
-    }
-
-    public static FireFly getInstance() {
-        return instance;
-    }
-
-    private final SliderSetting count = new SliderSetting(this, "Кол-во", 5, 1, 25, 1);
-    private final SliderSetting size = new SliderSetting(this, "Размер", 0.5F, 0.0F, 1F, 0.1F);
-    private final SliderSetting range = new SliderSetting(this, "Дистанция", 16, 4, 32, 1);
-    private final SliderSetting duration = new SliderSetting(this, "Время жизни", 3500, 500, 5000, 250);
-    private final SliderSetting strength = new SliderSetting(this, "Сила движения", 1.0F, 0.1F, 2.0F, 0.1F);
-    private final SliderSetting opacity = new SliderSetting(this, "Прозрачность", 1.0F, 0.1F, 1.0F, 0.1F);
-    private final BooleanSetting glowing = new BooleanSetting(this, "Свечение", true);
-    private final BooleanSetting onlyMove = new BooleanSetting(this, "Только в движении", false);
-    private final BooleanSetting ground = new BooleanSetting(this, "Спавнить на земле", false);
-    private final BooleanSetting physic = new BooleanSetting(this, "Физика", false);
-    private final ModeSetting colorMode = new ModeSetting(this, "Режим цвета", "Клиентский", "Радужный");
-    private final ModeSetting particleMode = new ModeSetting(this, "Тип частиц",
-            "Random", "Amongus", "Circle", "Crown", "Dollar", "Heart",
-            "Polygon", "Quad", "Skull", "Star", "Cross", "Triangle", "Bloom"
-    ).set("Bloom");
+    private final ValueSetting count = new ValueSetting("Кол-во", "").setValue(5f).range(1f, 25f);
+    private final ValueSetting size = new ValueSetting("Размер", "").setValue(0.5F).range(0.0F, 1F);
+    private final ValueSetting range = new ValueSetting("Дистанция", "").setValue(16f).range(4f, 32f);
+    private final ValueSetting duration = new ValueSetting("Время жизни", "").setValue(3500f).range(500f, 5000f);
+    private final ValueSetting strength = new ValueSetting("Сила движения", "").setValue(1.0F).range(0.1F, 2.0F);
+    private final ValueSetting opacity = new ValueSetting("Прозрачность", "").setValue(1.0F).range(0.1F, 1.0F);
+    private final BooleanSetting glowing = new BooleanSetting("Свечение", "").setValue(true);
+    private final BooleanSetting onlyMove = new BooleanSetting("Только в движении", "").setValue(false);
+    private final BooleanSetting ground = new BooleanSetting("Спавнить на земле", "").setValue(false);
+    private final BooleanSetting physic = new BooleanSetting("Физика", "").setValue(false);
+    private final SelectSetting colorMode = new SelectSetting("Режим цвета", "").value("Клиентский", "Радужный");
+    private final SelectSetting particleMode = new SelectSetting("Тип частиц", "")
+            .value("Bloom", "Random", "Amongus", "Circle", "Crown", "Dollar", "Heart",
+                    "Polygon", "Quad", "Skull", "Star", "Cross", "Triangle");
 
     private final List<Particle> particles = new ArrayList<>();
+
+    public FireFly() {
+        addSettings(
+                count, size, range, duration, strength, opacity,
+                glowing, onlyMove, ground, physic,
+                colorMode, particleMode
+        );
+    }
+
 
     @Override
     public void onEnable() {
@@ -85,8 +83,8 @@ public class FireFly extends Module {
         if (mc.player == null || mc.world == null) return;
         if (onlyMove.getValue() && !MovementUtility.isMoving()) return;
 
-        int rangeValue = this.range.getValue().intValue();
-        for (int i = 0; i < count.getValue().intValue(); i++) {
+        int rangeValue = (int) this.range.getValue();
+        for (int i = 0; i < (int) count.getValue(); i++) {
             Vec3d playerPos = mc.player.getPos();
             double randX = playerPos.x + randomValue(-rangeValue, rangeValue);
             double randZ = playerPos.z + randomValue(-rangeValue, rangeValue);
@@ -122,7 +120,7 @@ public class FireFly extends Module {
     private void renderParticles(MatrixStack matrixStack) {
 
         double lifetime = this.duration.getValue();
-        double fadeInDuration = this.duration.min;
+        double fadeInDuration = 500;
 
         removeExpiredParticles(lifetime + fadeInDuration);
         if (particles.isEmpty()) return;
@@ -228,13 +226,13 @@ public class FireFly extends Module {
     private void spawnParticle(Vec3d position, Vec3d velocity) {
         float size = 0.05F + (this.size.getValue() * 0.2F);
 
-        int particleColor = switch (this.colorMode.getValue()) {
+        int particleColor = switch (this.colorMode.getSelected()) {
             case "Клиентский" -> Color.WHITE.getRGB();
             case "Радужный" -> Color.HSBtoRGB((System.currentTimeMillis() + particles.size() * 100) % 2000L / 2000.0f, 0.7f, 1.0f);
             default -> Color.WHITE.getRGB();
         };
 
-        ParticleType type = switch (this.particleMode.getValue()) {
+        ParticleType type = switch (this.particleMode.getSelected()) {
             case "Amongus" -> ParticleType.AMONGUS;
             case "Circle" -> ParticleType.CIRCLE;
             case "Crown" -> ParticleType.CROWN;
