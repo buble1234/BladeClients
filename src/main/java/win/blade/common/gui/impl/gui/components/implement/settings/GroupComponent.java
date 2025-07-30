@@ -46,19 +46,27 @@ public class GroupComponent extends AbstractSettingComponent {
                     .build()
                     .render(x + 9, y + 15);
 
-        ((CheckComponent) checkComponent.position(x + width - 16, y + 7.5F))
-                .setRunnable(() -> setting.setValue(!setting.getValue()))
-                .setState(setting.getValue())
-                .render(context, mouseX, mouseY, delta);
+        if (setting.isToggleable()) {
+            ((CheckComponent) checkComponent.position(x + width - 16, y + 7.5F))
+                    .setRunnable(() -> setting.setValue(!setting.getValue()))
+                    .setState(setting.getValue())
+                    .render(context, mouseX, mouseY, delta);
 
-        ((SettingComponent) settingComponent.position(x + width - 28, y + 8))
-                .setRunnable(() -> spawnWindow(mouseX, mouseY))
-                .render(context, mouseX, mouseY, delta);
+            ((SettingComponent) settingComponent.position(x + width - 28, y + 8))
+                    .setRunnable(() -> spawnWindow(mouseX, mouseY))
+                    .render(context, mouseX, mouseY, delta);
+        } else {
+            ((SettingComponent) settingComponent.position(x + width - 16, y + 8))
+                    .setRunnable(() -> spawnWindow(mouseX, mouseY))
+                    .render(context, mouseX, mouseY, delta);
+        }
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        checkComponent.mouseClicked(mouseX, mouseY, button);
+        if (setting.isToggleable()) {
+            checkComponent.mouseClicked(mouseX, mouseY, button);
+        }
         settingComponent.mouseClicked(mouseX, mouseY, button);
         return super.mouseClicked(mouseX, mouseY, button);
     }

@@ -61,7 +61,7 @@ public class AuraModule extends Module {
             .value("Умные", "Центр", "Мульти")
             .visible(() -> aimGroup.getValue());
 
-    private final GroupSetting targetTypes = new GroupSetting("Типы целей", "").settings(
+    private final GroupSetting targetTypes = new GroupSetting("Типы целей", "").setToggleable().settings(
             new BooleanSetting("Игроки без брони", "").setValue(true),
             new BooleanSetting("Игроки с бронёй", "").setValue(true),
             new BooleanSetting("Невидимые игроки", "").setValue(false),
@@ -71,8 +71,7 @@ public class AuraModule extends Module {
             new BooleanSetting("Жители", "").setValue(false)
     );
 
-    private final GroupSetting behaviorOptions = new GroupSetting("Опции", "").settings(
-            new BooleanSetting("Корректировать движения", "").setValue(true).visible(() -> aimGroup.getValue()),
+    private final GroupSetting behaviorOptions = new GroupSetting("Опции", "").setToggleable().settings(
             new BooleanSetting("Сбрасывать спринт", "").setValue(true),
             new BooleanSetting("Бить сквозь блоки", "").setValue(false),
             new BooleanSetting("Отжимать щит", "").setValue(true),
@@ -82,9 +81,13 @@ public class AuraModule extends Module {
             new BooleanSetting("Фокусировать одну цель", "").setValue(false)
     );
 
-    private final SelectSetting moveMode = new SelectSetting("Режим коррекции движений", "")
-            .value("Слабая", "Сильная", "Нету")
-            .visible(() -> aimGroup.getValue() && getBooleanSetting(behaviorOptions, "Корректировать движения").getValue());
+    private final SelectSetting moveCorrectionMode = new SelectSetting("Режим", "")
+            .value("Слабая", "Сильная");
+
+    private final GroupSetting moveCorrectionGroup = new GroupSetting("Коррекция движений", "")
+            .visible(() -> aimGroup.getValue())
+            .settings(moveCorrectionMode);
+
 
     private final SelectSetting sortMode = new SelectSetting("Сортировка целей", "")
             .value("Дистанция", "Здоровье", "Броня", "Поле зрения", "Общая");
@@ -95,8 +98,9 @@ public class AuraModule extends Module {
     public AuraModule() {
         addSettings(
                 aimGroup, attackRange, aimRange, rotateTick,
-                pvpMode, cps, criticalMode, pointMode,
-                targetTypes, behaviorOptions, moveMode, sortMode
+                pointMode, moveCorrectionGroup,
+                pvpMode, cps, criticalMode,
+                targetTypes, behaviorOptions, sortMode
         );
     }
 
@@ -207,29 +211,25 @@ public class AuraModule extends Module {
     private void aimAtTarget() {
         PointMode selectedPointMode;
         switch (pointMode.getSelected()) {
-            case "Умные":
-                selectedPointMode = PointMode.SMART;
-                break;
-            case "Мульти":
-                selectedPointMode = PointMode.MULTI;
-                break;
-            default:
-                selectedPointMode = PointMode.CENTER;
+            case "Умные" -> selectedPointMode = PointMode.SMART;
+            case "Мульти" -> selectedPointMode = PointMode.MULTI;
+            default -> selectedPointMode = PointMode.CENTER;
         }
 
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
 
         boolean enableViewSync = getBooleanSetting(behaviorOptions, "Синхронизировать взгляд").getValue();
-        boolean enableMovementCorrection = getBooleanSetting(behaviorOptions, "Корректировать движения").getValue();
+
+        boolean enableMovementCorrection = false;
         boolean enableSilent = false;
 
-        if (enableMovementCorrection) {
-            if (moveMode.isSelected("Слабая")) {
+        if (moveCorrectionGroup.getValue()) {
+            enableMovementCorrection = true;
+
+            if (moveCorrectionMode.isSelected("Слабая")) {
                 enableSilent = true;
-            } else if (moveMode.isSelected("Сильная")) {
+            } else {
                 enableSilent = false;
-            } else if (moveMode.isSelected("Нету")) {
-                enableMovementCorrection = false;
             }
         }
 
