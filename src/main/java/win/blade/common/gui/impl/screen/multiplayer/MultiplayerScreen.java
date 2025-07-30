@@ -2,20 +2,27 @@ package win.blade.common.gui.impl.screen.multiplayer;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.network.MultiplayerServerListPinger;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.ServerList;
+import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.text.Text;
-import net.minecraft.util.Util;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.logging.UncaughtExceptionLogger;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RotationAxis;
 import org.slf4j.Logger;
 import win.blade.common.gui.button.Button;
 import win.blade.common.gui.impl.screen.BaseScreen;
 import win.blade.common.gui.impl.screen.window.CreateServerScreen;
+import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.math.TimerUtil;
+import win.blade.common.utils.math.animation.Animation;
+import win.blade.common.utils.math.animation.Easing;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
@@ -41,6 +48,10 @@ public class MultiplayerScreen extends BaseScreen {
     private int windowX;
     private int windowY;
 
+    public float targetScroll = 0;
+    public float maxScroll = 0;
+    public Animation scrollAnimation = new Animation();
+
     private ServerList serverList;
     private final List<ServerEntryWidget> serverEntries = new ArrayList<>();
     private final MultiplayerServerListPinger pinger = new MultiplayerServerListPinger();
@@ -52,6 +63,13 @@ public class MultiplayerScreen extends BaseScreen {
 
     public MultiplayerScreen() {
         super(Text.translatable("multiplayer.title"));
+    }
+
+    public MultiplayerScreen copyScroll(MultiplayerScreen screen){
+        targetScroll = screen.targetScroll;
+        scrollAnimation = screen.scrollAnimation;
+
+        return this;
     }
 
     @Override
@@ -90,6 +108,15 @@ public class MultiplayerScreen extends BaseScreen {
                 Text.of("Exit"),
                 this::close
         ));
+
+        this.addDrawableChild(new Button(
+                windowX + 250,
+                windowY + 12,
+                40,
+                20,
+                Text.of("Refresh"),
+                () -> this.client.setScreen(new MultiplayerScreen().copyScroll(this))
+        ));
     }
 
     private void connect(ServerInfo entry) {
@@ -98,22 +125,21 @@ public class MultiplayerScreen extends BaseScreen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        int lX = windowX + 15;
-        int lY = windowY + 40;
+        int listX = windowX + 15;
+        int listY = windowY + 40;
+        int listWidth = 276;
+        int listHeight = 249;
 
+        int entrySpacing = 52;
+        int entryRenderHeight = 46;
 
-        int lWidth = 276;
-        int lHeight = 249;
+        if (mouseX >= listX && mouseX < listX + listWidth && mouseY >= listY && mouseY < listY + listHeight) {
+            float scrollY = scrollAnimation.get();
+            double currentEntryTopY = listY + scrollY;
 
-
-        int eHeight = 52;
-        int entryRH = 92 / 2;
-
-        if (mouseX >= lX && mouseX < lX + lWidth && mouseY >= lY && mouseY < lY + lHeight) {
             for (ServerEntryWidget entry : this.serverEntries) {
-                if (mouseY >= lY && mouseY < lY + entryRH) {
-
-                    if (entry.mouseClicked(mouseX, mouseY, button, lX, (int) lY)) {
+                if (mouseY >= currentEntryTopY && mouseY < currentEntryTopY + entryRenderHeight) {
+                    if (entry.mouseClicked(mouseX, mouseY, button, listX, (int) currentEntryTopY)) {
                         return true;
                     }
 
@@ -127,11 +153,13 @@ public class MultiplayerScreen extends BaseScreen {
                         return true;
                     }
                 }
-                lY += eHeight;
+                currentEntryTopY += entrySpacing;
             }
         }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
+
 
     @Override
     public void tick() {
@@ -143,9 +171,9 @@ public class MultiplayerScreen extends BaseScreen {
     protected void renderContent(DrawContext context, int mouseX, int mouseY, float delta) {
 
         Color left, base, right;
-         left = new Color(23, 20, 38, 255);
-         base = new Color(20, 18, 27, 255);
-         right = new Color(17, 15, 23, 255);
+        left = new Color(23, 20, 38, 255);
+        base = new Color(20, 18, 27, 255);
+        right = new Color(17, 15, 23, 255);
 
         Builder.rectangle()
                 .size(new SizeState(306, 337))
@@ -162,24 +190,59 @@ public class MultiplayerScreen extends BaseScreen {
                 .build()
                 .render(windowX + 25, windowY + 17);
 
+
+        context.getMatrices().push();
+
+        float iconCenterX = windowX + 28f + FontType.sf_regular.get().getWidth("Multiplayer ", 12);
+        float iconCenterY = windowY + 28f;
+
+        context.getMatrices().translate(iconCenterX, iconCenterY, 0);
+        context.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees(90));
+
+        AbstractTexture arrowdown = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/arrpwl2.png"));
+
+        Builder.texture().size(new SizeState(8, 8)).color(new QuadColorState(Color.WHITE)).texture(0f, 0f, 1f, 1f, arrowdown).radius(new QuadRadiusState(0f)).build().render(context.getMatrices().peek().getPositionMatrix(), -8, -8);
+
+        context.getMatrices().pop();
+
         int listX = windowX + 15;
         int listY = windowY + 40;
         int listWidth = 276;
         int listHeight = 249;
         int entryH = 52;
 
+        scrollAnimation.update();
+
         context.getMatrices().push();
         context.enableScissor(listX, listY, listX + listWidth, listY + listHeight);
 
+        float scrollY = scrollAnimation.get();
         double curY = listY;
-        for (ServerEntryWidget entry : this.serverEntries) {
+        for (int index = 0; index < serverEntries.size(); index++) {
+            ServerEntryWidget entry = serverEntries.get(index);
             boolean isSelected = entry.equals(this.selectedEntry);
-            entry.render(context, listX, (int) curY, listWidth, 46, isSelected);
+            entry.render(context, index, mouseX, mouseY, listX, (int) (curY + scrollY), listWidth, 46, isSelected);
             curY += entryH;
         }
 
         context.disableScissor();
         context.getMatrices().pop();
+
+        var state2 = new QuadColorState(new Color(23, 20, 38, 0), base, right, new Color(20, 18, 27, 0));
+        Builder.rectangle().size(new SizeState(306, 288 - 120)).color(state2).radius(new QuadRadiusState(10)).build().render(windowX, windowY + 125);
+    }
+
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+
+        if (MathUtility.isHovered(mouseX, mouseY, windowX, windowY, 306, 337)) {
+            updateScroll(targetScroll + (float) verticalAmount * 10);
+
+
+        }
+
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override
@@ -192,5 +255,32 @@ public class MultiplayerScreen extends BaseScreen {
             this.serverList.saveFile();
         }
         super.close();
+    }
+
+
+    public void updateScroll(float pTargetScroll) {
+        int totalContentHeight = serverEntries.size() * (47 + 5) - 5;
+
+        maxScroll = 0;
+        if (totalContentHeight > 249) {
+            maxScroll = -(totalContentHeight - 249 + 5) - 10;
+        }
+
+        targetScroll = pTargetScroll;
+        targetScroll = MathHelper.clamp(targetScroll, maxScroll, 0);
+
+        scrollAnimation.run(targetScroll, 0.2, Easing.EASE_OUT_CUBIC);
+    }
+
+    public void deleteEntry(ServerEntryWidget entryWidget) {
+        this.serverList.remove(entryWidget.getServerInfo());
+        this.serverList.saveFile();
+
+        this.serverList.loadFile();
+        this.serverEntries.clear();
+        for (int i = 0; i < this.serverList.size(); i++) {
+            ServerInfo serverInfo = this.serverList.get(i);
+            this.serverEntries.add(new ServerEntryWidget(this, serverInfo, this.pinger, this.serverList, pingerPool));
+        }
     }
 }

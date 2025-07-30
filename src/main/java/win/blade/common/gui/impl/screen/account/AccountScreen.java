@@ -104,6 +104,7 @@ public class AccountScreen extends BaseScreen {
 
     @Override
     protected void renderContent(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+//        super.render(context, mouseX, mouseY, deltaTicks);
         Color left = new Color(23, 20, 38, 255);
         Color base = new Color(20, 18, 27, 255);
         Color right = new Color(17, 15, 23, 255);
@@ -183,8 +184,13 @@ public class AccountScreen extends BaseScreen {
             BuiltTexture settings = Builder.texture().size(new SizeState(7, 7)).texture(0.0f, 0.0f, 1.0f, 1.0f, setting).radius(new QuadRadiusState(0)).build();
             settings.render( windowX + 260, entryY + 15.7f);
 
-            AbstractTexture trash = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/trashing.png"));
-            BuiltTexture trashing = Builder.texture().size(new SizeState(8.5f, 8.5f)).texture(0.0f, 0.0f, 1.0f, 1.0f, trash).radius(new QuadRadiusState(0)).build();
+            boolean hovered = MathUtility.isHovered(mouseX, mouseY, windowX + 270, entryY + 15, 8.5f, 8.5f);
+            AbstractTexture trash = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/" + (hovered ? "trash" : "trashing") + ".png"));
+            BuiltTexture trashing =
+                    Builder.texture().size(new SizeState(8.5f, 8.5f)).texture(0.0f, 0.0f, 1.0f, 1.0f, trash)
+                            .radius(new QuadRadiusState(0))
+                            .build();
+
             trashing.render( windowX + 270, entryY + 15);
         }
 
@@ -192,13 +198,18 @@ public class AccountScreen extends BaseScreen {
 
         var state2 = new QuadColorState(new Color(23, 20, 38, 0), base, right, new Color(20, 18, 27, 0));
         Builder.rectangle().size(new SizeState(306, 288 - 125)).color(state2).radius(new QuadRadiusState(10)).build().render(windowX, windowY + 125);
+    }
 
-        windowManager.render(context, mouseX, mouseY, deltaTicks);
+    @Override
+    protected void renderLast(DrawContext context, int mouseX, int mouseY, float delta) {
+//        super.renderLast(context, mouseX, mouseY, delta);
+
+        windowManager.render(context, mouseX, mouseY, delta);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if(windowManager.mouseClicked(mouseX, mouseY, button)) return super.mouseClicked(mouseX, mouseY, button);
+        if(windowManager.mouseClicked(mouseX, mouseY, button)) return true;//super.mouseClicked(mouseX, mouseY, button);
 
         if (MathUtility.isHovered(mouseX, mouseY, windowX + 15, scissorY, 276, scissorHeight)) {
             int startY = windowY + 40;
@@ -210,12 +221,7 @@ public class AccountScreen extends BaseScreen {
 
                 if (MathUtility.isHovered(mouseX, mouseY, windowX + 15, entryY, 276, entryH)) {
                     if (MathUtility.isHovered(mouseX, mouseY, windowX + 270, entryY + 15, 8.5f, 8.5f)) {
-                        accountList.remove(account);
-                        accountList.sort(Comparator.comparing(Account::getCreationDateTime));
-                        AccountSaver.save(accountList);
-
-                        updateScroll(targetScroll - (entryH - gap));
-
+                        delete(account);
                         //mouseScrolled(0, 0, 0, 0);
                         return true;
                     } else if (MathUtility.isHovered(mouseX, mouseY, windowX + 260, entryY + 15.7f, 7, 7)) {
@@ -229,6 +235,14 @@ public class AccountScreen extends BaseScreen {
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    public void delete(Account account){
+        accountList.remove(account);
+        accountList.sort(Comparator.comparing(Account::getCreationDateTime));
+        AccountSaver.save(accountList);
+
+        updateScroll(targetScroll - (entryH - gap));
     }
 
     @Override

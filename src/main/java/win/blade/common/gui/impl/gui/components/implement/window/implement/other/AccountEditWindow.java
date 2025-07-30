@@ -160,6 +160,6 @@ public class AccountEditWindow extends AbstractWindow {
     }
 
     public void delete(){
-
+        AccountScreen.instance.delete(account);
     }
 }
