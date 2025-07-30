@@ -224,11 +224,6 @@ public class AuraModule extends Module {
         AttackManager.attack(livingTarget, settings);
     }
 
-    private boolean shouldCrit() {
-        return !mc.player.isOnGround() && !mc.player.isInLava() && !mc.player.isSubmergedInWater()
-                && !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) && mc.player.fallDistance > 0;
-    }
-
     private AttackSettings buildAttackSettings() {
         AttackMode attackMode = pvpMode.is("1.8") ? AttackMode.LEGACY : AttackMode.MODERN;
 

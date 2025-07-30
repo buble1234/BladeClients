@@ -3,7 +3,7 @@ package win.blade.core.module.storage.render;
 import net.minecraft.block.Block;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
-import win.blade.common.utils.render.Render3DUtilities;
+import win.blade.common.utils.render.draw.RendererUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.module.api.Category;
@@ -63,7 +63,7 @@ public class BlockESPModule extends Module {
 
     private void renderBlock(MatrixStack matrices, BlockPos pos, Color color) {
         Box box = new Box(pos);
-        Render3DUtilities.drawFilledOutlineBox(matrices, box, color, 1.5f);
+        RendererUtility.INSTANCE.BOXES.drawFilledOutline(matrices, box, color, 0.01f);
     }
 
     private Color getColorForBlock(Block block) {
