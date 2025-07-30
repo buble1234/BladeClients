@@ -26,15 +26,6 @@ public enum CriticalMode implements MinecraftInstance {
     ADAPTIVE {
         @Override
         public boolean canCritical(AttackSettings settings, AttackState state) {
-            if (mc.player.input.playerInput.jump()) {
-                return isPlayerInCriticalState() || mc.player.isSubmergedInWater() || mc.player.isInSwimmingPose() || (System.currentTimeMillis() - state.getLastJumpTime() < 200);
-            }
-            return true;
-        }
-    },
-    SMART {
-        @Override
-        public boolean canCritical(AttackSettings settings, AttackState state) {
 
             boolean reasonForSkipCrit = mc.player.getAbilities().flying || mc.player.isGliding() || mc.player.hasStatusEffect(StatusEffects.BLINDNESS) || mc.player.hasStatusEffect(StatusEffects.SLOW_FALLING);
 
@@ -73,6 +64,6 @@ public enum CriticalMode implements MinecraftInstance {
         if (mc.player.isGliding()) {
             return true;
         }
-        return !mc.player.isOnGround() && !mc.player.isInLava() && !mc.player.isSubmergedInWater() && !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) && mc.player.fallDistance > 0;
+        return !mc.player.isOnGround() && !mc.player.isInLava() && !mc.player.isSubmergedInWater() && mc.player.fallDistance > 0;
     }
 }
