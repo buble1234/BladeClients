@@ -17,8 +17,7 @@ public class PanicModule extends Module {
             mc.setScreen(null);
         }
         for (Module module : Manager.moduleManager.values()) {
-            if (module != this) {
-                module.setKeybind(Keyboard.KEY_NONE.getKey());
+            if (module != this) {module.setKeybind(Keyboard.KEY_NONE.getKey());
                 module.setEnabled(false);
             }
         }
