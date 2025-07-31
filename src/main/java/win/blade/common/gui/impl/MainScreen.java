@@ -61,29 +61,6 @@ public class MainScreen extends BaseScreen {
                 .thickness(0.05f)
                 .build();
 
-
-
-
-         final Identifier MY_ICON_SVG =  Identifier.of("blade", "textures/vecyes.svg");
-
-        Builder.vector()
-                .size(new SizeState(4, 4))
-                .color(new QuadColorState(Color.WHITE))
-                .radius(new QuadRadiusState(0))
-                .svg(MY_ICON_SVG)
-                .build()
-                .render(60, 50);
-
-        AbstractTexture checkTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/check.png"));
-
-        Builder.texture()
-                .size(new SizeState(8, 8))
-                .color(new QuadColorState(Color.GRAY))
-                .texture(0f, 0f, 1f, 1f, checkTexture)
-                .radius(new QuadRadiusState(0f))
-                .build()
-                .render(60,400);
-
         float iX = centerX - (Twidth / 2.0f) - FontType.icon2.get().getWidth("a", 24) - 5;
         bladeIcon.render(matrix, iX, centerY - 130);
 

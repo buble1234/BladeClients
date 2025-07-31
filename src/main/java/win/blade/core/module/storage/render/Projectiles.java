@@ -19,9 +19,8 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
 import org.joml.Matrix4f;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
-import win.blade.common.utils.color.ColorUtility;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.MultiSelectSetting;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
@@ -42,18 +41,21 @@ public class Projectiles extends Module {
 
     public Projectiles() {
         instance = this;
+        addSettings(renderName, projectiles);
     }
 
     public static Projectiles getInstance() {
         return instance;
     }
 
-    private final BooleanSetting renderName = new BooleanSetting(this, "Показывать владельца", false);
-    private final MultiBooleanSetting projectiles = new MultiBooleanSetting(this, "Снаряды",
-            BooleanSetting.of("Эндер Пёрл", true),
-            BooleanSetting.of("Стрела", true),
-            BooleanSetting.of("Трезубец", true)
+    private final BooleanSetting renderName = new BooleanSetting("Показывать владельца", "").setValue(true);
+
+    private final MultiSelectSetting projectiles = new MultiSelectSetting("Снаряды", "").value(
+            "Эндер Пёрл",
+            "Стрела",
+            "Трезубец"
     );
+
 
     @EventHandler
     public void onRender3D(RenderEvents.World event) {
@@ -207,9 +209,9 @@ public class Projectiles extends Module {
     }
 
     private boolean isValidEntity(Entity entity) {
-        return (entity instanceof EnderPearlEntity && projectiles.get("Эндер Пёрл").getValue())
-                || (entity instanceof ArrowEntity && projectiles.get("Стрела").getValue())
-                || (entity instanceof TridentEntity && projectiles.get("Трезубец").getValue());
+        return (entity instanceof EnderPearlEntity && projectiles.isSelected("Эндер Пёрл"))
+                || (entity instanceof ArrowEntity && projectiles.isSelected("Стрела"))
+                || (entity instanceof TridentEntity && projectiles.isSelected("Трезубец"));
     }
 
     private boolean hasMoved(Entity entity) {

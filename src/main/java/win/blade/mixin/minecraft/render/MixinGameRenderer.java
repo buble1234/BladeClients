@@ -94,7 +94,7 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
         }
 
         float aspectRatioValue;
-        String mode = module.multiplier.getValue();
+        String mode = module.multiplier.getSelected();
 
         switch (mode) {
             case "16:9":

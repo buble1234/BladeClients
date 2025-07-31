@@ -21,8 +21,7 @@ public record BuiltTexture(
         float smoothness,
         float u, float v,
         float texWidth, float texHeight,
-        int textureId
-    ) implements IRenderer {
+        int textureId) implements IRenderer {
 
     private static final ShaderProgramKey TEXTURE_SHADER_KEY = new ShaderProgramKey(ResourceUtility.getShaderIdentifier("common","texture"),
         VertexFormats.POSITION_TEXTURE_COLOR, Defines.EMPTY);

@@ -25,7 +25,7 @@ public class FinishScreen extends BaseScreen {
     }
 
     @Override
-    protected void init() {
+    public void init() {
         super.init();
         alphaAnimation.set(0);
         timer.reset();
