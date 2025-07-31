@@ -22,18 +22,28 @@ import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
+import win.blade.common.utils.other.IEntity;
 import win.blade.core.Manager;
 import win.blade.core.module.api.ModuleManager;
 import win.blade.core.module.storage.misc.SeeInvisiblesModule;
 import win.blade.core.module.storage.move.NoPushModule;
+import win.blade.core.module.storage.render.Particles;
 import win.blade.core.module.storage.render.ShaderESP;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Mixin(Entity.class)
-public abstract class MixinEntity implements MinecraftInstance {
+public abstract class MixinEntity implements MinecraftInstance, IEntity {
 
-    @Shadow public abstract boolean isFireImmune();
+    @Unique
+    public List<Particles.Point> points = new ArrayList<>();
+
+    @Override
+    public List<Particles.Point> getPoint() {
+        return points;
+    }
 
     @ModifyExpressionValue(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isControlledByPlayer()Z"))
     private boolean fixFallDistance(boolean original) {

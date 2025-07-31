@@ -21,7 +21,6 @@ import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.TimerUtil;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
-import win.blade.common.utils.player.MovementUtility;
 import win.blade.common.utils.player.PlayerUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
@@ -38,8 +37,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @ModuleInfo(name = "Particles", category = Category.RENDER)
 public class Particles extends Module {
-
-    private static Particles instance;
 
     private final BooleanSetting moveSetting = new BooleanSetting("Движении", "").setValue(true);
     private final BooleanSetting attackSetting = new BooleanSetting("Атаке", "").setValue(true);
@@ -66,17 +63,13 @@ public class Particles extends Module {
 
     private final List<Particle> targetParticles = new ArrayList<>();
     private final List<Particle> flameParticles = new ArrayList<>();
+    private final List<Point> playerPath = new ArrayList<>();
 
     public Particles() {
-        instance = this;
         addSettings(
                 events, countAttack, countMove, size, strength, opacity,
                 glowing, physic, colorMode, particleMode
         );
-    }
-
-    public static Particles getInstance() {
-        return instance;
     }
 
     private BooleanSetting getBooleanSetting(GroupSetting group, String name) {
@@ -96,6 +89,7 @@ public class Particles extends Module {
     private void clear() {
         if (!targetParticles.isEmpty()) targetParticles.clear();
         if (!flameParticles.isEmpty()) flameParticles.clear();
+        if (!playerPath.isEmpty()) playerPath.clear();
     }
 
     @EventHandler
@@ -116,17 +110,29 @@ public class Particles extends Module {
 
     @EventHandler
     public void onUpdate(UpdateEvents.Update event) {
-        if (mc.player == null || !getBooleanSetting(events, "Движении").getValue()) return;
+        if (mc.player == null) {
+            clear();
+            return;
+        }
 
-        if (MovementUtility.isMoving()) {
-            if (mc.options.getPerspective() != Perspective.FIRST_PERSON) {
-                for (int i = 0; i < (int) countMove.getValue(); i++) {
-                    spawnParticle(flameParticles,
-                            new Vec3d(mc.player.getX() + randomValue(-0.5, 0.5), mc.player.getY() + randomValue(0, mc.player.getHeight()), mc.player.getZ() + randomValue(-0.5, 0.5)),
-                            mc.player.getVelocity().add(randomValue(-0.25, 0.25), randomValue(-0.15, 0.15), randomValue(-0.25, 0.25)).multiply(strength.getValue())
-                    );
+        if (moveSetting.getValue()) {
+            Vec3d currentPos = mc.player.getPos();
+            Vec3d lastPos = playerPath.isEmpty() ? null : playerPath.get(playerPath.size() - 1).getPos();
+
+            if (lastPos == null || currentPos.distanceTo(lastPos) > 0.015) {
+                playerPath.add(new Point(currentPos));
+                if (mc.options.getPerspective() != Perspective.FIRST_PERSON) {
+                    for (int i = 0; i < (int) countMove.getValue(); i++) {
+                        spawnParticle(flameParticles,
+                                new Vec3d(mc.player.getX() + randomValue(-0.5, 0.5), mc.player.getY() + randomValue(0, mc.player.getHeight()), mc.player.getZ() + randomValue(-0.5, 0.5)),
+                                mc.player.getVelocity().add(randomValue(-0.25, 0.25), randomValue(-0.15, 0.15), randomValue(-0.25, 0.25)).multiply(strength.getValue())
+                        );
+                    }
                 }
             }
+            playerPath.removeIf(point -> point.isExpired(System.currentTimeMillis(), 2000L));
+        } else {
+            if (!playerPath.isEmpty()) playerPath.clear();
         }
 
         removeExpiredParticles(targetParticles, 5000);
@@ -215,7 +221,7 @@ public class Particles extends Module {
         }
 
         if (glowing.getValue()) {
-            drawTexturedQuad(matrix, FireFly.ParticleType.BLOOM.texture(), -size * 4, -size * 4, size * 8, size * 8, ColorUtility.applyOpacity(color, 0.1f));
+            drawTexturedQuad(matrix, Particles.ParticleType.BLOOM.texture(), -size * 4, -size * 4, size * 8, size * 8, ColorUtility.applyOpacity(color, 0.1f));
         }
 
         drawTexturedQuad(matrix, particle.type().texture(), -size, -size, size * 2, size * 2, color);
@@ -303,6 +309,24 @@ public class Particles extends Module {
         public static ParticleType getRandom() {
             ParticleType[] values = values();
             return values[ThreadLocalRandom.current().nextInt(values.length)];
+        }
+    }
+
+    public static class Point {
+        private final Vec3d pos;
+        private final long creationTime;
+
+        public Point(Vec3d pos) {
+            this.pos = pos;
+            this.creationTime = System.currentTimeMillis();
+        }
+
+        public Vec3d getPos() {
+            return pos;
+        }
+
+        public boolean isExpired(long currentTime, long lifetimeMs) {
+            return currentTime - creationTime > lifetimeMs;
         }
     }
 
