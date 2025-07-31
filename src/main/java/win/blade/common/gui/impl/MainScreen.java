@@ -14,6 +14,7 @@ import win.blade.common.gui.impl.screen.singleplayer.SingleplayerScreen;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.msdf.FontType;
 import win.blade.common.utils.render.renderers.impl.BuiltText;
+import win.blade.core.Manager;
 
 import java.awt.*;
 
