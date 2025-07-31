@@ -1,9 +1,12 @@
 package win.blade.common.gui.impl.screen.singleplayer;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.level.storage.LevelSummary;
 import win.blade.common.utils.minecraft.MinecraftInstance;
@@ -62,6 +65,34 @@ public class WorldEntryWidget implements MinecraftInstance {
         loadIcons();
     }
 
+    public boolean mouseClicked(double mouseX, double mouseY, int button, int entryX, int entryY) {
+        float trashX = entryX + 255;
+        float trashY = entryY + 9.5f;
+
+        if (mouseX >= trashX && mouseX <= trashX + 8.5f && mouseY >= trashY && mouseY <= trashY + 8.5f) {
+            if (summary.isDeletable()) {
+                mc.setScreen(new ConfirmScreen(
+                        confirmed -> {
+                            if (confirmed) {
+                                screen.deleteEntry(this);
+                            }
+                            mc.setScreen(screen);
+                        },
+                        Text.translatable("selectWorld.deleteQuestion"),
+                        Text.translatable("selectWorld.deleteWarning", summary.getName()).formatted(Formatting.RED),
+                        Text.translatable("selectWorld.deleteButton"),
+                        Text.translatable("gui.cancel")
+                ));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public LevelSummary getSummary() {
+        return summary;
+    }
+
     private void loadIcons() {
         AbstractTexture settingTexture = mc.getTextureManager().getTexture(Identifier.of("blade", "textures/settings.png"));
         this.settingsIcon = Builder.texture().size(new SizeState(7, 7)).texture(0, 0, 1, 1, settingTexture).build();
@@ -82,7 +113,6 @@ public class WorldEntryWidget implements MinecraftInstance {
                 .build();
         rectangle.render( x,y);
 
-
         BuiltBorder border = Builder.border()
                 .size(new SizeState(width,height))
                 .color(new QuadColorState(new Color(255, 255, 255, 10)))
@@ -90,6 +120,7 @@ public class WorldEntryWidget implements MinecraftInstance {
                 .thickness(0.6f)
                 .build();
         border.render(x,y);
+
 
         this.settingsIcon.render(context.getMatrices().peek().getPositionMatrix(), x + 245, y + 10);
         this.trashIcon.render(context.getMatrices().peek().getPositionMatrix(), x + 255, y + 9.5f);
@@ -105,7 +136,7 @@ public class WorldEntryWidget implements MinecraftInstance {
 
         Builder.text()
                 .font(FontType.sf_regular.get())
-                .text(summary.getDisplayName())
+                .text(summary.getName())
                 .color(new Color(255, 255, 255))
                 .size(10)
                 .build()
@@ -113,8 +144,8 @@ public class WorldEntryWidget implements MinecraftInstance {
 
 
         String mode,cheats,subname;
-         mode = summary.getGameMode().getTranslatableName().getString();
-         cheats = summary.hasCheats() ? "читы" : "без читов";
+        mode = summary.getGameMode().getTranslatableName().getString();
+        cheats = summary.hasCheats() ? "читы" : "без читов";
         subname = mode + ", " + cheats;
 
         Builder.text()

@@ -21,6 +21,7 @@ import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -32,10 +33,16 @@ import java.util.concurrent.TimeUnit;
         desc = "Позволяет передвигаться с открытым инвентарём"
 )
 public class InvWalkModule extends Module {
-    private final List<Packet<?>> packets = new ArrayList<>();
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final List<Packet<?>> packets = Collections.synchronizedList(new ArrayList<>());
+    private ScheduledExecutorService scheduler;
     private final TimerUtil wait = new TimerUtil();
     private KeyBinding[] keys;
+
+    @Override
+    protected void onEnable() {
+        scheduler = Executors.newSingleThreadScheduledExecutor();
+        super.onEnable();
+    }
 
     @EventHandler
     public void onTick(UpdateEvents.Update event) {
@@ -54,54 +61,67 @@ public class InvWalkModule extends Module {
             };
         }
 
-        int ping = PacketUtility.getPing();
-        ping = MathHelper.clamp(ping, 125, 225);
-
-        if (ServerUtility.isOnFuntime() && !packets.isEmpty() && !wait.hasReached(ping)) {
+        if (ServerUtility.isOnFuntime() && !packets.isEmpty() && !wait.hasReached(PacketUtility.getPing())) {
             PacketUtility.sendSneaking(true);
             PacketUtility.sendSprinting(false);
-            for (KeyBinding key : keys) {
-                key.setPressed(false);
+            if (keys != null) {
+                for (KeyBinding key : keys) {
+                    key.setPressed(false);
+                }
             }
             return;
         }
 
-        long window = mc.getWindow().getHandle();
-        for (KeyBinding key : keys) {
-            int code = key.getDefaultKey().getCode();
-            boolean pressed = GLFW.glfwGetKey(window, code) == GLFW.GLFW_PRESS;
-            key.setPressed(pressed);
+        if (mc.currentScreen != null && !(mc.currentScreen instanceof ChatScreen) && keys != null) {
+            long window = mc.getWindow().getHandle();
+            for (KeyBinding key : keys) {
+                if (key != null) {
+                    boolean pressed = GLFW.glfwGetKey(window, key.getDefaultKey().getCode()) == GLFW.GLFW_PRESS;
+                    key.setPressed(pressed);
+                }
+            }
         }
     }
 
     @EventHandler
     public void onPacket(PacketEvent.Send event) {
-        if (ServerUtility.isOnFuntime() && mc.currentScreen instanceof InventoryScreen && MovementUtility.isMoving() && event.getPacket() instanceof ClickSlotC2SPacket pkt) {
-            packets.add(pkt);
+        if (ServerUtility.isOnFuntime() && mc.currentScreen instanceof InventoryScreen && MovementUtility.isMoving() && event.getPacket() instanceof ClickSlotC2SPacket) {
+            packets.add(event.getPacket());
             event.cancel();
         }
     }
 
     @EventHandler
     public void onClose(PlayerActionEvents.CloseInventory event) {
-        if (ServerUtility.isOnFuntime() && mc.currentScreen instanceof InventoryScreen && !packets.isEmpty() && MovementUtility.isMoving()) {
+        if (ServerUtility.isOnFuntime() && !packets.isEmpty()) {
             wait.reset();
-            if (!scheduler.isShutdown()) {
+            if (scheduler != null && !scheduler.isShutdown()) {
                 scheduler.schedule(this::sendPackets, 100, TimeUnit.MILLISECONDS);
-                event.cancel();
-            } else {
-                sendPackets();
             }
+            event.cancel();
         }
     }
 
     private void sendPackets() {
-        for (Packet<?> p : packets) {
-            PacketUtility.sendPacket(p);
+        synchronized (packets) {
+            List<Packet<?>> packetsCopy = new ArrayList<>(packets);
+            packets.clear();
+            for (Packet<?> p : packetsCopy) {
+                PacketUtility.sendPacket(p);
+            }
         }
-        packets.clear();
         PacketUtility.sendSprinting(true);
         PacketUtility.sendSneaking(false);
+
+        if (keys != null && mc != null) {
+            long window = mc.getWindow().getHandle();
+            for (KeyBinding key : keys) {
+                if (key != null) {
+                    boolean pressed = GLFW.glfwGetKey(window, key.getDefaultKey().getCode()) == GLFW.GLFW_PRESS;
+                    key.setPressed(pressed);
+                }
+            }
+        }
     }
 
     @Override
@@ -111,20 +131,24 @@ public class InvWalkModule extends Module {
                 sendPackets();
             }
             PacketUtility.sendSneaking(false);
-            for (KeyBinding key : keys) {
-                if (key != null) {
-                    key.setPressed(false);
+            if (keys != null) {
+                for (KeyBinding key : keys) {
+                    if (key != null) {
+                        key.setPressed(false);
+                    }
                 }
             }
         }
-        scheduler.shutdown();
-        try {
-            if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+        if (scheduler != null) {
+            scheduler.shutdown();
+            try {
+                if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+                    scheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
                 scheduler.shutdownNow();
+                Thread.currentThread().interrupt();
             }
-        } catch (InterruptedException e) {
-            scheduler.shutdownNow();
-            Thread.currentThread().interrupt();
         }
         super.onDisable();
     }

@@ -36,7 +36,23 @@ repositories {
 dependencies {
     modImplementation "org.reflections:reflections:0.10.2"
     include "org.reflections:reflections:0.10.2"
+
     implementation 'io.github.CDAGaming:DiscordIPC:0.10.2'
+
+    implementation 'io.github.earcut4j:earcut4j:2.2.2'
+    include 'io.github.earcut4j:earcut4j:2.2.2'
+    def batikVersion = '1.17'
+    def batikExclude = {
+        exclude group: 'xalan', module: 'xalan'
+        exclude group: 'xml-apis', module: 'xml-apis'
+    }
+
+    implementation("org.apache.xmlgraphics:batik-parser:$batikVersion", batikExclude)
+    implementation("org.apache.xmlgraphics:batik-awt-util:$batikVersion", batikExclude)
+    implementation("org.apache.xmlgraphics:batik-transcoder:$batikVersion", batikExclude)
+
+    implementation("org.apache.xmlgraphics:batik-codec:$batikVersion", batikExclude)
+
 
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"

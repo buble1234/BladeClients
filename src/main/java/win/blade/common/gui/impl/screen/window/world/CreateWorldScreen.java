@@ -8,6 +8,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.resource.DataConfiguration;
 import net.minecraft.server.integrated.IntegratedServerLoader;
 import net.minecraft.text.Text;
+import net.minecraft.util.PathUtil;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
@@ -31,6 +32,8 @@ import win.blade.common.utils.render.msdf.FontType;
 import win.blade.common.utils.render.msdf.MsdfFont;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.function.Function;
 
 public class CreateWorldScreen extends BaseWindowScreen {
@@ -81,13 +84,17 @@ public class CreateWorldScreen extends BaseWindowScreen {
 
     private void createWorld() {
         IntegratedServerLoader loader = this.client.createIntegratedServerLoader();
-        
-        
+
         String worldN = this.worldT.getText().trim();
-        
-        
+
         if (StringUtils.isEmpty(worldN)) {
             worldN = "New World";
+        }
+
+        try {
+            Path savesDirectory = this.client.getLevelStorage().getSavesDirectory();
+            worldN = PathUtil.getNextUniqueName(savesDirectory, worldN, "");
+        } catch (IOException e) {
         }
 
         GameMode selectedMode = gameMode[this.modeIndex];

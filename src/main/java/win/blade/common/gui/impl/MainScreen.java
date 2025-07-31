@@ -3,7 +3,9 @@ package win.blade.common.gui.impl;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
+import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import win.blade.common.gui.button.Button;
 import win.blade.common.gui.impl.screen.BaseScreen;
@@ -12,6 +14,9 @@ import win.blade.common.gui.impl.screen.account.AccountScreen;
 import win.blade.common.gui.impl.screen.multiplayer.MultiplayerScreen;
 import win.blade.common.gui.impl.screen.singleplayer.SingleplayerScreen;
 import win.blade.common.utils.render.builders.Builder;
+import win.blade.common.utils.render.builders.states.QuadColorState;
+import win.blade.common.utils.render.builders.states.QuadRadiusState;
+import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.msdf.FontType;
 import win.blade.common.utils.render.renderers.impl.BuiltText;
 
@@ -23,6 +28,7 @@ public class MainScreen extends BaseScreen {
         super(Text.of(""));
     }
 
+     Identifier settingsIconSvg = Identifier.of("blade", "textures/vector.svg");
     public AccountScreen accountScreen = new AccountScreen();
     @Override
     protected void init() {
@@ -53,6 +59,29 @@ public class MainScreen extends BaseScreen {
                 .size(24)
                 .thickness(0.05f)
                 .build();
+
+
+
+
+         final Identifier MY_ICON_SVG =  Identifier.of("blade", "textures/vecyes.svg");
+
+        Builder.vector()
+                .size(new SizeState(4, 4))
+                .color(new QuadColorState(Color.WHITE))
+                .radius(new QuadRadiusState(0))
+                .svg(MY_ICON_SVG)
+                .build()
+                .render(60, 50);
+
+        AbstractTexture checkTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/check.png"));
+
+        Builder.texture()
+                .size(new SizeState(8, 8))
+                .color(new QuadColorState(Color.GRAY))
+                .texture(0f, 0f, 1f, 1f, checkTexture)
+                .radius(new QuadRadiusState(0f))
+                .build()
+                .render(60,400);
 
         float iX = centerX - (Twidth / 2.0f) - FontType.icon2.get().getWidth("a", 24) - 5;
         bladeIcon.render(matrix, iX, centerY - 130);

@@ -34,7 +34,7 @@ public abstract class BaseWindowScreen extends BaseScreen {
                 .render(context.getMatrices().peek().getPositionMatrix(), windowX, windowY);
 
         Builder.rectangle()
-                .size(new SizeState(306, 122))
+                .size(new SizeState(this.windowWidth, this.windowHeight))
                 .color(new QuadColorState(new Color(23, 20, 38, 255), new Color(20, 18, 27, 255), new Color(17, 15, 23, 255), new Color(20, 18, 27, 255)))
                 .radius(new QuadRadiusState(10))
                 .build()

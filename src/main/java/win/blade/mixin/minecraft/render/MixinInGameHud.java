@@ -1,6 +1,7 @@
 package win.blade.mixin.minecraft.render;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.util.math.MatrixStack;
@@ -8,11 +9,13 @@ import net.minecraft.scoreboard.ScoreboardObjective;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
 import win.blade.core.event.impl.render.RenderCancelEvents;
+import win.blade.core.module.storage.misc.BetterMinecraftModule;
 
 @Mixin(InGameHud.class)
 public abstract class MixinInGameHud implements MinecraftInstance {
@@ -55,6 +58,17 @@ public abstract class MixinInGameHud implements MinecraftInstance {
         Manager.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             ci.cancel();
+        }
+    }
+
+    @Redirect(method = "clear", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/ChatHud;clear(Z)V"))
+    private void onClearChatInHud(ChatHud instance, boolean clearHistory) {
+        BetterMinecraftModule module = Manager.getModuleManagement().get(BetterMinecraftModule.class);
+
+        if (module.isEnabled() && module.chatHistory.getValue()) {
+            instance.clear(false);
+        } else {
+            instance.clear(clearHistory);
         }
     }
 }

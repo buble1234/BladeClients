@@ -70,12 +70,10 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
 
                 for (Slot slot : this.handler.slots) {
                     if (slot.hasStack() && slot.getStack().getItem() == itemToDrop) {
-                        // Выбрасываем стак
                         this.onMouseClick(slot, slot.id, 1, SlotActionType.THROW);
                     }
                 }
 
-                // Отменяем стандартное действие, чтобы не выбросить предмет дважды
                 cir.setReturnValue(true);
                 cir.cancel();
             }

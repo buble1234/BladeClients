@@ -8,11 +8,11 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
@@ -27,6 +27,26 @@ public class MathUtility implements MinecraftInstance {
     public static boolean isHovered(double mouseX, double mouseY, double x, double y, double width, double height) {
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
+
+    public static Vec3d interpolate(Entity entity, float partialTicks) {
+        double posX = lerp(entity.lastRenderX, entity.getX(), partialTicks);
+        double posY = lerp(entity.lastRenderY, entity.getY(), partialTicks);
+        double posZ = lerp(entity.lastRenderZ, entity.getZ(), partialTicks);
+        return new Vec3d(posX, posY, posZ);
+    }
+
+    public static double lerp(double input, double target, double step) {
+        return input + step * (target - input);
+    }
+
+    public float lerp(float input, float target, double step) {
+        return (float) (input + step * (target - input));
+    }
+
+    public int lerp(int input, int target, double step) {
+        return (int) (input + step * (target - input));
+    }
+
 
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();

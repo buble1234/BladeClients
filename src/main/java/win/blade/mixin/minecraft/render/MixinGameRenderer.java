@@ -23,6 +23,7 @@ import win.blade.core.event.controllers.EventHolder;
 import win.blade.core.event.impl.render.FovEvent;
 import win.blade.core.event.impl.render.RenderCancelEvents;
 import win.blade.core.event.impl.render.WorldChangeEvent;
+import win.blade.core.module.storage.render.AspectRatioModule;
 
 @Mixin(GameRenderer.class)
 public abstract class MixinGameRenderer implements MinecraftInstance {
@@ -79,4 +80,63 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
         Manager.EVENT_BUS.post(event);
         cir.setReturnValue(event.getFov());
     }
+
+    @Shadow private float zoom;
+    @Shadow private float zoomX;
+    @Shadow private float zoomY;
+
+    @Inject(method = "getBasicProjectionMatrix(F)Lorg/joml/Matrix4f;", at = @At("TAIL"), cancellable = true)
+    private void onGetBasicProjectionMatrix(float fov, CallbackInfoReturnable<Matrix4f> cir) {
+        AspectRatioModule module = Manager.getModuleManagement().get(AspectRatioModule.class);
+
+        if (!module.isEnabled()) {
+            return;
+        }
+
+        float aspectRatioValue;
+        String mode = module.multiplier.getValue();
+
+        switch (mode) {
+            case "16:9":
+                aspectRatioValue = 16.0f / 9.0f;
+                break;
+            case "16:10":
+                aspectRatioValue = 16.0f / 10.0f;
+                break;
+            case "21:9":
+                aspectRatioValue = 21.0f / 9.0f;
+                break;
+            case "4:3":
+                aspectRatioValue = 4.0f / 3.0f;
+                break;
+            case "Кастомное":
+                aspectRatioValue = module.customRatio.getValue();
+                break;
+            default:
+                if (this.client.getWindow().getFramebufferHeight() == 0) return;
+                aspectRatioValue = (float) this.client.getWindow().getFramebufferWidth() / (float) this.client.getWindow().getFramebufferHeight();
+                break;
+        }
+
+        if (aspectRatioValue <= 0) return;
+
+        Matrix4f perspectiveMatrix = new Matrix4f();
+        perspectiveMatrix.setPerspective(
+                (float) Math.toRadians(fov),
+                aspectRatioValue,
+                0.05F,
+                this.client.gameRenderer.getFarPlaneDistance()
+        );
+
+        Matrix4f zoomMatrix = new Matrix4f().identity();
+        if (this.zoom != 1.0F) {
+            zoomMatrix.translate(this.zoomX, -this.zoomY, 0.0F);
+            zoomMatrix.scale(this.zoom, this.zoom, 1.0F);
+        }
+
+        zoomMatrix.mul(perspectiveMatrix);
+        cir.setReturnValue(zoomMatrix);
+    }
+
+
 }

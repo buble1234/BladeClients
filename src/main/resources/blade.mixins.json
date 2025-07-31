@@ -14,6 +14,8 @@
     "minecraft.entity.MixinFireWorkEntity",
     "minecraft.entity.MixinLivingEntity",
     "minecraft.gui.LoadingScreenMixin",
+    "minecraft.gui.MixinChatHud",
+    "minecraft.gui.MixinChatScreen",
     "minecraft.gui.MixinGameMenuScreen",
     "minecraft.gui.MixinMultiplayerServerListPinger",
     "minecraft.gui.MixinScreen",

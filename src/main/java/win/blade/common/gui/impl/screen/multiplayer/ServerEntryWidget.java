@@ -50,8 +50,6 @@ public class ServerEntryWidget implements MinecraftInstance {
     private boolean pinged = false;
     private BuiltTexture settingsIcon, trashIcon, placeholderIcon;
     private byte[] lastFaviconBytes;
-    public Identifier statusIcon;
-
     public AbstractTexture pingTexture;
 
     public ServerEntryWidget(MultiplayerScreen screen, ServerInfo serverInfo, MultiplayerServerListPinger pinger, ServerList serverList, ThreadPoolExecutor pingerThreadPool) {
@@ -75,7 +73,7 @@ public class ServerEntryWidget implements MinecraftInstance {
 
         AbstractTexture placeholderTexture = mc.getTextureManager().getTexture(Identifier.of("blade", "textures/noneserver.png"));
         this.placeholderIcon = Builder.texture()
-                .size(new SizeState(32, 32))
+                .size(new SizeState(24, 24))
                 .texture(0, 0, 1, 1, placeholderTexture)
                 .radius(new QuadRadiusState(6))
                 .smoothness(1)
@@ -190,7 +188,7 @@ public class ServerEntryWidget implements MinecraftInstance {
                         .render(x + 12, y + (height - 24) / 2f);
             }
         } else {
-            this.placeholderIcon.render(x + 10, y + (height - 32) / 2f);
+            this.placeholderIcon.render(x + 12, y + (height - 24) / 2f);
         }
 
         Builder.text().font(FontType.sf_regular.get()).text(sInfo.name).color(new Color(255, 255, 255)).size(10).build().render(x + 50, y + 10);
