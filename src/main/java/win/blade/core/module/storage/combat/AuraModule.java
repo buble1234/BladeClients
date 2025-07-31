@@ -77,7 +77,7 @@ public class AuraModule extends Module {
             new BooleanSetting("Отжимать щит", "").setValue(true),
             new BooleanSetting("Ломать щит", "").setValue(true),
             new BooleanSetting("Проверять еду", "").setValue(true),
-            new BooleanSetting("Синхронизировать взгляд", "").setValue(true).visible(() -> aimGroup.getValue()),
+            new BooleanSetting("Синхронизировать взгляд", "").setValue(false).visible(() -> aimGroup.getValue()),
             new BooleanSetting("Фокусировать одну цель", "").setValue(false)
     );
 

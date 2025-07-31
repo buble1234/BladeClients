@@ -14,6 +14,10 @@ import win.blade.core.module.api.ModuleInfo;
 public class CustomWorld extends Module {
     public ValueSetting time = new ValueSetting("Время", "Устанавливает выбранное время в мире").range(0, 24000).setValue(16000);
 
+    public CustomWorld() {
+        addSettings(time);
+    }
+
     @EventHandler
     public void onUpdate(UpdateEvents.Update e) {
         if (mc.world != null) { (mc.world.getLevelProperties()).setTimeOfDay((long) time.getValue()); }

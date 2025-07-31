@@ -44,7 +44,7 @@ public class InterfaceModule extends Module {
                 .map(name -> new BooleanSetting(name, "").setValue(true))
                 .toArray(BooleanSetting[]::new);
 
-        elementsSettings = new GroupSetting("Элементы интерфейса", "");
+        elementsSettings = new GroupSetting("Элементы интерфейса", "").setToggleable();
         elementsSettings.settings(settings);
     }
 

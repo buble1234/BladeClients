@@ -17,7 +17,7 @@ import win.blade.core.module.api.ModuleInfo;
 )
 public class NoPushModule extends Module {
 
-    public final GroupSetting options = new GroupSetting("Отключать коллизию для", "").settings(
+    public final GroupSetting options = new GroupSetting("Отключать коллизию для", "").setToggleable().settings(
             new BooleanSetting("Сущностей", "").setValue(true),
             new BooleanSetting("Блоков", "").setValue(true),
             new BooleanSetting("Жидкостей", "").setValue(true),

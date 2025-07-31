@@ -25,7 +25,7 @@ import win.blade.mixin.accessor.MinecraftClientAccessor;
         desc = "Убирает задержку на выбранные вещи")
 public class NoDelayModule extends Module {
 
-    private final GroupSetting delayOptions = new GroupSetting("Убирать задержку на", "").settings(
+    private final GroupSetting delayOptions = new GroupSetting("Убирать задержку на", "").setToggleable().settings(
             new BooleanSetting("Прыжок", "").setValue(true),
             new BooleanSetting("Правый клик", "").setValue(true),
             new BooleanSetting("Ломание блоков", "").setValue(true)
