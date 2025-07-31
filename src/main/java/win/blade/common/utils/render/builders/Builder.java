@@ -7,7 +7,6 @@ public final class Builder {
     private static final RectangleBuilder RECTANGLE_BUILDER = new RectangleBuilder();
     private static final TextureBuilder TEXTURE_BUILDER = new TextureBuilder();
     private static final BlurBuilder BLUR_BUILDER = new BlurBuilder();
-    private static final VectorBuilder VECTOR_BUILDER = new VectorBuilder();
 
     private static final TextBuilder TEXT_BUILDER = new TextBuilder();
     private static final BorderBuilder BORDER_BUILDER = new BorderBuilder();
@@ -35,10 +34,6 @@ public final class Builder {
 
     public static LiquidGlassBuilder liquidGlassBuilder() {
         return LIQUID_GLASS_BUILDER;
-    }
-
-    public static VectorBuilder vector() {
-        return VECTOR_BUILDER;
     }
 
 }
