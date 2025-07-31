@@ -13,4 +13,8 @@ import win.blade.core.module.api.ModuleInfo;
 public class ItemScrollerModule extends Module {
     public final ValueSetting delay = new ValueSetting("Задержка", "").setValue(50f).range(0f, 100f);
 
+
+    public ItemScrollerModule() {
+        addSettings(delay);
+    }
 }

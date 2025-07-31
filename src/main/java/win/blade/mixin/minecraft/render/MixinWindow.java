@@ -26,6 +26,7 @@ public class MixinWindow {
 
     @Inject(method = "setIcon(Lnet/minecraft/resource/ResourcePack;Lnet/minecraft/client/util/Icons;)V", at = @At("HEAD"), cancellable = true)
     private void setCustomIcon(ResourcePack resourcePack, Icons icons, CallbackInfo ci) {
+        if (Manager.isPanic()) return;
         ci.cancel();
 
         try (InputStream iconStream = MixinWindow.class.getResourceAsStream("/assets/blade/textures/logoGame.png")) {

@@ -23,6 +23,10 @@ public class AutoTpacceptModule extends Module {
 
     private final BooleanSetting onlyFriends = new BooleanSetting("Только друзья", "Принимает телепорт только от друзей").setValue(false);
 
+    public AutoTpacceptModule() {
+        addSettings(onlyFriends);
+    }
+
     @EventHandler
     public void onPacketReceive(PacketEvent.Receive event) {
         if (mc.player == null || mc.world == null) return;

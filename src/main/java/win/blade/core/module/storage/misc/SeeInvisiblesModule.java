@@ -14,4 +14,7 @@ public class SeeInvisiblesModule extends Module {
 
     public final ValueSetting alpha = new ValueSetting("Прозрачность", "").range(0, 1);
 
+    public SeeInvisiblesModule() {
+        addSettings(alpha);
+    }
 }
