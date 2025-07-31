@@ -284,6 +284,7 @@ public class AccountScreen extends BaseScreen {
         } catch (Throwable t){
             t.printStackTrace();
         }
+
         AccountSaver.save(accountList);
     }
 

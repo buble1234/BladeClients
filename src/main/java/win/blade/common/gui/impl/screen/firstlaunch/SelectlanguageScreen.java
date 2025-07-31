@@ -90,7 +90,7 @@ public class SelectlanguageScreen extends BaseScreen {
 
         Builder.text()
                 .font(font)
-                .text("Выберите язык, чтобы\nпродолжить")
+                .text("Выбери язык, чтобы\nпродолжить")
                 .size(fz)
                 .color(new Color(1f, 1f, 1f, textAlpha.get()))
                 .align(TextAlign.CENTER)

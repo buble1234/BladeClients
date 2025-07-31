@@ -1,6 +1,8 @@
 package win.blade.core;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import win.blade.common.gui.impl.gui.MenuScreen;
+import win.blade.common.gui.impl.screen.ExitScreen;
 import win.blade.common.ui.NotificationManager;
 import win.blade.common.utils.browser.BrowserManager;
 import win.blade.common.utils.friends.FriendManager;
@@ -24,6 +26,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Manager implements MinecraftInstance {
 
@@ -35,6 +38,7 @@ public class Manager implements MinecraftInstance {
     public static final NotificationManager notificationManager = new NotificationManager();
     public static CommandManager commandManager;
 
+    public static ExitScreen screen = new ExitScreen();
     public static MenuScreen menuScreen;
 
 
@@ -120,6 +124,21 @@ public class Manager implements MinecraftInstance {
 
     public static MenuScreen getMenuScreen() {
         return menuScreen == null  ? menuScreen = new MenuScreen() : menuScreen;
+    }
+
+    public static ExitScreen getExitScreen(){
+        return screen;
+    }
+
+    public static boolean canQuit(){
+        if(screen.hasShown){
+            return true;
+        } else {
+            mc.setScreen(screen);
+            executorService.schedule(() -> RenderSystem.recordRenderCall(() -> screen.close()), 1000, TimeUnit.MILLISECONDS);
+
+            return false;
+        }
     }
 
     public static boolean isPanic() {
