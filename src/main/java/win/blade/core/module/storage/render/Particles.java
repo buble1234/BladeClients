@@ -13,15 +13,14 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.ModeSetting;
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
+import win.blade.common.gui.impl.gui.setting.implement.SelectSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.TimerUtil;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
-import win.blade.common.utils.player.MovementUtility;
 import win.blade.common.utils.player.PlayerUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
@@ -39,37 +38,42 @@ import java.util.concurrent.ThreadLocalRandom;
 @ModuleInfo(name = "Particles", category = Category.RENDER)
 public class Particles extends Module {
 
-    private static Particles instance;
+    private final BooleanSetting moveSetting = new BooleanSetting("Движении", "").setValue(true);
+    private final BooleanSetting attackSetting = new BooleanSetting("Атаке", "").setValue(true);
+    private final BooleanSetting critSetting = new BooleanSetting("Крите", "").setValue(false).visible(attackSetting::getValue);
 
-    private final BooleanSetting moveSetting = BooleanSetting.of("Движении", true);
-    private final BooleanSetting attackSetting = BooleanSetting.of("Атаке", true);
-    private final BooleanSetting critSetting = BooleanSetting.of("Крите", false).setVisible(() -> attackSetting.getValue());
+    private final GroupSetting events = new GroupSetting("Спавнить при", "").settings(
+            moveSetting, attackSetting, critSetting
+    );
 
-    private final MultiBooleanSetting events = new MultiBooleanSetting(this, "Спавнить при", moveSetting, attackSetting, critSetting);
+    private final ValueSetting countAttack = new ValueSetting("Кол-во при атаке", "")
+            .setValue(2f).range(1f, 25f).visible(attackSetting::getValue);
+    private final ValueSetting countMove = new ValueSetting("Кол-во при движении", "")
+            .setValue(2f).range(1f, 25f).visible(moveSetting::getValue);
 
-    private final SliderSetting countAttack = new SliderSetting(this, "Кол-во при атаке", 2, 1, 25, 1).setVisible(() -> attackSetting.getValue());
-    private final SliderSetting countMove = new SliderSetting(this, "Кол-во при движении", 2, 1, 25, 1).setVisible(() -> moveSetting.getValue());
-
-    private final SliderSetting size = new SliderSetting(this, "Размер", 0.2F, 0.0F, 1F, 0.1F);
-    private final SliderSetting strength = new SliderSetting(this, "Сила движения", 1.0F, 0.1F, 2.0F, 0.1F);
-    private final SliderSetting opacity = new SliderSetting(this, "Прозрачность", 1.0F, 0.1F, 1.0F, 0.1F);
-    private final BooleanSetting glowing = new BooleanSetting(this, "Свечение", true);
-    private final BooleanSetting physic = new BooleanSetting(this, "Физика", false);
-    private final ModeSetting colorMode = new ModeSetting(this, "Режим цвета", "Клиентский", "Радужный");
-    private final ModeSetting particleMode = new ModeSetting(this, "Тип частиц",
-            "Random", "Amongus", "Circle", "Crown", "Dollar", "Heart",
-            "Polygon", "Quad", "Skull", "Star", "Cross", "Triangle", "Bloom"
-    ).set("Bloom");
+    private final ValueSetting size = new ValueSetting("Размер", "").setValue(0.2F).range(0.0F, 1F);
+    private final ValueSetting strength = new ValueSetting("Сила движения", "").setValue(1.0F).range(0.1F, 2.0F);
+    private final ValueSetting opacity = new ValueSetting("Прозрачность", "").setValue(1.0F).range(0.1F, 1.0F);
+    private final BooleanSetting glowing = new BooleanSetting("Свечение", "").setValue(true);
+    private final BooleanSetting physic = new BooleanSetting("Физика", "").setValue(false);
+    private final SelectSetting colorMode = new SelectSetting("Режим цвета", "").value("Клиентский", "Радужный");
+    private final SelectSetting particleMode = new SelectSetting("Тип частиц", "")
+            .value("Bloom", "Random", "Amongus", "Circle", "Crown", "Dollar", "Heart",
+                    "Polygon", "Quad", "Skull", "Star", "Cross", "Triangle");
 
     private final List<Particle> targetParticles = new ArrayList<>();
     private final List<Particle> flameParticles = new ArrayList<>();
+    private final List<Point> playerPath = new ArrayList<>();
 
     public Particles() {
-        instance = this;
+        addSettings(
+                events, countAttack, countMove, size, strength, opacity,
+                glowing, physic, colorMode, particleMode
+        );
     }
 
-    public static Particles getInstance() {
-        return instance;
+    private BooleanSetting getBooleanSetting(GroupSetting group, String name) {
+        return (BooleanSetting) group.getSubSetting(name);
     }
 
     @Override
@@ -85,17 +89,18 @@ public class Particles extends Module {
     private void clear() {
         if (!targetParticles.isEmpty()) targetParticles.clear();
         if (!flameParticles.isEmpty()) flameParticles.clear();
+        if (!playerPath.isEmpty()) playerPath.clear();
     }
 
     @EventHandler
     public void onAttack(PlayerActionEvents.Attack event) {
-        if (mc.player == null || !attackSetting.getValue()) return;
-        if (critSetting.getValue() && !PlayerUtility.isCritical()) return;
+        if (mc.player == null || !getBooleanSetting(events, "Атаке").getValue()) return;
+        if (getBooleanSetting(events, "Крите").getValue() && !PlayerUtility.isCritical()) return;
 
         Entity target = event.getEntity();
         float motion = strength.getValue();
 
-        for (int i = 0; i < countAttack.getValue().intValue(); i++) {
+        for (int i = 0; i < (int) countAttack.getValue(); i++) {
             spawnParticle(targetParticles,
                     new Vec3d(target.getX(), target.getY() + randomValue(0, target.getHeight()), target.getZ()),
                     new Vec3d(randomValue(-motion, motion), randomValue(-motion, motion / 4F), randomValue(-motion, motion))
@@ -105,17 +110,29 @@ public class Particles extends Module {
 
     @EventHandler
     public void onUpdate(UpdateEvents.Update event) {
-        if (mc.player == null || !moveSetting.getValue()) return;
+        if (mc.player == null) {
+            clear();
+            return;
+        }
 
-        if (MovementUtility.isMoving()) {
-            if (mc.options.getPerspective() != Perspective.FIRST_PERSON) {
-                for (int i = 0; i < countMove.getValue().intValue(); i++) {
-                    spawnParticle(flameParticles,
-                            new Vec3d(mc.player.getX() + randomValue(-0.5, 0.5), mc.player.getY() + randomValue(0, mc.player.getHeight()), mc.player.getZ() + randomValue(-0.5, 0.5)),
-                            mc.player.getVelocity().add(randomValue(-0.25, 0.25), randomValue(-0.15, 0.15), randomValue(-0.25, 0.25)).multiply(strength.getValue())
-                    );
+        if (moveSetting.getValue()) {
+            Vec3d currentPos = mc.player.getPos();
+            Vec3d lastPos = playerPath.isEmpty() ? null : playerPath.get(playerPath.size() - 1).getPos();
+
+            if (lastPos == null || currentPos.distanceTo(lastPos) > 0.015) {
+                playerPath.add(new Point(currentPos));
+                if (mc.options.getPerspective() != Perspective.FIRST_PERSON) {
+                    for (int i = 0; i < (int) countMove.getValue(); i++) {
+                        spawnParticle(flameParticles,
+                                new Vec3d(mc.player.getX() + randomValue(-0.5, 0.5), mc.player.getY() + randomValue(0, mc.player.getHeight()), mc.player.getZ() + randomValue(-0.5, 0.5)),
+                                mc.player.getVelocity().add(randomValue(-0.25, 0.25), randomValue(-0.15, 0.15), randomValue(-0.25, 0.25)).multiply(strength.getValue())
+                        );
+                    }
                 }
             }
+            playerPath.removeIf(point -> point.isExpired(System.currentTimeMillis(), 2000L));
+        } else {
+            if (!playerPath.isEmpty()) playerPath.clear();
         }
 
         removeExpiredParticles(targetParticles, 5000);
@@ -143,13 +160,13 @@ public class Particles extends Module {
 
     private void spawnParticle(List<Particle> particles, Vec3d position, Vec3d velocity) {
         float size = 0.05F + (this.size.getValue() * 0.2F);
-        int color = switch (this.colorMode.getValue()) {
+        int color = switch (this.colorMode.getSelected()) {
             case "Клиентский" -> Color.WHITE.getRGB();
             case "Радужный" -> Color.HSBtoRGB((System.currentTimeMillis() + particles.size() * 100) % 2000L / 2000.0f, 0.7f, 1.0f);
             default -> Color.WHITE.getRGB();
         };
 
-        Particles.ParticleType type = switch (this.particleMode.getValue()) {
+        Particles.ParticleType type = switch (this.particleMode.getSelected()) {
             case "Amongus" -> Particles.ParticleType.AMONGUS;
             case "Circle" -> Particles.ParticleType.CIRCLE;
             case "Crown" -> Particles.ParticleType.CROWN;
@@ -204,7 +221,7 @@ public class Particles extends Module {
         }
 
         if (glowing.getValue()) {
-            drawTexturedQuad(matrix, FireFly.ParticleType.BLOOM.texture(), -size * 4, -size * 4, size * 8, size * 8, ColorUtility.applyOpacity(color, 0.1f));
+            drawTexturedQuad(matrix, Particles.ParticleType.BLOOM.texture(), -size * 4, -size * 4, size * 8, size * 8, ColorUtility.applyOpacity(color, 0.1f));
         }
 
         drawTexturedQuad(matrix, particle.type().texture(), -size, -size, size * 2, size * 2, color);
@@ -292,6 +309,24 @@ public class Particles extends Module {
         public static ParticleType getRandom() {
             ParticleType[] values = values();
             return values[ThreadLocalRandom.current().nextInt(values.length)];
+        }
+    }
+
+    public static class Point {
+        private final Vec3d pos;
+        private final long creationTime;
+
+        public Point(Vec3d pos) {
+            this.pos = pos;
+            this.creationTime = System.currentTimeMillis();
+        }
+
+        public Vec3d getPos() {
+            return pos;
+        }
+
+        public boolean isExpired(long currentTime, long lifetimeMs) {
+            return currentTime - creationTime > lifetimeMs;
         }
     }
 

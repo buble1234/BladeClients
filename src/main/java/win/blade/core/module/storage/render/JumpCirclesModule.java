@@ -12,7 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.common.utils.math.TimerUtil;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
@@ -33,10 +33,9 @@ import java.util.List;
 )
 public class JumpCirclesModule extends Module {
 
-
-    private final SliderSetting lifetime = new SliderSetting(this, "Время жизни", 1500, 500, 3000, 100);
-    private final SliderSetting radius = new SliderSetting(this, "Радиус", 1F, 0.5F, 3F, 0.1F);
-    private final SliderSetting opacity = new SliderSetting(this, "Прозрачность", 1F, 0.05F, 1F, 0.05F);
+    private final ValueSetting lifetime = new ValueSetting("Время жизни", "").setValue(1500f).range(500f, 3000f);
+    private final ValueSetting radius = new ValueSetting("Радиус", "").setValue(1f).range(0.5f, 3f);
+    private final ValueSetting opacity = new ValueSetting("Прозрачность", "").setValue(1f).range(0.05f, 1f);
 
     private final float glow = 0.2f;
     private final float line = 0.01f;
@@ -46,6 +45,7 @@ public class JumpCirclesModule extends Module {
 
     public JumpCirclesModule() {
         instance = this;
+        addSettings(lifetime, radius, opacity);
     }
 
     public static JumpCirclesModule getInstance() {

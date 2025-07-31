@@ -57,4 +57,11 @@ public class MixinMinecraftClient {
     private void onSetWorld(@Nullable ClientWorld world, CallbackInfo ci) {
         Manager.EVENT_BUS.post(new WorldLoadEvent());
     }
+
+    @Inject(method = "scheduleStop", at = @At("HEAD"), cancellable = true)
+    private void onQuit(CallbackInfo ci){
+        if(!Manager.canQuit()){
+            ci.cancel();
+        }
+    }
 }

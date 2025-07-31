@@ -11,6 +11,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import win.blade.common.gui.impl.gui.setting.Setting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.core.Manager;
 import win.blade.core.module.storage.move.NoPushModule;
 
@@ -26,22 +28,28 @@ public abstract class MixinFlowableFluid {
 
     @Inject(method = "getVelocity", at = @At(value = "HEAD"), cancellable = true)
     private void onGetVelocity(BlockView world, BlockPos pos, FluidState state, CallbackInfoReturnable<Vec3d> cir) {
-        Optional<NoPushModule> noPush = Manager.getModuleManagement().find(NoPushModule.class);
-        if (noPush.isPresent() && noPush.get().isEnabled() && noPush.get().options.getValue("Жидкостей")) {
-            double d = 0.0;
-            double e = 0.0;
-            BlockPos.Mutable mutable = new BlockPos.Mutable();
-            Vec3d vec3d = new Vec3d(d, 0.0, e);
-            if (state.get(FALLING)) {
-                for (Direction direction2 : Direction.Type.HORIZONTAL) {
-                    mutable.set(pos, direction2);
-                    if (!this.isFlowBlocked(world, mutable, direction2) && !this.isFlowBlocked(world, mutable.up(), direction2))
-                        continue;
-                    vec3d = vec3d.normalize().add(0.0, -6.0, 0.0);
-                    break;
+        Optional<NoPushModule> noPushOpt = Manager.getModuleManagement().find(NoPushModule.class);
+        if (noPushOpt.isPresent() && noPushOpt.get().isEnabled()) {
+            NoPushModule noPush = noPushOpt.get();
+
+            Setting liquidSetting = noPush.options.getSubSetting("Жидкостей");
+
+            if (liquidSetting instanceof BooleanSetting && ((BooleanSetting) liquidSetting).getValue()) {
+                double d = 0.0;
+                double e = 0.0;
+                BlockPos.Mutable mutable = new BlockPos.Mutable();
+                Vec3d vec3d = new Vec3d(d, 0.0, e);
+                if (state.get(FALLING)) {
+                    for (Direction direction2 : Direction.Type.HORIZONTAL) {
+                        mutable.set(pos, direction2);
+                        if (!this.isFlowBlocked(world, mutable, direction2) && !this.isFlowBlocked(world, mutable.up(), direction2))
+                            continue;
+                        vec3d = vec3d.normalize().add(0.0, -6.0, 0.0);
+                        break;
+                    }
                 }
+                cir.setReturnValue(vec3d.normalize());
             }
-            cir.setReturnValue(vec3d.normalize());
         }
     }
 }

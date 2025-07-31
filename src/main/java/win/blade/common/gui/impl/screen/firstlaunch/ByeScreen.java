@@ -63,7 +63,7 @@ public class ByeScreen extends BaseScreen {
         float gap = 20f;
 
 
-        String text = russian ? "Приятной игры, боец" : "Nice game, fighter";
+        String text = russian ? "Приятной игры, боец" : "Have a nice game, fighter";
 
         float textWidth = font.getWidth(text, fz);
         float totalWidth = textWidth + gap + iSize;

@@ -2,15 +2,8 @@ package win.blade.core.module.storage.combat;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
-import win.blade.common.gui.impl.menu.settings.impl.*;
+import win.blade.common.gui.impl.gui.setting.implement.*;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
 import win.blade.common.utils.aim.base.AimCalculator;
@@ -37,42 +30,83 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(name = "Aura", category = Category.COMBAT)
 public class AuraModule extends Module {
 
-    public final ModeSetting aimMode = new ModeSetting(this, "Режим прицеливания", "Постоянный", "Во время удара", "Нету");
-    private final SliderSetting attackRange = new SliderSetting(this, "Дистанция атаки", 3.0f, 1.0f, 6.0f, 0.1f);
-    private final SliderSetting aimRange = new SliderSetting(this, "Дистанция прицеливания", 4.5f, 2.0f, 8.0f, 0.1f).setVisible(() -> !aimMode.is("Нету"));
-    private final SliderSetting rotateTick = new SliderSetting(this, "Тики поворота", 5, 1, 10, 1.0f).setVisible(() -> aimMode.is("Во время удара"));
-    private final ModeSetting pvpMode = new ModeSetting(this, "Режим PvP", "1.9", "1.8");
-    private final SliderSetting cps = new SliderSetting(this, "Скорость атаки", 12, 8, 16, 0.5f).setVisible(() -> pvpMode.is("1.8"));
-    private final ModeSetting criticalMode = new ModeSetting(this, "Критические удары", "Всегда", "Умные", "Нету");
-    private final ModeSetting pointMode = new ModeSetting(this, "Точка прицеливания", "Умные", "Центр", "Мульти").setVisible(() -> !aimMode.is("Нету"));
+    private final SelectSetting aimModeSetting = new SelectSetting("Режим", "")
+            .value("Постоянный", "Во время удара");
 
-    private final MultiBooleanSetting targetTypes = new MultiBooleanSetting(this, "Типы целей",
-            BooleanSetting.of("Игроки без брони", true).onAction(this::updateTargetTypes),
-            BooleanSetting.of("Игроки с бронёй", true).onAction(this::updateTargetTypes),
-            BooleanSetting.of("Невидимые игроки", false).onAction(this::updateTargetTypes),
-            BooleanSetting.of("Тиммейты", false).onAction(this::updateTargetTypes),
-            BooleanSetting.of("Мобы", true).onAction(this::updateTargetTypes),
-            BooleanSetting.of("Животные", false).onAction(this::updateTargetTypes),
-            BooleanSetting.of("Жители", false).onAction(this::updateTargetTypes)
+    public final GroupSetting aimGroup = new GroupSetting("Прицеливание", "")
+            .settings(aimModeSetting);
+
+    private final ValueSetting attackRange = new ValueSetting("Дистанция атаки", "")
+            .setValue(3.0f).range(1.0f, 6.0f);
+
+    private final ValueSetting aimRange = new ValueSetting("Дистанция прицеливания", "")
+            .setValue(4.5f).range(2.0f, 8.0f)
+            .visible(() -> aimGroup.getValue());
+
+    private final ValueSetting rotateTick = new ValueSetting("Тики поворота", "")
+            .setValue(5f).range(1f, 10f)
+            .visible(() -> aimGroup.getValue() && aimModeSetting.isSelected("Во время удара"));
+
+    private final SelectSetting pvpMode = new SelectSetting("Режим PvP", "")
+            .value("1.9", "1.8");
+
+    private final ValueSetting cps = new ValueSetting("Скорость атаки", "")
+            .setValue(12f).range(8f, 16f)
+            .visible(() -> pvpMode.isSelected("1.8"));
+
+    private final SelectSetting criticalMode = new SelectSetting("Критические удары", "")
+            .value("Всегда", "Умные", "Нету");
+
+    private final SelectSetting pointMode = new SelectSetting("Точка прицеливания", "")
+            .value("Умные", "Центр", "Мульти")
+            .visible(() -> aimGroup.getValue());
+
+    private final GroupSetting targetTypes = new GroupSetting("Типы целей", "").setToggleable().settings(
+            new BooleanSetting("Игроки без брони", "").setValue(true),
+            new BooleanSetting("Игроки с бронёй", "").setValue(true),
+            new BooleanSetting("Невидимые игроки", "").setValue(false),
+            new BooleanSetting("Тиммейты", "").setValue(false),
+            new BooleanSetting("Мобы", "").setValue(true),
+            new BooleanSetting("Животные", "").setValue(false),
+            new BooleanSetting("Жители", "").setValue(false)
     );
 
-    private final MultiBooleanSetting behaviorOptions = new MultiBooleanSetting(this, "Опции",
-            BooleanSetting.of("Корректировать движения", true).setVisible(() -> !aimMode.is("Нету")),
-            BooleanSetting.of("Сбрасывать спринт", true),
-            BooleanSetting.of("Бить сквозь блоки", false),
-            BooleanSetting.of("Отжимать щит", true),
-            BooleanSetting.of("Ломать щит", true),
-            BooleanSetting.of("Проверять еду", true),
-            BooleanSetting.of("Синхронизировать взгляд", true).setVisible(() -> !aimMode.is("Нету")),
-            BooleanSetting.of("Фокусировать одну цель", false)
+    private final GroupSetting behaviorOptions = new GroupSetting("Опции", "").setToggleable().settings(
+            new BooleanSetting("Сбрасывать спринт", "").setValue(true),
+            new BooleanSetting("Бить сквозь блоки", "").setValue(false),
+            new BooleanSetting("Отжимать щит", "").setValue(true),
+            new BooleanSetting("Ломать щит", "").setValue(true),
+            new BooleanSetting("Проверять еду", "").setValue(true),
+            new BooleanSetting("Синхронизировать взгляд", "").setValue(false).visible(() -> aimGroup.getValue()),
+            new BooleanSetting("Фокусировать одну цель", "").setValue(false)
     );
 
-    private final ModeSetting moveMode = new ModeSetting(this, "Режим коррекции движений", "Слабая", "Сильная", "Нету").setVisible(() -> !aimMode.is("Нету"));
+    private final SelectSetting moveCorrectionMode = new SelectSetting("Режим", "")
+            .value("Слабая", "Сильная");
 
-    private final ModeSetting sortMode = new ModeSetting(this, "Сортировка целей", "Дистанция", "Здоровье", "Броня", "Поле зрения", "Общая");
+    private final GroupSetting moveCorrectionGroup = new GroupSetting("Коррекция движений", "")
+            .visible(() -> aimGroup.getValue())
+            .settings(moveCorrectionMode);
+
+
+    private final SelectSetting sortMode = new SelectSetting("Сортировка целей", "")
+            .value("Дистанция", "Здоровье", "Броня", "Поле зрения", "Общая");
 
     private Entity currentTarget;
     private float aimTicks;
+
+    public AuraModule() {
+        addSettings(
+                aimGroup, attackRange, aimRange, rotateTick,
+                pointMode, moveCorrectionGroup,
+                pvpMode, cps, criticalMode,
+                targetTypes, behaviorOptions, sortMode
+        );
+    }
+
+    private BooleanSetting getBooleanSetting(GroupSetting group, String name) {
+        return (BooleanSetting) group.getSubSetting(name);
+    }
 
     @Override
     public void onEnable() {
@@ -117,7 +151,7 @@ public class AuraModule extends Module {
 
         handleAimLogic();
 
-        boolean hitThroughBlocks = behaviorOptions.get("Бить сквозь блоки").getValue();
+        boolean hitThroughBlocks = getBooleanSetting(behaviorOptions, "Бить сквозь блоки").getValue();
         boolean attackConditionMet = false;
 
         if (hitThroughBlocks) {
@@ -134,14 +168,14 @@ public class AuraModule extends Module {
     }
 
     private void updateCurrentTarget() {
-        boolean focusTarget = behaviorOptions.get("Фокусировать одну цель").getValue();
+        boolean focusTarget = getBooleanSetting(behaviorOptions, "Фокусировать одну цель").getValue();
         float totalRange = aimRange.getValue() + attackRange.getValue();
 
         if (focusTarget && currentTarget != null && currentTarget.isAlive() && mc.player.distanceTo(currentTarget) <= totalRange && TargetUtility.isValidTarget(currentTarget)) {
             return;
         }
 
-        LivingEntity potentialTarget = TargetUtility.findBestTarget(totalRange, sortMode.getValue());
+        LivingEntity potentialTarget = TargetUtility.findBestTarget(totalRange, sortMode.getSelected());
         if (potentialTarget != null && TargetUtility.isValidTarget(potentialTarget)) {
             currentTarget = potentialTarget;
         } else {
@@ -150,12 +184,12 @@ public class AuraModule extends Module {
     }
 
     private void handleAimLogic() {
-        if (aimMode.is("Нету")) {
+        if (!aimGroup.getValue()) {
             AimManager.INSTANCE.disableWithSmooth();
             return;
         }
 
-        if (aimMode.is("Во время удара")) {
+        if (aimModeSetting.isSelected("Во время удара")) {
             if (aimTicks > 0) {
                 aimTicks--;
                 aimAtTarget();
@@ -176,32 +210,27 @@ public class AuraModule extends Module {
 
     private void aimAtTarget() {
         PointMode selectedPointMode;
-        switch (pointMode.getValue()) {
-            case "Умные":
-                selectedPointMode = PointMode.SMART;
-                break;
-            case "Мульти":
-                selectedPointMode = PointMode.MULTI;
-                break;
-            default:
-                selectedPointMode = PointMode.CENTER;
+        switch (pointMode.getSelected()) {
+            case "Умные" -> selectedPointMode = PointMode.SMART;
+            case "Мульти" -> selectedPointMode = PointMode.MULTI;
+            default -> selectedPointMode = PointMode.CENTER;
         }
 
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
 
-        boolean enableViewSync = behaviorOptions.get("Синхронизировать взгляд").getValue();
+        boolean enableViewSync = getBooleanSetting(behaviorOptions, "Синхронизировать взгляд").getValue();
+
         boolean enableMovementCorrection = false;
         boolean enableSilent = false;
 
-        if (moveMode.is("Слабая")) {
+        if (moveCorrectionGroup.getValue()) {
             enableMovementCorrection = true;
-            enableSilent = true;
-        } else if (moveMode.is("Сильная")) {
-            enableMovementCorrection = true;
-            enableSilent = false;
-        } else if (moveMode.is("Нету")) {
-            enableMovementCorrection = false;
-            enableSilent = false;
+
+            if (moveCorrectionMode.isSelected("Слабая")) {
+                enableSilent = true;
+            } else {
+                enableSilent = false;
+            }
         }
 
         AimSettings aimSettings = new AimSettings(
@@ -225,9 +254,9 @@ public class AuraModule extends Module {
     }
 
     private AttackSettings buildAttackSettings() {
-        AttackMode attackMode = pvpMode.is("1.8") ? AttackMode.LEGACY : AttackMode.MODERN;
+        AttackMode attackMode = pvpMode.isSelected("1.8") ? AttackMode.LEGACY : AttackMode.MODERN;
 
-        CriticalMode critical = switch (criticalMode.getValue()) {
+        CriticalMode critical = switch (criticalMode.getSelected()) {
             case "Всегда" -> CriticalMode.ALWAYS;
             case "Умные" -> CriticalMode.ADAPTIVE;
             default -> CriticalMode.NONE;
@@ -237,10 +266,10 @@ public class AuraModule extends Module {
                 attackMode,
                 critical,
                 cps.getValue(),
-                behaviorOptions.get("Отжимать щит").getValue(),
-                behaviorOptions.get("Проверять еду").getValue(),
+                getBooleanSetting(behaviorOptions, "Отжимать щит").getValue(),
+                getBooleanSetting(behaviorOptions, "Проверять еду").getValue(),
                 attackRange.getValue(),
-                behaviorOptions.get("Сбрасывать спринт").getValue(),
+                getBooleanSetting(behaviorOptions, "Сбрасывать спринт").getValue(),
                 true
         );
     }

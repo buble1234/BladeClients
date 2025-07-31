@@ -1,4 +1,4 @@
-package win.blade.common.gui.impl.menu.helpers;
+package win.blade.common.gui.impl.screen.example;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.InputUtil;

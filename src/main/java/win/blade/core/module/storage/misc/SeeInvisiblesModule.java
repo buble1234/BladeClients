@@ -1,6 +1,6 @@
 package win.blade.core.module.storage.misc;
 
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
@@ -12,6 +12,9 @@ import win.blade.core.module.api.ModuleInfo;
 )
 public class SeeInvisiblesModule extends Module {
 
-    public final SliderSetting alpha = new SliderSetting(this, "Прозрачность", 0.5F, 0.1F, 1.0F, 0.05F);
+    public final ValueSetting alpha = new ValueSetting("Прозрачность", "").range(0, 1);
 
+    public SeeInvisiblesModule() {
+        addSettings(alpha);
+    }
 }

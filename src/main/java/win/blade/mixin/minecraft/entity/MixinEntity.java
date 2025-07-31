@@ -16,22 +16,34 @@ import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+import win.blade.common.gui.impl.gui.setting.Setting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
+import win.blade.common.utils.other.IEntity;
 import win.blade.core.Manager;
 import win.blade.core.module.api.ModuleManager;
 import win.blade.core.module.storage.misc.SeeInvisiblesModule;
 import win.blade.core.module.storage.move.NoPushModule;
+import win.blade.core.module.storage.render.Particles;
 import win.blade.core.module.storage.render.ShaderESP;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Mixin(Entity.class)
-public abstract class MixinEntity implements MinecraftInstance {
+public abstract class MixinEntity implements MinecraftInstance, IEntity {
 
-    @Shadow public abstract boolean isFireImmune();
+    @Unique
+    public List<Particles.Point> points = new ArrayList<>();
+
+    @Override
+    public List<Particles.Point> getPoint() {
+        return points;
+    }
 
     @ModifyExpressionValue(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isControlledByPlayer()Z"))
     private boolean fixFallDistance(boolean original) {
@@ -74,12 +86,19 @@ public abstract class MixinEntity implements MinecraftInstance {
 
     @ModifyArgs(method = "pushAwayFrom", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;addVelocity(DDD)V"))
     public void onPushAwayFrom(Args args) {
-        Optional<NoPushModule> noPush = Manager.getModuleManagement().find(NoPushModule.class);
-        if (noPush.isPresent() && noPush.get().isEnabled() && noPush.get().options.getValue("Сущностей")) {
-            if ((Object) this == mc.player) {
-                args.set(0, 0.);
-                args.set(1, 0.);
-                args.set(2, 0.);
+        Optional<NoPushModule> noPushOpt = Manager.getModuleManagement().find(NoPushModule.class);
+
+        if (noPushOpt.isPresent() && noPushOpt.get().isEnabled()) {
+            NoPushModule noPush = noPushOpt.get();
+
+            Setting entitySetting = noPush.options.getSubSetting("Сущностей");
+
+            if (entitySetting instanceof BooleanSetting && ((BooleanSetting) entitySetting).getValue()) {
+                if ((Object) this == mc.player) {
+                    args.set(0, 0.0);
+                    args.set(1, 0.0);
+                    args.set(2, 0.0);
+                }
             }
         }
     }

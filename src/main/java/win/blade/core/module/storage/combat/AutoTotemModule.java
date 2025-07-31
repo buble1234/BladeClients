@@ -5,9 +5,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
-import win.blade.common.gui.impl.menu.settings.impl.BooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.MultiBooleanSetting;
-import win.blade.common.gui.impl.menu.settings.impl.SliderSetting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
@@ -25,13 +25,22 @@ import win.blade.core.module.api.ModuleInfo;
 )
 public class AutoTotemModule extends Module {
 
-    private final SliderSetting health = new SliderSetting(this, "Здоровье для свапа", 10.0f, 1.0f, 20.0f, 0.1f);
+    private final ValueSetting health = new ValueSetting("Здоровье для свапа", "")
+            .setValue(10.0f).range(1.0f, 20.0f);
 
-    private final MultiBooleanSetting swapOptions = new MultiBooleanSetting(this, "Опции свапа",
-            BooleanSetting.of("Не прерывать использование", true),
-            BooleanSetting.of("Не сменять при сфере в руке", true),
-            BooleanSetting.of("Предпочитать не зачарованные", false)
+    private final GroupSetting swapOptions = new GroupSetting("Опции свапа", "").settings(
+            new BooleanSetting("Не прерывать использование", "").setValue(true),
+            new BooleanSetting("Не сменять при сфере в руке", "").setValue(true),
+            new BooleanSetting("Предпочитать не зачарованные", "").setValue(false)
     );
+
+    public AutoTotemModule() {
+        addSettings(health, swapOptions);
+    }
+
+    private BooleanSetting getBooleanSetting(GroupSetting group, String name) {
+        return (BooleanSetting) group.getSubSetting(name);
+    }
 
     @EventHandler
     public void onUpdate(UpdateEvents.PlayerUpdate event) {
@@ -44,12 +53,12 @@ public class AutoTotemModule extends Module {
         }
 
         boolean isUsingItem = mc.player.isUsingItem();
-        if (swapOptions.getValue("Не прерывать использование") && isUsingItem) {
+        if (getBooleanSetting(swapOptions, "Не прерывать использование").getValue() && isUsingItem) {
             return;
         }
 
-        boolean isSphereItem = isItemInOffHand(Items.PLAYER_HEAD);
-        if (swapOptions.getValue("Не сменять при сфере в руке") && isSphereItem) {
+        boolean isSphereInHand = isItemInOffHand(Items.PLAYER_HEAD);
+        if (getBooleanSetting(swapOptions, "Не сменять при сфере в руке").getValue() && isSphereInHand) {
             return;
         }
 
@@ -74,7 +83,10 @@ public class AutoTotemModule extends Module {
 
         mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, totemSlot, 0, SlotActionType.PICKUP, mc.player);
         mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, offhandSlotIndex, 0, SlotActionType.PICKUP, mc.player);
-        mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, totemSlot, 0, SlotActionType.PICKUP, mc.player);
+
+        if (!mc.player.currentScreenHandler.getCursorStack().isEmpty()) {
+            mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, totemSlot, 0, SlotActionType.PICKUP, mc.player);
+        }
     }
 
     private int findTotemSlot() {
@@ -82,9 +94,10 @@ public class AutoTotemModule extends Module {
             return -1;
         }
 
-        if (swapOptions.getValue("Предпочитать не зачарованные") && isTotemInHand()) {
-            if (isEnchanted(mc.player.getMainHandStack()) || isEnchanted(mc.player.getOffHandStack())) {
-                return findUnenchantedTotem();
+        if (getBooleanSetting(swapOptions, "Предпочитать не зачарованные").getValue()) {
+            int unenchantedTotemSlot = findUnenchantedTotem();
+            if (unenchantedTotemSlot != -1) {
+                return unenchantedTotemSlot;
             }
         }
 
@@ -101,21 +114,9 @@ public class AutoTotemModule extends Module {
     public static boolean isItemInOffHand(Item item) {
         if (mc.player != null) {
             ItemStack offHandStack = mc.player.getOffHandStack();
-            if(!offHandStack.isEmpty()){
-                return offHandStack.getItem() == item;
-            }
-            return false;
+            return !offHandStack.isEmpty() && offHandStack.getItem() == item;
         }
         return false;
-    }
-
-    private boolean isTotemInHand() {
-        return mc.player.getMainHandStack().getItem() == Items.TOTEM_OF_UNDYING ||
-                mc.player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING;
-    }
-
-    private boolean isEnchanted(ItemStack stack) {
-        return stack.getItem() == Items.TOTEM_OF_UNDYING && stack.hasEnchantments();
     }
 
     private int findUnenchantedTotem() {

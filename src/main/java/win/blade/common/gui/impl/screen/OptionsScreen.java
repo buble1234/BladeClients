@@ -65,12 +65,17 @@ public class OptionsScreen extends BaseScreen  {
         this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.chat"), () -> this.client.setScreen(new ChatOptionsScreen(this, this.gameOptions))));
         row++;
 
-        this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.resourcepack"), () -> this.client.setScreen(new PackScreen(
+        this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.resourcepack"),
+        () -> this.client.setScreen(new PackScreen(
                 this.client.getResourcePackManager(),
-                manager -> this.client.reloadResources(),
+                manager -> {
+                    this.client.options.refreshResourcePacks(manager);
+                    this.client.setScreen(this);
+                },
                 this.client.getResourcePackDir(),
                 Text.translatable("resourcePack.title")
-        ))));
+        )))
+        );
         this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.of("Special features"), () -> {})); // "Особые возможности"
         row++;
 

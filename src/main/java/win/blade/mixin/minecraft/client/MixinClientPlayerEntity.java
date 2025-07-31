@@ -11,6 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import win.blade.common.gui.impl.gui.setting.Setting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.manager.AimManager;
@@ -40,9 +42,17 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
 
     @Inject(method = "pushOutOfBlocks", at = @At("HEAD"), cancellable = true)
     private void onPushOutOfBlocks(double x, double d, CallbackInfo info) {
-        Optional<NoPushModule> noPush = Manager.getModuleManagement().find(NoPushModule.class);
-        if (noPush.isPresent() && noPush.get().isEnabled() && noPush.get().options.getValue("Блоков"))
-            info.cancel();
+        Optional<NoPushModule> noPushOpt = Manager.getModuleManagement().find(NoPushModule.class);
+
+        if (noPushOpt.isPresent() && noPushOpt.get().isEnabled()) {
+            NoPushModule noPush = noPushOpt.get();
+
+            Setting blockSetting = noPush.options.getSubSetting("Блоков");
+
+            if (blockSetting instanceof BooleanSetting && ((BooleanSetting) blockSetting).getValue()) {
+                info.cancel();
+            }
+        }
     }
 
     @Inject(method = "tick", at = @At("HEAD"))

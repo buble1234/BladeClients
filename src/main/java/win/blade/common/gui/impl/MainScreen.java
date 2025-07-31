@@ -19,6 +19,7 @@ import win.blade.common.utils.render.builders.states.QuadRadiusState;
 import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.msdf.FontType;
 import win.blade.common.utils.render.renderers.impl.BuiltText;
+import win.blade.core.Manager;
 
 import java.awt.*;
 
