@@ -24,14 +24,7 @@ public class Button extends ClickableWidget {
     private final Runnable onClick;
     private final MsdfFont fontRegular = FontType.sf_regular.get();
 
-    public Button(int x, int y, int width, int height, Text text, Runnable onClick) {
-        super(x, y, width, height, text);
-        this.onClick = onClick;
-    }
-
-    @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-
+    private RenderAction onRender = (context, mouseX, mouseY, delta) -> {
         Color black = new Color(20, 18, 27);
 
         Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
@@ -66,6 +59,16 @@ public class Button extends ClickableWidget {
                 .thickness(0.05f)
                 .build();
         render.render(matrix, textX, textY);
+    };
+
+    public Button(int x, int y, int width, int height, Text text, Runnable onClick) {
+        super(x, y, width, height, text);
+        this.onClick = onClick;
+    }
+
+    @Override
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+        onRender.render(context, mouseX, mouseY, delta);
     }
 
     @Override
@@ -88,6 +91,20 @@ public class Button extends ClickableWidget {
     @Override
     protected void appendClickableNarrations(NarrationMessageBuilder builder) {
         this.appendDefaultNarrations(builder);
+    }
+
+    public Button addRender(boolean copyOrig, RenderAction action){
+       var orig = onRender;
+
+        this.onRender = ((context, mouseX, mouseY, delta) -> {
+            if(copyOrig){
+                orig.render(context, mouseX, mouseY, delta);
+            }
+
+            action.render(context, mouseX, mouseY, delta);
+        });
+
+        return this;
     }
 
 }
