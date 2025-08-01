@@ -19,9 +19,16 @@ public class FinishScreen extends BaseScreen {
     private final Animation alphaAnimation = new Animation();
     private final TimerUtil timer = new TimerUtil();
     private int stage = 0;
+    public boolean shouldClose = true;
 
     public FinishScreen() {
         super(Text.of(""));
+    }
+
+    public FinishScreen notClose(){
+        this.shouldClose = false;
+
+        return this;
     }
 
     @Override
@@ -48,13 +55,13 @@ public class FinishScreen extends BaseScreen {
                 }
                 break;
             case 2:
-                if (timer.hasReached(1200)) {
+                if (timer.hasReached(1200) && !shouldClose) {
                     alphaAnimation.run(0.0, 1.0, Easing.EASE_IN_CUBIC);
                     stage = 3;
                 }
                 break;
             case 3:
-                if (alphaAnimation.isFinished()) {
+                if (alphaAnimation.isFinished() && shouldClose) {
                     close();
                     stage = 4;
                 }
