@@ -34,18 +34,19 @@ public class PauseScreen extends Screen {
     protected void init() {
         super.init();
 
-        final int buttonWidth = 498 / 2;
+        final int buttonWidth = 498 / 2 - 3;
+//        249 /2;
         final int buttonHeight = 65 / 2;
         final int buttonPadding = 4;
-        final int halfButtonWidth = buttonWidth / 2;
+        final int halfButtonWidth = 243 / 2;
 
         final int numberOfRows = 4;
         final int totalButtonsHeight = (numberOfRows * buttonHeight) + ((numberOfRows - 1) * buttonPadding);
 
-        this.buttonsTopY = (this.height / 2) - (totalButtonsHeight / 2);
+        this.buttonsTopY = (this.height / 2) - (totalButtonsHeight / 2) + 15;
         int currentY = this.buttonsTopY;
 
-        final int centerX = this.width / 2;
+        final int centerX = this.width / 2 - 3;
         final int rowHeight = buttonHeight + buttonPadding;
 
         this.addDrawableChild(new Button(centerX - halfButtonWidth, currentY, buttonWidth, buttonHeight, Text.translatable("menu.returnToGame"), () -> {
@@ -58,7 +59,7 @@ public class PauseScreen extends Screen {
         this.addDrawableChild(new Button(centerX - halfButtonWidth, currentY, halfButtonWidth - 2, buttonHeight, Text.translatable("gui.advancements"), () -> {
             this.client.setScreen(new AdvancementsScreen(this.client.player.networkHandler.getAdvancementHandler(), this));
         }));
-        this.addDrawableChild(new Button(centerX + 2, currentY, halfButtonWidth - 2, buttonHeight, Text.translatable("gui.stats"), () -> {
+        this.addDrawableChild(new Button(centerX + 6, currentY, halfButtonWidth - 2, buttonHeight, Text.translatable("gui.stats"), () -> {
             this.client.setScreen(new StatsScreen(this, this.client.player.getStatHandler()));
         }));
 
@@ -69,11 +70,11 @@ public class PauseScreen extends Screen {
         }));
 
         if (this.client.isIntegratedServerRunning() && !this.client.getServer().isRemote()) {
-            this.addDrawableChild(new Button(centerX + 2, currentY, halfButtonWidth - 2, buttonHeight, Text.translatable("menu.shareToLan"), () -> {
+            this.addDrawableChild(new Button(centerX + 6, currentY, halfButtonWidth - 2, buttonHeight, Text.translatable("menu.shareToLan"), () -> {
                 this.client.setScreen(new OpenToLanScreen(this));
             }));
         } else {
-            this.addDrawableChild(new Button(centerX + 2, currentY, halfButtonWidth - 2, buttonHeight, Text.translatable("menu.playerReporting"), () -> {
+            this.addDrawableChild(new Button(centerX + 6, currentY, halfButtonWidth - 2, buttonHeight, Text.translatable("menu.playerReporting"), () -> {
                 this.client.setScreen(new SocialInteractionsScreen(this));
             }));
         }
@@ -115,7 +116,7 @@ public class PauseScreen extends Screen {
                 .svgTexture(Identifier.of("blade", "textures/bladetitle.svg"))
                 .build();
 
-        float x = (this.width - tileWidth) / 2.0f - 25;
+        float x = (this.width - tileWidth) / 2.0f - 19.5f;
         float y = this.buttonsTopY - tileHeight + 18;
 
         title.render(x, y);
