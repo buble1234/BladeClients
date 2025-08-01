@@ -61,7 +61,7 @@ public class ValueComponent extends AbstractSettingComponent {
         );
 
         Builder.text()
-                .font(fontRegular)
+                .font(FontType.sf_regular.get())
                 .text(setting.getName())
                 .size(7)
                 .color(new Color(0xFFD4D6E1))

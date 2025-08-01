@@ -36,7 +36,6 @@ public class ModuleBindWindow extends AbstractBindWindow {
     @Override
     protected void setType(int type) {
         module.type = type;
-
     }
 
     @Override

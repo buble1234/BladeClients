@@ -10,6 +10,7 @@ public class TextSetting extends Setting {
 
     public TextSetting(String name, String description) {
         super(name, description);
+        text = "";
     }
 
     public String getText() {

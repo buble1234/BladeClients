@@ -6,6 +6,7 @@ import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.components.implement.settings.AbstractSettingComponent;
 import win.blade.common.gui.impl.gui.components.implement.window.AbstractWindow;
+import win.blade.common.gui.impl.gui.components.implement.window.WindowManager;
 import win.blade.common.gui.impl.gui.setting.SettingComponentAdder;
 import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
 import win.blade.common.utils.math.MathUtility;
@@ -46,26 +47,23 @@ public class GroupWindow extends AbstractWindow {
 
     @Override
     public void drawWindow(DrawContext context, int mouseX, int mouseY, float delta) {
-        Matrix4f positionMatrix = context
-                .getMatrices()
-                .peek()
-                .getPositionMatrix();
-
         height = MathHelper.clamp(getComponentHeight(), 0, 200);
+//
+//        Builder.rectangle()
+//                .size(new SizeState(width, height))
+//                .color(new QuadColorState(new Color(0x32000000)))
+//                .radius(new QuadRadiusState(12))
+//                .build()
+//                .render(x, y);
 
-        Builder.rectangle()
-                .size(new SizeState(width, height))
-                .color(new QuadColorState(new Color(0x32000000)))
-                .radius(new QuadRadiusState(12))
-                .build()
-                .render(x, y);
+//        Builder.rectangle()
+//                .size(new SizeState(width, height))
+//                .color(new QuadColorState(new Color(0xFF191A28)))
+//                .radius(new QuadRadiusState(12))
+//                .build()
+//                .render(x, y);
 
-        Builder.rectangle()
-                .size(new SizeState(width, height))
-                .color(new QuadColorState(new Color(0xFF191A28)))
-                .radius(new QuadRadiusState(12))
-                .build()
-                .render(x, y);
+        WindowManager._renderBackground(x, y, width, height, 12, true, null);
 
         Builder.text()
                 .font(fontRegular)

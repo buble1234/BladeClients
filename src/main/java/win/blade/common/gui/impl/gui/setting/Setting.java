@@ -9,7 +9,6 @@ public class Setting {
     private final String name;
     private String description;
     private Supplier<Boolean> visible;
-    private boolean inBox = false;
 
     private List<Setting> attachments = new ArrayList<>();
 
@@ -23,32 +22,16 @@ public class Setting {
         this.description = description;
     }
 
-    public Setting addToBox(CheckBox box){
-        box.add(this);
-        inBox = true;
-
-        return this;
-    }
-
     public String getName() {
         return name;
     }
 
     public String getDescription() {
-        return description.isEmpty() ? "No description" : description;
+        return description.isEmpty() ? "" : description;
     }
 
     public Supplier<Boolean> getVisible() {
         return visible;
-    }
-
-    public boolean isInBox(){
-        return inBox;
-    }
-
-
-    public boolean notInBox(){
-        return !isInBox();
     }
 
     public Setting withAttachments(Setting... settings){
