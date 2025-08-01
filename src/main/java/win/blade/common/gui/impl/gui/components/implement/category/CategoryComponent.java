@@ -201,38 +201,22 @@ public class CategoryComponent extends AbstractComponent {
     }
 
     private void drawCategoryTab(DrawContext context, Matrix4f positionMatrix) {
-        AbstractTexture tabTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/active.png"));
 
         if (menuScreen.category == this.category) {
-
-            Color transparent = new Color(102, 60, 255, 0);
-            Color violet16 = new Color(102, 60, 255, 41);
-
-            QuadColorState gradient = new QuadColorState(
-                    violet16,
-                    transparent,
-                    transparent,
-                    violet16
-            );
-
-            Builder.rectangle()
+            Builder.texture()
                     .size(new SizeState(66, 20))
-                    .color(gradient)
-                    .radius(new QuadRadiusState(7))
+                    .svgTexture(Identifier.of("blade", "textures/gui/category/selected.svg"))
+                    .color(new QuadColorState(-1))
                     .build()
-                    .render(x + 3, y -5);
-
+                    .render(x + 3, y - 5.5);
         }
 
-
-
-//        Builder.text()
-//                .font(FontType.icon.get())
-//                .text(category.getIcon())
-//                .size(9)
-//                .color(new Color(102,60,255))
-//                .build()
-//                .render(x + 12, y -0.5f );
+        Builder.texture()
+                .size(new SizeState(9, 9))
+                .svgTexture(Identifier.of("blade", "textures/gui/category/" + category.getName().toLowerCase() + ".svg"))
+                .color(new QuadColorState(-1))
+                .build()
+                .render(x + 12, y -0.5f );
 
         Builder.text()
                 .font(fontBold)

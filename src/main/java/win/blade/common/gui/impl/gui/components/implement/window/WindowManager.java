@@ -124,13 +124,13 @@ public class WindowManager extends AbstractComponent {
 
         if(outline) {
             Builder.border()
-                    .size(new SizeState(width + 2f, height + 2f))
+                    .size(new SizeState(width + 1f, height + 1f))
                     .color(color)
                     .radius(new QuadRadiusState(radius))
                     .outlineColor(color)
-                    .thickness(2)
+                    .thickness(1)
                     .build()
-                    .render(x - 1f, y - 1f);
+                    .render(x - 0.5f, y - 0.5f);
         }
 
 
@@ -138,7 +138,7 @@ public class WindowManager extends AbstractComponent {
                 .size(new SizeState(width, height))
                 .color(new QuadColorState(Color.WHITE))
                 .texture(0f, 0f, 1f, 1f, back)
-                .radius(new QuadRadiusState(8))
+                .radius(new QuadRadiusState(radius))
                 .build()
                 .render(x, y);
     }

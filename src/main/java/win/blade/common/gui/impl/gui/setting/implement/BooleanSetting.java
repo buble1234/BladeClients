@@ -52,8 +52,5 @@ public class BooleanSetting extends Setting {
         return (BooleanSetting) super.withAttachments(settings);
     }
 
-    @Override
-    public BooleanSetting addToBox(CheckBox box) {
-        return (BooleanSetting) super.addToBox(box);
-    }
+
 }

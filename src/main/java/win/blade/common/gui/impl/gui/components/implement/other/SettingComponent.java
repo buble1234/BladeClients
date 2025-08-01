@@ -23,17 +23,10 @@ public class SettingComponent extends AbstractComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        Matrix4f positionMatrix = context
-                .getMatrices()
-                .peek()
-                .getPositionMatrix();
-
-        AbstractTexture settingsTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/settings.png"));
-
         Builder.texture()
                 .size(new SizeState(7, 7))
-                .color(new QuadColorState(new Color(0xFFafb0bc)))
-                .texture(0f, 0f, 1f, 1f, settingsTexture)
+                .color(new QuadColorState(-1))
+                .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/gui/setting.svg"))
                 .radius(new QuadRadiusState(0f))
                 .build()
                 .render(x, y);

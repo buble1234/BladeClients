@@ -127,7 +127,7 @@ public class ModuleComponent extends AbstractComponent {
                 .render(context, mouseX, mouseY, delta);
 
 
-        ((SettingComponent) settingComponent.position(x + width - 28, y + 28.5F))
+        ((SettingComponent) settingComponent.position(x + width - 26.5f, y + 28.25F))
                 .setRunnable(() -> spawnWindow(mouseX, mouseY))
                 .render(context, mouseX, mouseY, delta);
 
@@ -136,9 +136,6 @@ public class ModuleComponent extends AbstractComponent {
         float offset = y + 42;
         for (int i = components.size() - 1; i >= 0; i--) {
             AbstractSettingComponent component = components.get(i);
-
-//            var visible = component.getSetting()
-//                    .getVisible();
 
             if (component.isAvailable()) {
                 continue;

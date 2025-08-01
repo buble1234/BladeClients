@@ -59,8 +59,10 @@ public abstract class AbstractSettingComponent extends AbstractComponent {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    private void openPopUp(){
-        getMenuScreen().setNewPopUp(setting, true);
+    private void openPopUp() {
+        if (setting.hasAttachments()) {
+            getMenuScreen().setNewPopUp(setting, true);
+        }
     }
 
     public boolean isAvailable(){
