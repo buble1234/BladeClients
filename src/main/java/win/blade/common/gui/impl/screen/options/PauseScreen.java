@@ -66,7 +66,7 @@ public class PauseScreen extends Screen {
         currentY += rowHeight;
 
         this.addDrawableChild(new Button(centerX - halfButtonWidth, currentY, halfButtonWidth - 2, buttonHeight, Text.translatable("menu.options"), () -> {
-            this.client.setScreen(new OptionsScreen(this, this.client.options));
+            this.client.setScreen(new InGameOptionsScreen(this));
         }));
 
         if (this.client.isIntegratedServerRunning() && !this.client.getServer().isRemote()) {
