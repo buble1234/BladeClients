@@ -75,7 +75,7 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
         Builder.texture()
                 .size(new SizeState(5F, 5f))
                 .color(new QuadColorState(new Color(color)))
-                .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/gui/check.svg"))
+                .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/svg/gui/check.svg"))
                 .radius(new QuadRadiusState(0f))
                 .build()
                 .render(rectX + rectWidth - 8.5f, rectY + (rectHeight / 2) - 1.25f);

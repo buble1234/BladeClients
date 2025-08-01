@@ -26,7 +26,7 @@ public class SettingComponent extends AbstractComponent {
         Builder.texture()
                 .size(new SizeState(7, 7))
                 .color(new QuadColorState(-1))
-                .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/gui/setting.svg"))
+                .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/svg/gui/setting.svg"))
                 .radius(new QuadRadiusState(0f))
                 .build()
                 .render(x, y);

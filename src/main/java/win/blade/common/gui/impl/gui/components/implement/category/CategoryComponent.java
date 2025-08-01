@@ -205,7 +205,7 @@ public class CategoryComponent extends AbstractComponent {
         if (menuScreen.category == this.category) {
             Builder.texture()
                     .size(new SizeState(66, 20))
-                    .svgTexture(Identifier.of("blade", "textures/gui/category/selected.svg"))
+                    .svgTexture(Identifier.of("blade", "textures/svg/gui/category/selected.svg"))
                     .color(new QuadColorState(-1))
                     .build()
                     .render(x + 3, y - 5.5);
@@ -213,7 +213,7 @@ public class CategoryComponent extends AbstractComponent {
 
         Builder.texture()
                 .size(new SizeState(9, 9))
-                .svgTexture(Identifier.of("blade", "textures/gui/category/" + category.getName().toLowerCase() + ".svg"))
+                .svgTexture(Identifier.of("blade", "textures/svg/gui/category/" + category.getName().toLowerCase() + ".svg"))
                 .color(new QuadColorState(-1))
                 .build()
                 .render(x + 12, y -0.5f );
