@@ -22,6 +22,7 @@ public class TestModule extends Module {
     public ColorSetting colorSetting = new ColorSetting("Color Picker", "");
 
     public TestModule (){
+        colorSetting.presets(1, 2);
         addSettings(groupSetting, textSetting, valueSetting, colorSetting);
     }
 }

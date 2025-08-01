@@ -1,5 +1,7 @@
 package win.blade.common.gui.impl.gui.setting;
 
+import win.blade.common.utils.keyboard.Keyboard;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +11,7 @@ public class Setting {
     private final String name;
     private String description;
     private Supplier<Boolean> visible;
+
 
     private List<Setting> attachments = new ArrayList<>();
 
@@ -40,6 +43,8 @@ public class Setting {
 
         return this;
     }
+
+
 
     public boolean hasAttachments(){
         return !attachments.isEmpty();

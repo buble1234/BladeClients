@@ -42,7 +42,7 @@ public class Manager implements MinecraftInstance {
     public static MenuScreen menuScreen;
 
 
-    private final Map<Module, Boolean> wasKeyPressed = new HashMap<>();
+    public static final Map<String, Boolean> wasKeyPressed = new HashMap<>();
 
     public void init() {
         setPanic(false);
@@ -77,36 +77,21 @@ public class Manager implements MinecraftInstance {
         handleKeybinds();
     }
 
-//    @EventHandler
-//    public void keyPressedEvent(InputEvents.Keyboard e){
-//        for (Module module : moduleManager.all()){
-//            if(module.keybind() == -1) continue;
-//
-//            if(module.type == 1){
-//                if(e.getKey() == module.keybind() && e.getAction() == 1){
-//                    module.toggle();
-//                }
-//            } else if (module.type == 0){
-//                if(e.getKey() == module.keybind()){
-//                    module.scheduledToggle(e.getAction() == 1);
-//                }
-//            }
-//        }
-//    }
-
     private void handleKeybinds() {
-        if (mc.currentScreen != null) {
-            wasKeyPressed.clear();
-            return;
-        }
+//        if (mc.currentScreen != null) {
+//            wasKeyPressed.clear();
+//            return;
+//        }
 
         for (Module module : moduleManager.all()) {
+            module.handleSettingsBind();
+
             if (module.keybind() == Keyboard.KEY_NONE.getKey()) {
                 continue;
             }
 
             boolean isPress = Keyboard.isKeyDown(module.keybind());
-            boolean prevPress = wasKeyPressed.getOrDefault(module, false);
+            boolean prevPress = wasKeyPressed.getOrDefault(module.name(), false);
 
             if (module.type == 1) {
                 if (isPress && !prevPress) {
@@ -118,7 +103,7 @@ public class Manager implements MinecraftInstance {
                 }
             }
 
-            wasKeyPressed.put(module, isPress);
+            wasKeyPressed.put(module.name(), isPress);
         }
     }
 

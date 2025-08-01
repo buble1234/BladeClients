@@ -46,9 +46,9 @@ public class SelectComponent extends AbstractSettingComponent {
         height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
 
         List<String> fullSettingsList = setting.getList();
-        this.dropdownListX = x + width - 75;
+        this.dropdownListX = x + width - 69;
         this.dropDownListY = y + 20;
-        this.dropDownListWidth = 66;
+        this.dropDownListWidth = 60;
         this.dropDownListHeight = fullSettingsList.size() * 12 + 4F;
 
         if (open) {
@@ -61,27 +61,38 @@ public class SelectComponent extends AbstractSettingComponent {
         renderSelectList(context, mouseX, mouseY, delta);
 
         Builder.text()
-                .font(fontRegular).text(setting.getName()).size(7)
+                .font(fontRegular).text(setting.getName()).size(6)
                 .color(new Color(0xFFD4D6E1)).build()
-                .render(x + 9, y + 6);
+                .render(x + 9, y + 8 + addJust());
 
-        Builder.text()
-                .font(fontRegular).text(wrapped).size(6)
-                .color(new Color(0xFF878894)).build()
-                .render(x + 9, y + 15);
+        if (shouldRenderDescription)
+            Builder.text()
+                    .font(fontRegular).text(wrapped).size(5)
+                    .color(new Color(0xFF878894)).build()
+                    .render(x + 9, y + 15);
     }
+
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
             if (MathUtility.isHovered(mouseX, mouseY, x + width - 75, y + 4, 66, 14)) {
                 open = !open;
+
+//                return true;
             } else if (open && !isHoveredList(mouseX, mouseY)) {
                 open = false;
+
+//                return true;
             }
 
             if (open) {
-                selectedButtons.forEach(selectedButton -> selectedButton.mouseClicked(mouseX, mouseY, button));
+//                selectedButtons.forEach(selectedButton -> selectedButton.mouseClicked(mouseX, mouseY, button));
+                for (SelectedButton selectedButton : selectedButtons) {
+                    if(selectedButton.mouseClicked(mouseX, mouseY, button)){
+                        return true;
+                    }
+                }
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -94,22 +105,22 @@ public class SelectComponent extends AbstractSettingComponent {
 
     private void renderSelected() {
         BuiltRectangle backgroundBox = Builder.rectangle()
-                .size(new SizeState(66, 14))
+                .size(new SizeState(60, 14))
                 .color(new QuadColorState(new Color(0xFF161825)))
                 .radius(new QuadRadiusState(2))
                 .build();
 
         BuiltRectangle gradientOverlay = Builder.rectangle()
-                .size(new SizeState(64, 12))
+                .size(new SizeState(58, 12))
                 .radius(new QuadRadiusState(2))
                 .color(new QuadColorState(0x00161825, 0x00161825, 0xFF161825, 0xFF161825))
                 .build();
 
         Stencil.push();
-        backgroundBox.render(x + width - 77.5f, y + 4);
+        backgroundBox.render(x + width - 71.5f, y + 4);
         Stencil.read(1);
 
-        backgroundBox.render(x + width - 75, y + 4);
+        backgroundBox.render(x + width - 69, y + 4);
 
         String selectedName = setting.getSelected();
         Builder.text()
@@ -118,7 +129,7 @@ public class SelectComponent extends AbstractSettingComponent {
                 .size(6)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render(x + width - 74 + 3, y + 7.5f);
+                .render(x + width - 68 + 3, y + 7.5f);
 
         Stencil.pop();
 

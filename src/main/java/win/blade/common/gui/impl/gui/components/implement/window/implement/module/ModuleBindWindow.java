@@ -9,8 +9,7 @@ import win.blade.core.module.api.Module;
 
 public class ModuleBindWindow extends AbstractBindWindow {
     private final Module module;
-    public ValueSetting setting;
-    public ValueComponent component;
+
     public ModuleBindWindow(Module module) {
         this.module = module;
         setting = new ValueSetting("Value", "").setMax(250).setMin(0).setValue(module.holdDuration);
@@ -39,17 +38,6 @@ public class ModuleBindWindow extends AbstractBindWindow {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        height = getType() == 0 ? 75 : 60;
-        super.render(context, mouseX, mouseY, delta);
-
-        if (getType() == 0) {
-            ((ValueComponent) component.position(x + 2.5F, y + height - 27).size(width - 4, 1)).render(context, mouseX, mouseY, delta);
-            module.holdDuration = (long) setting.getValue();
-        }
-    }
-
-    @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if(getType() == 0) {
             if (component.mouseReleased(mouseX, mouseY, button)) return true;
@@ -65,5 +53,12 @@ public class ModuleBindWindow extends AbstractBindWindow {
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    protected Runnable onChange() {
+        return () -> {
+            this.module.holdDuration = (long) setting.getValue();
+        };
     }
 }

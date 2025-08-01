@@ -64,7 +64,7 @@ public class ModuleComponent extends AbstractComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        width =142;
+        width = 142.5f;
         Matrix4f positionMatrix = context
                 .getMatrices()
                 .peek()
@@ -83,9 +83,6 @@ public class ModuleComponent extends AbstractComponent {
                 .radius(new QuadRadiusState(6, 0, 0, 6))
                 .build()
                 .render(x, y);
-
-
-
 
 
         Builder.border()
@@ -240,6 +237,7 @@ public class ModuleComponent extends AbstractComponent {
     private void drawBind(DrawContext context, Matrix4f positionMatrix) {
         String bindName = Keyboard.getKeyName(module.keybind());
         float stringWidth = fontRegular.getWidth(bindName, 5);
+
 
         Builder.rectangle()
                 .size(new SizeState(stringWidth + 8, 11.5f))

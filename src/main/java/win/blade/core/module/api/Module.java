@@ -1,7 +1,11 @@
 package win.blade.core.module.api;
 
 import win.blade.common.gui.impl.gui.setting.Setting;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
 import win.blade.common.ui.NotificationType;
+import win.blade.common.utils.keyboard.Keyboard;
+import win.blade.common.utils.minecraft.ChatUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.other.SoundUtility;
 import win.blade.core.Manager;
@@ -24,14 +28,35 @@ public abstract class Module implements MinecraftInstance {
 
     public int type = 1;
 
-    List<Setting> settings =  new ArrayList<>();
+    private final List<Setting> settings =  new ArrayList<>();
+    private final List<BooleanSetting> booleanSettings = new ArrayList<>();
 
     public List<Setting> settings() {
         return settings;
     }
 
     public void addSettings(Setting... settings){
-        this.settings.addAll(Arrays.asList(settings));
+        for (Setting setting : settings) {
+            if(setting.hasAttachments()){
+                for(Setting attachment : setting.getAttachments()){
+                    if(attachment instanceof BooleanSetting booleanSetting){
+                        booleanSettings.add(booleanSetting);
+                    }
+                }
+            }
+
+            if(setting instanceof GroupSetting groupSetting){
+              for(Setting child : groupSetting.getSubSettings()){
+                  if(child instanceof BooleanSetting booleanSetting){
+                      booleanSettings.add(booleanSetting);
+                  }
+              }
+            } else if(setting instanceof BooleanSetting booleanSetting){
+                booleanSettings.add(booleanSetting);
+            }
+
+            this.settings.add(setting);
+        }
     }
 
     protected Module() {
@@ -78,6 +103,31 @@ public abstract class Module implements MinecraftInstance {
         }
 
         return this;
+    }
+
+    public void handleSettingsBind(){
+        for(BooleanSetting booleanSetting : booleanSettings){
+            if(booleanSetting.getKey() == -1) continue;
+
+            boolean isPressed = Keyboard.isKeyDown(booleanSetting.getKey());
+            boolean wasPressed = Manager.wasKeyPressed.getOrDefault(booleanSetting.toString(), false);
+
+//            ChatUtility.print("handling " + booleanSetting.toString());
+
+            if(booleanSetting.getType() == 1){
+                 if(isPressed && !wasPressed){
+                     booleanSetting.setValue(!booleanSetting.getValue());
+                 }
+            } else {
+                if (isPressed != wasPressed) {
+                    Manager.executorService.schedule(() -> {
+                        booleanSetting.setValue(! booleanSetting.getValue());
+                    }, booleanSetting.getHoldDuration(), TimeUnit.MILLISECONDS);
+                }
+            }
+
+            Manager.wasKeyPressed.put(booleanSetting.toString(), isPressed);
+        }
     }
 
     public void scheduledToggle(boolean state){

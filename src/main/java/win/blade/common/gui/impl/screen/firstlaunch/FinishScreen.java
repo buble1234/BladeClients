@@ -55,7 +55,7 @@ public class FinishScreen extends BaseScreen {
                 }
                 break;
             case 2:
-                if (timer.hasReached(1200) && !shouldClose) {
+                if (timer.hasReached(1200) && shouldClose) {
                     alphaAnimation.run(0.0, 1.0, Easing.EASE_IN_CUBIC);
                     stage = 3;
                 }

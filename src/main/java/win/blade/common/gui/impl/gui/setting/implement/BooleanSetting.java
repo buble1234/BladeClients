@@ -10,6 +10,7 @@ public class BooleanSetting extends Setting {
     private boolean value;
     private int key = GLFW.GLFW_KEY_UNKNOWN;
     private int type = 1; // 0 - hold, 1 - toggle
+    private long holdDuration = 50;
 
     public BooleanSetting(String name, String description) {
         super(name, description);
@@ -37,8 +38,18 @@ public class BooleanSetting extends Setting {
         return type;
     }
 
+    public long getHoldDuration() {
+        return holdDuration;
+    }
+
     public BooleanSetting setType(int type) {
         this.type = type;
+        return this;
+    }
+
+    public BooleanSetting setHoldDuration(long holdDuration) {
+        this.holdDuration = holdDuration;
+
         return this;
     }
 

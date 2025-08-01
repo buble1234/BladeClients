@@ -29,7 +29,6 @@ public class MainScreen extends BaseScreen {
         super(Text.of(""));
     }
 
-     Identifier settingsIconSvg = Identifier.of("blade", "textures/vector.svg");
     public AccountScreen accountScreen = new AccountScreen();
     @Override
     protected void init() {

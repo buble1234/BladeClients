@@ -15,6 +15,7 @@ public class ColorSetting extends Setting {
             brightness = 1,
             alpha = 1;
 
+
     private int[] presets;
 
     public ColorSetting(String name, String description) {

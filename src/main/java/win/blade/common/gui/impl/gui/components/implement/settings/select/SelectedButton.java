@@ -91,6 +91,7 @@ public class SelectedButton extends AbstractComponent {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (MathUtility.isHovered(mouseX, mouseY, x, y, width, height) && button == 0) {
             setting.setSelected(text);
+            return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }

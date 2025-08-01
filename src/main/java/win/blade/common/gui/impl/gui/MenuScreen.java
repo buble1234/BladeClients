@@ -5,8 +5,10 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.Window;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 
+import org.lwjgl.opengl._3DFXTextureCompressionFXT1;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.components.implement.other.*;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.module.InfoWindow;
@@ -14,6 +16,9 @@ import win.blade.common.gui.impl.gui.components.implement.window.implement.setti
 import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
+import win.blade.common.utils.render.builders.Builder;
+import win.blade.common.utils.render.builders.states.QuadColorState;
+import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.core.module.api.Category;
 
 import java.util.ArrayList;
@@ -71,6 +76,12 @@ public class MenuScreen extends Screen implements MinecraftInstance {
             super.render(context, mouseX, mouseY, delta);
             return;
         }
+//
+//        Builder.texture()
+//                .svgTexture(Identifier.of("blade", "textures/svg/backgroundeffect.svg"))
+//                .size(new SizeState(100, 100))//mc.getWindow().getScaledWidth() + 400, mc.getWindow().getScaledHeight() + 400))
+//                .build()
+//                .render(0,0);
 
         Window gameWindow = this.client.getWindow();
 

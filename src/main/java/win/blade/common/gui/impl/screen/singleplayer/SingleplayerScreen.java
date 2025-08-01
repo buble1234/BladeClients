@@ -209,7 +209,7 @@ public class SingleplayerScreen extends BaseScreen {
 
         var state2 = new QuadColorState(new Color(23, 20, 38, 0), base, right, new Color(20, 18, 27, 0));
         Builder.rectangle()
-                .size(new SizeState(306, 60))
+                .size(new SizeState(306, 65))
                 .color(state2)
                 .radius(new QuadRadiusState(10))
                 .build()

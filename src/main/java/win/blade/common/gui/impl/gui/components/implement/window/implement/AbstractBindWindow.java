@@ -3,9 +3,11 @@ package win.blade.common.gui.impl.gui.components.implement.window.implement;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.texture.AbstractTexture;
+import net.minecraft.server.command.PublishCommand;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
+import win.blade.common.gui.impl.gui.components.implement.settings.ValueComponent;
 import win.blade.common.gui.impl.gui.components.implement.window.AbstractWindow;
 import win.blade.common.gui.impl.gui.components.implement.window.WindowManager;
 import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
@@ -26,6 +28,9 @@ import static win.blade.common.utils.other.StringUtil.getBindName;
 public abstract class AbstractBindWindow extends AbstractWindow {
     private boolean binding;
 
+    public ValueSetting setting;
+    public ValueComponent component;
+
     private final MsdfFont fontRegular = FontType.sf_regular.get();
 
     protected abstract int getKey();
@@ -36,9 +41,11 @@ public abstract class AbstractBindWindow extends AbstractWindow {
 
     protected abstract void setType(int type);
 
+    protected abstract Runnable onChange();
 
     @Override
     public void drawWindow(DrawContext context, int mouseX, int mouseY, float delta) {
+        height = getType() == 0 ? 75 : 60;
 
         QuadColorState color = new QuadColorState(
                 new Color(50, 39, 97, 255),
@@ -80,10 +87,20 @@ public abstract class AbstractBindWindow extends AbstractWindow {
 
         drawKeyButton(context);
         drawTypeButton(context);
+
+
+        if (getType() == 0) {
+            ((ValueComponent) component.position(x - 4f, y + height - 27).size(width + 2, 1)).render(context, mouseX, mouseY, delta);
+            onChange().run();
+        }
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if(getType() == 0) {
+            if (component.mouseClicked(mouseX, mouseY, button)) return true;
+        }
+
         if (button == 0) {
             if (MathUtility.isHovered(mouseX, mouseY, x + width - 57, y + 37F, 52, 13)) {
                 setType(getType() != 1 ? 1 : 0);
@@ -105,6 +122,15 @@ public abstract class AbstractBindWindow extends AbstractWindow {
             binding = false;
         }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if(getType() == 0) {
+            if (component.mouseReleased(mouseX, mouseY, button)) return true;
+        }
+
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
