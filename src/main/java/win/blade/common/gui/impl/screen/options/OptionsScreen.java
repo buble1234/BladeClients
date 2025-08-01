@@ -1,4 +1,4 @@
-package win.blade.common.gui.impl.screen;
+package win.blade.common.gui.impl.screen.options;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -9,13 +9,14 @@ import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 import win.blade.common.gui.button.Button;
 import win.blade.common.gui.button.Slider;
+import win.blade.common.gui.impl.screen.BaseScreen;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.msdf.FontType;
 import win.blade.common.utils.render.renderers.impl.BuiltText;
 import java.awt.*;
 
 
-public class OptionsScreen extends BaseScreen  {
+public class OptionsScreen extends BaseScreen {
 
     private final Screen parent;
     private final GameOptions gameOptions;

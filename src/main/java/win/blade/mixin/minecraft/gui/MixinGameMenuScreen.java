@@ -4,14 +4,27 @@ import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import win.blade.common.gui.impl.screen.options.PauseScreen;
 import win.blade.core.Manager;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
+
 @Mixin(GameMenuScreen.class)
 public class MixinGameMenuScreen {
+
+    @Inject(method = "init", at = @At("HEAD"), cancellable = true)
+    private void onInit(CallbackInfo ci) {
+        if (!Manager.isPanic()) {
+            mc.setScreen(new PauseScreen(null));
+            ci.cancel();
+        }
+    }
 
     @ModifyArg(
             method = "disconnect",
