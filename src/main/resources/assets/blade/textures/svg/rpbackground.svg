@@ -1,0 +1,21 @@
+<svg width="406" height="623" viewBox="0 0 406 623" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Базовый фон -->
+    <rect width="406" height="623" rx="25" fill="#14121B"/>
+
+    <!-- Линейный градиент для лёгкого затемнения -->
+    <rect width="406" height="623" rx="25" fill="url(#paint0_linear_0_1303)" fill-opacity="0.2"/>
+
+    <!-- Радиальный градиент для фиолетового свечения в углу (этот эффект вы хотели сохранить) -->
+    <rect width="406" height="623" rx="25" fill="url(#paint1_radial_0_1303)" fill-opacity="0.4"/>
+
+    <defs>
+        <linearGradient id="paint0_linear_0_1303" x1="88.8353" y1="1.68648e-05" x2="511.976" y2="190.67" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#100A25" stop-opacity="0"/>
+            <stop offset="1" stop-color="#100A25"/>
+        </linearGradient>
+        <radialGradient id="paint1_radial_0_1303" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(-313.124 -525.021) rotate(-105.481) scale(1061.28 812.768)">
+            <stop offset="0" stop-color="#663CFF" stop-opacity="0.4"/>
+            <stop offset="1" stop-color="#663CFF" stop-opacity="0"/>
+        </radialGradient>
+    </defs>
+</svg>
