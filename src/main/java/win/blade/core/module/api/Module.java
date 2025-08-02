@@ -22,15 +22,12 @@ public abstract class Module implements MinecraftInstance {
     private BindMode bindMode;
     public long holdDuration = 50;
 
-    public String getVisibleName() { return "Module"; }
-
-    public Category getCategory() { return this.data.category(); }
     public int type = 1;
 
     List<Setting> settings =  new ArrayList<>();
 
     public List<Setting> settings() {
-        return settings.stream().filter(win.blade.common.gui.impl.gui.setting.Setting::notInBox).toList();
+        return settings;
     }
 
     public void addSettings(Setting... settings){
@@ -106,6 +103,11 @@ public abstract class Module implements MinecraftInstance {
         Manager.notificationManager.add(data.name() + " " + (enabled ? "enabled" : "disabled"),
                 enabled ? NotificationType.SUCCESS : NotificationType.ERROR, 2000);
     }
+
+    public Category getCategory() {
+        return this.data.category();
+    }
+
 
     protected void onEnable() {}
     protected void onDisable() {}

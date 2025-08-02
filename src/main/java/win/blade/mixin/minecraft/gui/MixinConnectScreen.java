@@ -29,7 +29,7 @@ public class MixinConnectScreen extends Screen {
         ci.cancel();
 
         if(finishScreen == null){
-            finishScreen = new FinishScreen();
+            finishScreen = new FinishScreen().notClose();
             finishScreen.init();
         }
 

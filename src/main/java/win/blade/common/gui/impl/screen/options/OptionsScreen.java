@@ -1,4 +1,4 @@
-package win.blade.common.gui.impl.screen;
+package win.blade.common.gui.impl.screen.options;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -9,13 +9,17 @@ import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 import win.blade.common.gui.button.Button;
 import win.blade.common.gui.button.Slider;
+import win.blade.common.gui.impl.screen.BaseScreen;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.msdf.FontType;
 import win.blade.common.utils.render.renderers.impl.BuiltText;
 import java.awt.*;
 
-
-public class OptionsScreen extends BaseScreen  {
+/**
+ * Автор: NoCap
+ * Дата создания: 01.08.2025
+ */
+public class OptionsScreen extends BaseScreen {
 
     private final Screen parent;
     private final GameOptions gameOptions;
@@ -57,7 +61,7 @@ public class OptionsScreen extends BaseScreen  {
         this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.sounds"), () -> this.client.setScreen(new SoundOptionsScreen(this, this.gameOptions))));
         row++;
 
-        this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.video"), () -> this.client.setScreen(new VideoOptionsScreen(this, this.client, this.gameOptions))));
+        this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.video"), () -> this.client.setScreen(new VideoOptionsScreen(this, this.gameOptions))));
         this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.controls"), () -> this.client.setScreen(new ControlsOptionsScreen(this, this.gameOptions))));
         row++;
 
@@ -76,7 +80,7 @@ public class OptionsScreen extends BaseScreen  {
                 Text.translatable("resourcePack.title")
         )))
         );
-        this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.of("Special features"), () -> {})); // "Особые возможности"
+        this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.of("Special features"), () -> {}));
         row++;
 
         this.addDrawableChild(new Button(centerX - buttonWidth / 2, buttonsTopY + row * rowH + 15, buttonWidth, buttonHeight, Text.translatable("gui.done"), () -> this.client.setScreen(this.parent)));

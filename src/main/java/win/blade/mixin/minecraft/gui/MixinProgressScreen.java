@@ -25,7 +25,7 @@ public class MixinProgressScreen {
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     public void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (screen == null) {
-            screen = new FinishScreen();
+            screen = new FinishScreen().notClose();
             screen.init();
         }
         MinecraftClient mc = MinecraftClient.getInstance();

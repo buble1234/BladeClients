@@ -27,8 +27,5 @@ public class CheckBox extends Setting {
         return children;
     }
 
-    @Override
-    public Setting addToBox(CheckBox box) {
-        throw new RuntimeException("Нельзя добавить бокс в бокс");//super.addToBox(box);
-    }
+
 }

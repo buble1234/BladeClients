@@ -41,11 +41,6 @@ public class CheckComponent extends AbstractComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        Matrix4f positionMatrix = context
-                .getMatrices()
-                .peek()
-                .getPositionMatrix();
-
         Color stateColor = state
                 ? new Color(102,60,255)
                 : new Color(28,26,37);
@@ -58,15 +53,14 @@ public class CheckComponent extends AbstractComponent {
                 .render(x, y);
 
         if (state) {
-            AbstractTexture checkTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/check.png"));
 
             Builder.texture()
-                    .size(new SizeState(18/2, 18/2))
+                    .size(new SizeState(4.7, 4.7))
                     .color(new QuadColorState(Color.WHITE))
-                    .texture(0f, 0f, 1f, 1f, checkTexture)
+                    .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/svg/gui/check.svg"))
                     .radius(new QuadRadiusState(0f))
                     .build()
-                    .render(x -0.3 , y -0.5f);
+                    .render(x + 1.6f , y + 1.6f);
 
 
         }

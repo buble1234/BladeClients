@@ -18,7 +18,7 @@ public class MixinMessageScreen {
 
     @Inject(method = "init", at = @At("HEAD"), cancellable = true)
     public void init(CallbackInfo ci){
-        MinecraftClient.getInstance().setScreen(new FinishScreen());
+        MinecraftClient.getInstance().setScreen(new FinishScreen().notClose());
         ci.cancel();
     }
 }

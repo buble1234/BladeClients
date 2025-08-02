@@ -109,14 +109,22 @@ public class MultiplayerScreen extends BaseScreen {
                 this::close
         ));
 
-        this.addDrawableChild(new Button(
-                windowX + 250,
-                windowY + 12,
-                40,
-                20,
-                Text.of("Refresh"),
+        this.addDrawableChild(
+                new Button(
+                    windowX + 265,
+                    windowY + 17,
+                    15,
+                    10,
+                    Text.of(""),
                 () -> this.client.setScreen(new MultiplayerScreen().copyScroll(this))
-        ));
+                ).addRender(false, (context, mouseX, mouseY, delta) -> {
+                    Builder.texture()
+                            .svgTexture(Identifier.of("blade", "textures/svg/refresh.svg"))
+                            .size(new SizeState(7, 6.5f))
+                            .build()
+                            .render(windowX + 267.5f, windowY + 19);
+                })
+        );
     }
 
     private void connect(ServerInfo entry) {
@@ -201,7 +209,8 @@ public class MultiplayerScreen extends BaseScreen {
 
         AbstractTexture arrowdown = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/arrpwl2.png"));
 
-        Builder.texture().size(new SizeState(8, 8)).color(new QuadColorState(Color.WHITE)).texture(0f, 0f, 1f, 1f, arrowdown).radius(new QuadRadiusState(0f)).build().render(context.getMatrices().peek().getPositionMatrix(), -8, -8);
+        Builder.texture().size(new SizeState(8, 8)).color(new QuadColorState(Color.WHITE)).texture(0f, 0f, 1f, 1f, arrowdown)
+                .radius(new QuadRadiusState(0f)).build().render(context.getMatrices().peek().getPositionMatrix(), -8, -8);
 
         context.getMatrices().pop();
 

@@ -52,11 +52,11 @@ public class GroupComponent extends AbstractSettingComponent {
                     .setState(setting.getValue())
                     .render(context, mouseX, mouseY, delta);
 
-            ((SettingComponent) settingComponent.position(x + width - 28, y + 8))
+            ((SettingComponent) settingComponent.position(x + width - 26.5f, y + 8))
                     .setRunnable(() -> spawnWindow(mouseX, mouseY))
                     .render(context, mouseX, mouseY, delta);
         } else {
-            ((SettingComponent) settingComponent.position(x + width - 16, y + 8))
+            ((SettingComponent) settingComponent.position(x + width - 16, y + 7.75f))
                     .setRunnable(() -> spawnWindow(mouseX, mouseY))
                     .render(context, mouseX, mouseY, delta);
         }

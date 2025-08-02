@@ -72,15 +72,13 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
                 ? 0xFF878894
                 : 0xFF10C97B;
 
-        AbstractTexture checkTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/check.png"));
-        
         Builder.texture()
-                .size(new SizeState(10.5F, 10.5F))
+                .size(new SizeState(5F, 5f))
                 .color(new QuadColorState(new Color(color)))
-                .texture(0f, 0f, 1f, 1f, checkTexture)
+                .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/svg/gui/check.svg"))
                 .radius(new QuadRadiusState(0f))
                 .build()
-                .render(rectX + rectWidth - 12.5F, rectY + (rectHeight / 2) - 3.5F);
+                .render(rectX + rectWidth - 8.5f, rectY + (rectHeight / 2) - 1.25f);
 
         Builder.text()
                 .font(fontRegular)

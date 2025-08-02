@@ -29,7 +29,7 @@ public class MixinWindow {
         if (Manager.isPanic()) return;
         ci.cancel();
 
-        try (InputStream iconStream = MixinWindow.class.getResourceAsStream("/assets/blade/textures/logoGame.png")) {
+        try (InputStream iconStream = MixinWindow.class.getResourceAsStream("/assets/blade/textures/logogame.png")) {
 
             if (iconStream == null) {
                 LogUtils.getLogger().error("Couldn't find custom icon file");
