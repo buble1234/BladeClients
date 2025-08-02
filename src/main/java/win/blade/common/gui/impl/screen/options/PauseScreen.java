@@ -5,7 +5,6 @@ import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.advancement.AdvancementsScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.SocialInteractionsScreen;
-import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.text.Text;
@@ -13,8 +12,6 @@ import net.minecraft.util.Identifier;
 import win.blade.common.gui.button.Button;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.SizeState;
-
-import java.awt.*;
 
 /**
  * Автор: NoCap
@@ -35,7 +32,7 @@ public class PauseScreen extends Screen {
         super.init();
 
         final int buttonWidth = 498 / 2 - 3;
-//        249 /2;
+
         final int buttonHeight = 65 / 2;
         final int buttonPadding = 4;
         final int halfButtonWidth = 243 / 2;
@@ -66,7 +63,7 @@ public class PauseScreen extends Screen {
         currentY += rowHeight;
 
         this.addDrawableChild(new Button(centerX - halfButtonWidth, currentY, halfButtonWidth - 2, buttonHeight, Text.translatable("menu.options"), () -> {
-            this.client.setScreen(new OptionsScreen(this, this.client.options));
+            this.client.setScreen(new InGameOptionsScreen(this));
         }));
 
         if (this.client.isIntegratedServerRunning() && !this.client.getServer().isRemote()) {
