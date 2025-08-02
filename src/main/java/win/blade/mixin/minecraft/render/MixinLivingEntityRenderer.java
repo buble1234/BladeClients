@@ -20,10 +20,19 @@ import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.core.Manager;
 import win.blade.core.module.storage.misc.SeeInvisiblesModule;
 
+import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
+
 @Mixin(LivingEntityRenderer.class)
 public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> implements MinecraftInstance {
 
     @Shadow protected abstract boolean isVisible(S state);
+
+    private final Map<UUID, Float> prevBodyYawStorage = new WeakHashMap<>();
+    private final Map<UUID, Float> bodyYawStorage = new WeakHashMap<>();
+    private long lastTick = -1;
+
 
     @Inject(method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
     private void updateVisualRotation(T livingEntity, S livingEntityRenderState, float tickDelta, CallbackInfo ci) {
@@ -36,14 +45,57 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extend
         ViewDirection previousDirection = manager.getPreviousDirection();
 
         if (currentDirection != null && previousDirection != null) {
+            long currentTick = livingEntity.getWorld().getTime();
+
+            if (this.lastTick != currentTick) {
+                this.lastTick = currentTick;
+
+                float lastTickBodyYaw = bodyYawStorage.getOrDefault(livingEntity.getUuid(), livingEntity.bodyYaw);
+                prevBodyYawStorage.put(livingEntity.getUuid(), lastTickBodyYaw);
+
+                float bodyYawForCurrentTick = lastTickBodyYaw;
+                float headYaw = currentDirection.yaw();
+                float targetBodyYaw = bodyYawForCurrentTick;
+
+                double deltaX = livingEntity.getX() - livingEntity.prevX;
+                double deltaZ = livingEntity.getZ() - livingEntity.prevZ;
+                float moveDistanceSq = (float) (deltaX * deltaX + deltaZ * deltaZ);
+
+                if (moveDistanceSq > 0.0025000002F) {
+                    float moveAngle = (float) MathHelper.atan2(deltaZ, deltaX) * 57.295776F - 90.0F;
+                    float angleDiff = MathHelper.abs(MathHelper.wrapDegrees(headYaw) - moveAngle);
+
+                    if (95.0F < angleDiff && angleDiff < 265.0F) {
+                        targetBodyYaw = moveAngle - 180.0F;
+                    } else {
+                        targetBodyYaw = moveAngle;
+                    }
+                }
+
+                if (livingEntity.handSwingProgress > 0.0F) {
+                    targetBodyYaw = headYaw;
+                }
+
+                float bodyYawDelta = MathHelper.wrapDegrees(targetBodyYaw - bodyYawForCurrentTick);
+                bodyYawForCurrentTick += bodyYawDelta * 0.3F;
+
+                float headBodyDiff = MathHelper.wrapDegrees(headYaw - bodyYawForCurrentTick);
+                if (Math.abs(headBodyDiff) > 50) {
+                    bodyYawForCurrentTick += headBodyDiff - (MathHelper.sign(headBodyDiff) * 50);
+                }
+
+                bodyYawStorage.put(livingEntity.getUuid(), bodyYawForCurrentTick);
+            }
+
+            float prevBodyYaw = prevBodyYawStorage.getOrDefault(livingEntity.getUuid(), livingEntity.bodyYaw);
+            float currentTickBodyYaw = bodyYawStorage.getOrDefault(livingEntity.getUuid(), livingEntity.bodyYaw);
+            float interpolatedBodyYaw = MathHelper.lerpAngleDegrees(tickDelta, prevBodyYaw, currentTickBodyYaw);
+
             float renderYaw = MathHelper.lerpAngleDegrees(tickDelta, previousDirection.yaw(), currentDirection.yaw());
             float renderPitch = MathHelper.lerpAngleDegrees(tickDelta, previousDirection.pitch(), currentDirection.pitch());
 
-            renderYaw = MathHelper.wrapDegrees(renderYaw);
-            renderPitch = MathHelper.clamp(renderPitch, -90f, 90f);
-
-            livingEntityRenderState.bodyYaw = renderYaw;
-            livingEntityRenderState.yawDegrees = 0;
+            livingEntityRenderState.bodyYaw = interpolatedBodyYaw;
+            livingEntityRenderState.yawDegrees = MathHelper.wrapDegrees(renderYaw - interpolatedBodyYaw);
             livingEntityRenderState.pitch = renderPitch;
         }
     }
