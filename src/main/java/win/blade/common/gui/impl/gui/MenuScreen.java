@@ -1,15 +1,12 @@
 package win.blade.common.gui.impl.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.Window;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 
-import org.lwjgl.opengl._3DFXTextureCompressionFXT1;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.components.implement.other.*;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.module.InfoWindow;
@@ -17,9 +14,6 @@ import win.blade.common.gui.impl.gui.components.implement.window.implement.setti
 import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
-import win.blade.common.utils.render.builders.Builder;
-import win.blade.common.utils.render.builders.states.QuadColorState;
-import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.core.module.api.Category;
 
 import java.util.ArrayList;
@@ -73,12 +67,10 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
         if (this.client == null || this.client.getWindow() == null) {
+            super.render(context, mouseX, mouseY, delta);
             return;
         }
-//
-//        this.client.getFramebuffer().beginWrite(true);
 
         Window gameWindow = this.client.getWindow();
 
@@ -86,28 +78,25 @@ public class MenuScreen extends Screen implements MinecraftInstance {
         this.y = gameWindow.getScaledHeight() / 2 - 125;
         this.width = 400;
         this.height = 250;
-//
+
+        Matrix4f positionMatrix = context
+                .getMatrices()
+                .peek()
+                .getPositionMatrix();
+
         backgroundComponent.setMenuScreen(this)
                 .position(this.x, this.y)
                 .size(this.width, this.height);
 
-        backgroundComponent.render(context, mouseX, mouseY, delta);
+//        userComponent.setMenuScreen(this)
+//                .position(this.x, this.y + this.height);
 
-        userComponent.setMenuScreen(this)
-                .position(this.x, this.y + this.height);
-
-        userComponent.render(context, mouseX, mouseY, delta);
-//
         searchComponent.position(this.x + 300, this.y + 6);
 
-        searchComponent.render(context, mouseX, mouseY, delta);
-        //
         categoryContainerComponent.position(this.x, this.y);
 
-        categoryContainerComponent.render(context, mouseX, mouseY, delta);
-//
-//        components.forEach(component -> component.render(context, mouseX, mouseY, delta));
-//        windowManager.render(context, mouseX, mouseY, delta);
+        components.forEach(component -> component.render(context, mouseX, mouseY, delta));
+        windowManager.render(context, mouseX, mouseY, delta);
     }
 
     @Override
@@ -173,12 +162,6 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                     windowManager.delete(abstractWindow);
                 }
             });
-
-            RenderSystem.disableBlend();          // 1. ОТКЛЮЧАЕМ смешивание
-            RenderSystem.defaultBlendFunc();      // 2. СБРАСЫВАЕМ функцию смешивания на стандартную
-            RenderSystem.enableDepthTest();       // 3. Включаем тест глубины (у вас уже есть)
-            RenderSystem.setShader((ShaderProgram)  null);   // 4. Сбрасываем шейдер (у вас почти правильно, но лучше использовать лямбду)
-            RenderSystem.enableCull();
             super.close();
         }
     }
