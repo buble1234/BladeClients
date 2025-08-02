@@ -88,7 +88,7 @@ public class AimManager {
         this.isActive = false;
     }
 
-    private ViewDirection getPlayerDirection() {
+    public ViewDirection getPlayerDirection() {
         var player = mc.player;
         return player != null ? new ViewDirection(player.getYaw(), player.getPitch()) : ViewDirection.ORIGIN;
     }

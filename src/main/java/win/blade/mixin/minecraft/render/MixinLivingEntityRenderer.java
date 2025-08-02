@@ -27,59 +27,90 @@ import win.blade.core.module.storage.misc.SeeInvisiblesModule;
 
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
 
 @Mixin(LivingEntityRenderer.class)
 public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> implements MinecraftInstance {
 
     @Shadow protected abstract boolean isVisible(S state);
 
-    @Inject(method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V",
-            at = @At("HEAD"),
-            cancellable = true)
-    private void updateVisualRotation(T livingEntity, S livingEntityRenderState, float tickDelta, CallbackInfo ci) {
-        // Убеждаемся, что это наш игрок
-        if (mc.player == null || livingEntity != mc.player) return;
+    private final Map<UUID, Float> prevBodyYawStorage = new WeakHashMap<>();
+    private final Map<UUID, Float> bodyYawStorage = new WeakHashMap<>();
+    private long lastTick = -1;
 
-        AimManager manager = AimManager.INSTANCE;
-        if (!manager.isEnabled() || !manager.shouldInterpolate()) {
-            return;
-        }
-
-        // Даем оригинальному методу заполнить все поля, КРОМЕ ротаций
-        // Сначала вызываем его, потом переписываем
-        // Это более совместимый подход, чем HEAD + cancel
-    }
-
-    // Правильнее будет оставить TAIL, но исправить логику. Давайте вернемся к этому.
-    // Проблема в том, что HEAD + cancel требует копирования всего метода.
-    // Давайте починим ваш TAIL инжект.
 
     @Inject(method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
-    private void overrideVisualRotation_atTail(T livingEntity, S livingEntityRenderState, float tickDelta, CallbackInfo ci) {
+    private void updateVisualRotation(T livingEntity, S livingEntityRenderState, float tickDelta, CallbackInfo ci) {
         if (mc.player == null || livingEntity != mc.player) return;
 
         AimManager manager = AimManager.INSTANCE;
-        if (!manager.isEnabled() || !manager.shouldInterpolate()) return;
+        if (!manager.isEnabled()) return;
 
-        // Оригинальный метод уже отработал. Теперь мы просто переписываем его результаты своими.
         ViewDirection currentDirection = manager.getCurrentDirection();
         ViewDirection previousDirection = manager.getPreviousDirection();
-        Map.Entry<Vec3d, Vec3d> rotationInfo = manager.rotationInfo;
 
-        Vec3d prevVec = rotationInfo.getKey();
-        Vec3d newVec = rotationInfo.getValue();
+        if (currentDirection != null && previousDirection != null) {
+            long currentTick = livingEntity.getWorld().getTime();
 
-        float renderHeadYaw = (float) MathHelper.lerpAngleDegrees(tickDelta, prevVec.x, newVec.x);
-        float renderBodyYaw = (float) MathHelper.lerpAngleDegrees(tickDelta, prevVec.y, newVec.y);
-        float renderPitch = MathHelper.lerpAngleDegrees(tickDelta, previousDirection.pitch(), currentDirection.pitch());
+            if (this.lastTick != currentTick) {
+                this.lastTick = currentTick;
 
-        // Переписываем значения, рассчитанные ванильным кодом
-        livingEntityRenderState.bodyYaw = renderBodyYaw;
-        livingEntityRenderState.yawDegrees = MathHelper.wrapDegrees(renderHeadYaw - renderBodyYaw);
-        livingEntityRenderState.pitch = renderPitch;
+                float lastTickBodyYaw = bodyYawStorage.getOrDefault(livingEntity.getUuid(), livingEntity.bodyYaw);
+                prevBodyYawStorage.put(livingEntity.getUuid(), lastTickBodyYaw);
+
+                float bodyYawForCurrentTick = lastTickBodyYaw;
+                float headYaw = currentDirection.yaw();
+                float targetBodyYaw = bodyYawForCurrentTick;
+
+                double deltaX = livingEntity.getX() - livingEntity.prevX;
+                double deltaZ = livingEntity.getZ() - livingEntity.prevZ;
+                float moveDistanceSq = (float) (deltaX * deltaX + deltaZ * deltaZ);
+
+                if (moveDistanceSq > 0.0025000002F) {
+                    float moveAngle = (float) MathHelper.atan2(deltaZ, deltaX) * 57.295776F - 90.0F;
+                    float angleDiff = MathHelper.abs(MathHelper.wrapDegrees(headYaw) - moveAngle);
+
+                    if (95.0F < angleDiff && angleDiff < 265.0F) {
+                        targetBodyYaw = moveAngle - 180.0F;
+                    } else {
+                        targetBodyYaw = moveAngle;
+                    }
+                }
+
+                if (livingEntity.handSwingProgress > 0.0F) {
+                    targetBodyYaw = headYaw;
+                }
+
+                float bodyYawDelta = MathHelper.wrapDegrees(targetBodyYaw - bodyYawForCurrentTick);
+                bodyYawForCurrentTick += bodyYawDelta * 0.3F;
+
+                float headBodyDiff = MathHelper.wrapDegrees(headYaw - bodyYawForCurrentTick);
+                if (Math.abs(headBodyDiff) > 50) {
+                    bodyYawForCurrentTick += headBodyDiff - (MathHelper.sign(headBodyDiff) * 50);
+                }
+
+                bodyYawStorage.put(livingEntity.getUuid(), bodyYawForCurrentTick);
+            }
+
+            float prevBodyYaw = prevBodyYawStorage.getOrDefault(livingEntity.getUuid(), livingEntity.bodyYaw);
+            float currentTickBodyYaw = bodyYawStorage.getOrDefault(livingEntity.getUuid(), livingEntity.bodyYaw);
+            float interpolatedBodyYaw = MathHelper.lerpAngleDegrees(tickDelta, prevBodyYaw, currentTickBodyYaw);
+
+            float renderYaw = MathHelper.lerpAngleDegrees(tickDelta, previousDirection.yaw(), currentDirection.yaw());
+            float renderPitch = MathHelper.lerpAngleDegrees(tickDelta, previousDirection.pitch(), currentDirection.pitch());
+
+            renderYaw = MathHelper.wrapDegrees(renderYaw);
+            renderPitch = MathHelper.clamp(renderPitch, -90f, 90f);
+
+            livingEntityRenderState.bodyYaw = renderYaw;
+            livingEntityRenderState.yawDegrees = 0;
+            livingEntityRenderState.bodyYaw = interpolatedBodyYaw;
+            livingEntityRenderState.yawDegrees = MathHelper.wrapDegrees(renderYaw - interpolatedBodyYaw);
+            livingEntityRenderState.pitch = renderPitch;
+        }
     }
 
-    
     @Redirect(
             method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/EntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;III)V")
