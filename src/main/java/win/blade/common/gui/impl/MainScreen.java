@@ -49,29 +49,35 @@ public class MainScreen extends BaseScreen {
         Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
         int centerX = this.width / 2;
         int centerY = this.height / 2;
+        float iX = centerX - 115;
 
-        float Twidth = FontType.sf_regular.get().getWidth("Blade Client", 16);
-
-        BuiltText bladeIcon = Builder.text()
-                .font(FontType.icon2.get())
-                .text("a")
-                .color(new Color(102, 60, 255, 255))
-                .size(24)
-                .thickness(0.05f)
-                .build();
-
-        float iX = centerX - (Twidth / 2.0f) - FontType.icon2.get().getWidth("a", 24) - 5;
-        bladeIcon.render(matrix, iX, centerY - 130);
-
-
-        BuiltText text = Builder.text()
-                .font(FontType.sf_regular.get())
-                .text("Blade Client")
-                .color(Color.WHITE)
-                .size(16)
-                .thickness(0.05f)
-                .build();
-        text.render(matrix, centerX - Twidth / 2.0f + 5, centerY - 125);
+        Builder.texture()
+                .size(new SizeState(180, 180))
+                .svgTexture(Identifier.of("blade", "textures/svg/bladetitle.svg"))
+                .build()
+                .render(iX, centerY - 205);
+//
+//        float Twidth = FontType.sf_regular.get().getWidth("Blade Client", 16);
+//
+//        BuiltText bladeIcon = Builder.text()
+//                .font(FontType.icon2.get())
+//                .text("a")
+//                .color(new Color(102, 60, 255, 255))
+//                .size(24)
+//                .thickness(0.05f)
+//                .build();
+//
+//        bladeIcon.render(matrix, iX, centerY - 130);
+//
+//
+//        BuiltText text = Builder.text()
+//                .font(FontType.sf_regular.get())
+//                .text("Blade Client")
+//                .color(Color.WHITE)
+//                .size(16)
+//                .thickness(0.05f)
+//                .build();
+//        text.render(matrix, centerX - Twidth / 2.0f + 5, centerY - 125);
     }
 
 

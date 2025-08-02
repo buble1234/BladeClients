@@ -26,40 +26,42 @@ public class GroupComponent extends AbstractSettingComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        String wrapped = StringUtil.wrap(setting.getDescription(), 100, 6);
-        height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
+//        if(false) {
+            String wrapped = StringUtil.wrap(setting.getDescription(), 100, 6);
+            height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
 
-        Builder.text()
-                .font(fontRegular)
-                .text(setting.getName())
-                .size(6)
-                .color(new Color(0xFFD4D6E1))
-                .build()
-                .render(x + 9, y + 8 + addJust());
-
-        if (shouldRenderDescription)
             Builder.text()
                     .font(fontRegular)
-                    .text(wrapped)
-                    .size(5)
-                    .color(new Color(0xFF878894))
+                    .text(setting.getName())
+                    .size(6)
+                    .color(new Color(0xFFD4D6E1))
                     .build()
-                    .render(x + 9, y + 15);
+                    .render(x + 9, y + 8 + addJust());
 
-        if (setting.isToggleable()) {
-            ((CheckComponent) checkComponent.position(x + width - 16, y + 7.5F))
-                    .setRunnable(() -> setting.setValue(!setting.getValue()))
-                    .setState(setting.getValue())
-                    .render(context, mouseX, mouseY, delta);
+            if (shouldRenderDescription)
+                Builder.text()
+                        .font(fontRegular)
+                        .text(wrapped)
+                        .size(5)
+                        .color(new Color(0xFF878894))
+                        .build()
+                        .render(x + 9, y + 15);
 
-            ((SettingComponent) settingComponent.position(x + width - 26.5f, y + 8))
-                    .setRunnable(() -> spawnWindow(mouseX, mouseY))
-                    .render(context, mouseX, mouseY, delta);
-        } else {
-            ((SettingComponent) settingComponent.position(x + width - 16, y + 7.75f))
-                    .setRunnable(() -> spawnWindow(mouseX, mouseY))
-                    .render(context, mouseX, mouseY, delta);
-        }
+            if (setting.isToggleable()) {
+                ((CheckComponent) checkComponent.position(x + width - 16, y + 7.5F))
+                        .setRunnable(() -> setting.setValue(! setting.getValue()))
+                        .setState(setting.getValue())
+                        .render(context, mouseX, mouseY, delta);
+
+                ((SettingComponent) settingComponent.position(x + width - 26.5f, y + 8))
+                        .setRunnable(() -> spawnWindow(mouseX, mouseY))
+                        .render(context, mouseX, mouseY, delta);
+            } else {
+                ((SettingComponent) settingComponent.position(x + width - 16, y + 7.75f))
+                        .setRunnable(() -> spawnWindow(mouseX, mouseY))
+                        .render(context, mouseX, mouseY, delta);
+            }
+//        }
     }
 
     @Override

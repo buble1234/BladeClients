@@ -7,7 +7,12 @@ import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
+import net.minecraft.util.profiler.Profilers;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,34 +25,61 @@ import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.core.Manager;
 import win.blade.core.module.storage.misc.SeeInvisiblesModule;
 
+import java.util.AbstractMap;
+import java.util.Map;
+
 @Mixin(LivingEntityRenderer.class)
 public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> implements MinecraftInstance {
 
     @Shadow protected abstract boolean isVisible(S state);
 
-    @Inject(method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
+    @Inject(method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V",
+            at = @At("HEAD"),
+            cancellable = true)
     private void updateVisualRotation(T livingEntity, S livingEntityRenderState, float tickDelta, CallbackInfo ci) {
+        // Убеждаемся, что это наш игрок
         if (mc.player == null || livingEntity != mc.player) return;
 
         AimManager manager = AimManager.INSTANCE;
-        if (!manager.isEnabled()) return;
-
-        ViewDirection currentDirection = manager.getCurrentDirection();
-        ViewDirection previousDirection = manager.getPreviousDirection();
-
-        if (currentDirection != null && previousDirection != null) {
-            float renderYaw = MathHelper.lerpAngleDegrees(tickDelta, previousDirection.yaw(), currentDirection.yaw());
-            float renderPitch = MathHelper.lerpAngleDegrees(tickDelta, previousDirection.pitch(), currentDirection.pitch());
-
-            renderYaw = MathHelper.wrapDegrees(renderYaw);
-            renderPitch = MathHelper.clamp(renderPitch, -90f, 90f);
-
-            livingEntityRenderState.bodyYaw = renderYaw;
-            livingEntityRenderState.yawDegrees = 0;
-            livingEntityRenderState.pitch = renderPitch;
+        if (!manager.isEnabled() || !manager.shouldInterpolate()) {
+            return;
         }
+
+        // Даем оригинальному методу заполнить все поля, КРОМЕ ротаций
+        // Сначала вызываем его, потом переписываем
+        // Это более совместимый подход, чем HEAD + cancel
     }
 
+    // Правильнее будет оставить TAIL, но исправить логику. Давайте вернемся к этому.
+    // Проблема в том, что HEAD + cancel требует копирования всего метода.
+    // Давайте починим ваш TAIL инжект.
+
+    @Inject(method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
+    private void overrideVisualRotation_atTail(T livingEntity, S livingEntityRenderState, float tickDelta, CallbackInfo ci) {
+        if (mc.player == null || livingEntity != mc.player) return;
+
+        AimManager manager = AimManager.INSTANCE;
+        if (!manager.isEnabled() || !manager.shouldInterpolate()) return;
+
+        // Оригинальный метод уже отработал. Теперь мы просто переписываем его результаты своими.
+        ViewDirection currentDirection = manager.getCurrentDirection();
+        ViewDirection previousDirection = manager.getPreviousDirection();
+        Map.Entry<Vec3d, Vec3d> rotationInfo = manager.rotationInfo;
+
+        Vec3d prevVec = rotationInfo.getKey();
+        Vec3d newVec = rotationInfo.getValue();
+
+        float renderHeadYaw = (float) MathHelper.lerpAngleDegrees(tickDelta, prevVec.x, newVec.x);
+        float renderBodyYaw = (float) MathHelper.lerpAngleDegrees(tickDelta, prevVec.y, newVec.y);
+        float renderPitch = MathHelper.lerpAngleDegrees(tickDelta, previousDirection.pitch(), currentDirection.pitch());
+
+        // Переписываем значения, рассчитанные ванильным кодом
+        livingEntityRenderState.bodyYaw = renderBodyYaw;
+        livingEntityRenderState.yawDegrees = MathHelper.wrapDegrees(renderHeadYaw - renderBodyYaw);
+        livingEntityRenderState.pitch = renderPitch;
+    }
+
+    
     @Redirect(
             method = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/EntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;III)V")

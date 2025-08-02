@@ -113,7 +113,7 @@ public class PauseScreen extends Screen {
 
         var title = Builder.texture()
                 .size(new SizeState(tileWidth, tileHeight))
-                .svgTexture(Identifier.of("blade", "textures/bladetitle.svg"))
+                .svgTexture(Identifier.of("blade", "textures/svg/bladetitle.svg"))
                 .build();
 
         float x = (this.width - tileWidth) / 2.0f - 19.5f;
