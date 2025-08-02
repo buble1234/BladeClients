@@ -135,7 +135,7 @@ public class InGameOptionsScreen extends Screen {
 
         currentY += buttonHeight + subsequentRowGap;
 
-        this.addDrawableChild(new Button(col1X, currentY, buttonWidth, buttonHeight, Text.translatable("options.video"), () -> this.client.setScreen(new VideoOptionsScreen(this, this.client, this.client.options))));
+        this.addDrawableChild(new Button(col1X, currentY, buttonWidth, buttonHeight, Text.translatable("options.video"), () -> this.client.setScreen(new VideoOptionsScreen(this, this.client.options))));
         this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.controls"), () -> this.client.setScreen(new ControlsOptionsScreen(this, this.client.options))));
 
         currentY += buttonHeight + subsequentRowGap;
