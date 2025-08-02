@@ -1,20 +1,26 @@
 package win.blade.common.gui.impl.screen.options;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.option.*;
 import net.minecraft.client.render.ChunkBuilderMode;
+import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.util.Monitor;
 import net.minecraft.client.util.VideoMode;
 import net.minecraft.particle.ParticlesMode;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import win.blade.common.gui.button.Button;
 import win.blade.common.gui.button.Slider;
+import win.blade.common.gui.impl.screen.BaseScreen;
 import win.blade.common.utils.render.builders.Builder;
+import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.msdf.FontType;
 import win.blade.common.utils.render.msdf.MsdfFont;
+import win.blade.common.utils.render.renderers.impl.BuiltTexture;
 
 import java.awt.Color;
 import java.util.Optional;
@@ -39,12 +45,14 @@ public class VideoOptionsScreen extends Screen {
             glintStrengthSlider, menuBackgroundBlurrinessSlider, biomeBlendRadiusSlider;
 
     private int currentResolutionIndex;
+    private boolean renderBackground = false;
 
-    public VideoOptionsScreen(Screen parent, GameOptions options) {
+    public VideoOptionsScreen(Screen parent, GameOptions options, boolean shouldRenderBackground) {
         super(Text.translatable("options.videoTitle"));
         this.parent = parent;
         this.options = options;
         this.mipmapLevels = options.getMipmapLevels().getValue();
+        renderBackground = shouldRenderBackground;
     }
 
     @Override
@@ -285,14 +293,28 @@ public class VideoOptionsScreen extends Screen {
     private Text getPercentText(Text prefix, double value) { return value == 0.0 ? prefix.copy().append(": ").append(ScreenTexts.OFF) : prefix.copy().append(": " + (int)(value * 100.0) + "%"); }
 
 
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        if(renderBackground){
+            Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
+
+            AbstractTexture customTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/mainmenu.png"));
+            BuiltTexture customIcon = Builder.texture()
+                    .size(new SizeState(client.getWindow().getScaledWidth(), client.getWindow().getScaledHeight()))
+                    .texture(0.0f, 0.0f, 1.0f, 1.0f, customTexture)
+                    .smoothness(3.0f)
+                    .build();
+            customIcon.render(matrix, 0, 0);
+        }
+
         Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
         MsdfFont font = FontType.sf_regular.get();
         float fontSize = 16f;
         String titleText = this.title.getString();
         float textWidth = font.getWidth(titleText, fontSize);
         float textX = (this.width - textWidth) / 2.0f;
+
 
         Builder.text().font(font).text(titleText).color(Color.WHITE).size(fontSize).thickness(0.05f).build().render(matrix, textX, 40);
 

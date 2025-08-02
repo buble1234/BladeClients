@@ -78,6 +78,7 @@ public abstract class BaseScreen extends Screen implements MinecraftInstance {
     }
 
     protected abstract void renderContent(DrawContext context, int mouseX, int mouseY, float delta);
+
     protected void renderLast(DrawContext context, int mouseX, int mouseY, float delta){
 
     }

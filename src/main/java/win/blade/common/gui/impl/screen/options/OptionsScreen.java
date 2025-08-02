@@ -5,11 +5,13 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.*;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.option.GameOptions;
+import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 import win.blade.common.gui.button.Button;
 import win.blade.common.gui.button.Slider;
 import win.blade.common.gui.impl.screen.BaseScreen;
+import win.blade.common.gui.impl.screen.options.resourcepack.ResourcePackScreen;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.msdf.FontType;
 import win.blade.common.utils.render.renderers.impl.BuiltText;
@@ -61,7 +63,7 @@ public class OptionsScreen extends BaseScreen {
         this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.sounds"), () -> this.client.setScreen(new SoundOptionsScreen(this, this.gameOptions))));
         row++;
 
-        this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.video"), () -> this.client.setScreen(new VideoOptionsScreen(this, this.gameOptions))));
+        this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.video"), () -> this.client.setScreen(new VideoOptionsScreen(this, this.gameOptions, true))));
         this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.controls"), () -> this.client.setScreen(new ControlsOptionsScreen(this, this.gameOptions))));
         row++;
 
@@ -70,16 +72,13 @@ public class OptionsScreen extends BaseScreen {
         row++;
 
         this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.resourcepack"),
-        () -> this.client.setScreen(new PackScreen(
+        () -> this.client.setScreen(new ResourcePackScreen(
+                this,
                 this.client.getResourcePackManager(),
-                manager -> {
-                    this.client.options.refreshResourcePacks(manager);
-                    this.client.setScreen(this);
-                },
+                this::refreshResourcePacks,
                 this.client.getResourcePackDir(),
-                Text.translatable("resourcePack.title")
-        )))
-        );
+                Text.translatable("resourcePack.title"), true)
+        )));
         this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.of("Special features"), () -> {}));
         row++;
 
@@ -102,6 +101,12 @@ public class OptionsScreen extends BaseScreen {
 
         titleRender.render(matrix, this.width / 2.0f - Twidth / 2.0f, 40);
 
+    }
+
+
+    private void refreshResourcePacks(ResourcePackManager m) {
+        this.client.options.refreshResourcePacks(m);
+        this.client.setScreen(this);
     }
 
 

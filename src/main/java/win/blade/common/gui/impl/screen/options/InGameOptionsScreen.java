@@ -14,6 +14,7 @@ import net.minecraft.world.Difficulty;
 import org.joml.Matrix4f;
 import win.blade.common.gui.button.Button;
 import win.blade.common.gui.button.Slider;
+import win.blade.common.gui.impl.screen.options.resourcepack.ResourcePackScreen;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.msdf.FontType;
@@ -57,7 +58,7 @@ public class InGameOptionsScreen extends Screen {
 
         int currentY = buttonsTopY;
 
-        boolean showDifficultyOptions = this.client.world != null && this.client.isIntegratedServerRunning() && !this.client.world.getLevelProperties().isHardcore();
+        boolean showDifficultyOptions = this.client.world != null && this.client.isIntegratedServerRunning() && ! this.client.world.getLevelProperties().isHardcore();
         boolean isDifficultyLocked = showDifficultyOptions && this.client.world.getLevelProperties().isDifficultyLocked();
 
         double initialFov = (this.client.options.getFov().getValue() - 30.0) / 80.0;
@@ -100,7 +101,7 @@ public class InGameOptionsScreen extends Screen {
                     Builder.text().font(font).text(value).color(valueColor).size(fontSize).thickness(0.05f).build().render(matrix, currentX, textY);
                 }
             };
-            this.difficultyButton.active = !isDifficultyLocked;
+            this.difficultyButton.active = ! isDifficultyLocked;
             this.addDrawableChild(this.difficultyButton);
 
             this.lockButton = new Button(col2X + difficultyButtonWidth + columnPadding, currentY, lockButtonWidth, buttonHeight, Text.empty(), this::lockDifficulty) {
@@ -122,7 +123,7 @@ public class InGameOptionsScreen extends Screen {
                             .render(iconX, iconY);
                 }
             };
-            this.lockButton.active = !isDifficultyLocked;
+            this.lockButton.active = ! isDifficultyLocked;
             this.addDrawableChild(this.lockButton);
         } else {
             this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.accessibility"), () -> this.client.setScreen(new AccessibilityOptionsScreen(this, this.client.options))));
@@ -135,7 +136,7 @@ public class InGameOptionsScreen extends Screen {
 
         currentY += buttonHeight + subsequentRowGap;
 
-        this.addDrawableChild(new Button(col1X, currentY, buttonWidth, buttonHeight, Text.translatable("options.video"), () -> this.client.setScreen(new VideoOptionsScreen(this, this.client.options))));
+        this.addDrawableChild(new Button(col1X, currentY, buttonWidth, buttonHeight, Text.translatable("options.video"), () -> this.client.setScreen(new VideoOptionsScreen(this, this.client.options, false))));
         this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.controls"), () -> this.client.setScreen(new ControlsOptionsScreen(this, this.client.options))));
 
         currentY += buttonHeight + subsequentRowGap;
@@ -145,7 +146,15 @@ public class InGameOptionsScreen extends Screen {
 
         currentY += buttonHeight + subsequentRowGap;
 
-        this.addDrawableChild(new Button(col1X, currentY, buttonWidth, buttonHeight, Text.translatable("options.resourcepack"), () -> this.client.setScreen(new PackScreen(this.client.getResourcePackManager(), this::refreshResourcePacks, this.client.getResourcePackDir(), Text.translatable("resourcePack.title")))));
+        this.addDrawableChild(new Button(col1X, currentY, buttonWidth, buttonHeight, Text.translatable("options.resourcepack"),
+                () -> this.client.setScreen(new ResourcePackScreen(
+                        this,
+                        this.client.getResourcePackManager(),
+                        this::refreshResourcePacks,
+                        this.client.getResourcePackDir(),
+                        Text.translatable("resourcePack.title"), false)
+                ))
+        );
         if(showDifficultyOptions) {
             this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.accessibility"), () -> this.client.setScreen(new AccessibilityOptionsScreen(this, this.client.options))));
         } else {
