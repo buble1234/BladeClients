@@ -5,6 +5,7 @@ import win.blade.common.gui.impl.gui.MenuScreen;
 import win.blade.common.gui.impl.screen.ExitScreen;
 import win.blade.common.ui.NotificationManager;
 import win.blade.common.utils.browser.BrowserManager;
+import win.blade.common.utils.config.ConfigManager;
 import win.blade.common.utils.friends.FriendManager;
 import win.blade.common.utils.keyboard.KeyOptions;
 import win.blade.core.commands.CommandManager;
@@ -51,7 +52,7 @@ public class Manager implements MinecraftInstance {
 
         BrowserManager.INSTANCE.initializeBrowser();
         KeyOptions.initialize();
-        //ConfigManager.instance = new ConfigManager();
+        ConfigManager.instance = new ConfigManager();
         FriendManager.instance = new FriendManager();
         commandManager = new CommandManager();
 
@@ -78,10 +79,10 @@ public class Manager implements MinecraftInstance {
     }
 
     private void handleKeybinds() {
-//        if (mc.currentScreen != null) {
-//            wasKeyPressed.clear();
-//            return;
-//        }
+        if (mc.currentScreen != null) {
+            wasKeyPressed.clear();
+            return;
+        }
 
         for (Module module : moduleManager.all()) {
             module.handleSettingsBind();
@@ -100,6 +101,7 @@ public class Manager implements MinecraftInstance {
             } else if (module.type == 0) {
                 if (isPress != module.isEnabled()) {
                     module.scheduledToggle(isPress);
+
                 }
             }
 

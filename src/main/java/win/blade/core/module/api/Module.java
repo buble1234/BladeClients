@@ -4,6 +4,7 @@ import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
 import win.blade.common.ui.NotificationType;
+import win.blade.common.utils.config.ConfigManager;
 import win.blade.common.utils.keyboard.Keyboard;
 import win.blade.common.utils.minecraft.ChatUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
@@ -67,6 +68,7 @@ public abstract class Module implements MinecraftInstance {
     }
 
     public final Module toggle() {
+        ConfigManager.instance.saveConfig("default");
         return setEnabled(!enabled);
     }
 
@@ -133,6 +135,7 @@ public abstract class Module implements MinecraftInstance {
     public void scheduledToggle(boolean state){
         Manager.executorService.schedule(() -> {
             setEnabled(state);
+            ConfigManager.instance.saveConfig("default");
         }, holdDuration, TimeUnit.MILLISECONDS);
     }
 

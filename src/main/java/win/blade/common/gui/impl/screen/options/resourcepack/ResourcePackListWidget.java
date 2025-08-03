@@ -113,15 +113,11 @@ public class ResourcePackListWidget implements Drawable, Element, Selectable {
 
         matrixStack.pop();
 
-//        .push(this.x, this.y + 40, this.width, this.height - 40, context.getMatrices());
-
         int currentY = this.y + 45 - (int) this.scrollY;
         for (ResourcePackEntry entry : children) {
             entry.render(context, this.x + 12, currentY, 178, 50, mouseX, mouseY);
             currentY += 50;
         }
-
-//        ScissorStack.pop(context.getMatrices());
     }
 
     @Override

@@ -2,6 +2,7 @@ package win.blade.common.ui.element;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
+import win.blade.common.utils.config.ConfigManager;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
 import win.blade.core.Manager;
@@ -34,7 +35,7 @@ public abstract class InteractiveUIElement extends UIElement {
         this.animatedWidth.set(width);
         this.animatedHeight.set(height);
 
-        //ConfigManager.draggableList.add(this);
+        ConfigManager.draggableList.add(this);
     }
 
     public void setAnimation(double duration, Easing easing) {

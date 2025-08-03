@@ -21,8 +21,11 @@ accessible field net/minecraft/entity/Entity hasVisualFire Z
 accessible field net/minecraft/network/packet/s2c/play/GameMessageS2CPacket content Lnet/minecraft/text/Text;
 accessible field net/minecraft/block/spawner/MobSpawnerLogic spawnDelay I
 accessible class net/minecraft/client/gui/hud/InGameHud$HeartType
+accessible class net/minecraft/client/network/ClientCommonNetworkHandler$ConfirmServerResourcePackScreen
 accessible method net/minecraft/network/packet/c2s/play/PlayerInteractEntityC2SPacket write (Lnet/minecraft/network/PacketByteBuf;)V
 accessible method net/minecraft/client/world/ClientWorld getPendingUpdateManager ()Lnet/minecraft/client/network/PendingUpdateManager;
 accessible method net/minecraft/client/render/entity/LivingEntityRenderer getRenderLayer (Lnet/minecraft/entity/LivingEntity;ZZZ)Lnet/minecraft/client/render/RenderLayer;
 accessible method net/minecraft/entity/LivingEntity getHandSwingDuration ()I
 accessible method net/minecraft/client/input/KeyboardInput getMovementMultiplier (ZZ)F
+
+
