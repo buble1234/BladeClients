@@ -52,11 +52,11 @@ public class PlayerUtility implements MinecraftInstance {
     }
 
     public static Hand getAttackHand() {
-        ItemStack mainHand = mc.player.getMainHandStack();
-        ItemStack offHand = mc.player.getOffHandStack();
-
-        if (PlayerUtility.isWeapon(mainHand)) return Hand.MAIN_HAND;
-        if (PlayerUtility.isWeapon(offHand)) return Hand.OFF_HAND;
+//        ItemStack mainHand = mc.player.getMainHandStack();
+//        ItemStack offHand = mc.player.getOffHandStack();
+//
+//        if (PlayerUtility.isWeapon(mainHand)) return Hand.MAIN_HAND;
+//        if (PlayerUtility.isWeapon(offHand)) return Hand.OFF_HAND;
         return Hand.MAIN_HAND;
     }
 
