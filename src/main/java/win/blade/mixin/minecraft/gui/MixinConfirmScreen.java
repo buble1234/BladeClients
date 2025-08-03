@@ -25,9 +25,10 @@ public class MixinConfirmScreen extends Screen {
         super(title);
     }
 
+    @SuppressWarnings("all")
     @Inject(method = "addButtons", at = @At("TAIL"))
     private void addSpoofButton(int y, CallbackInfo ci) {
-        if (!Manager.isPanic()) {
+        if (!Manager.isPanic() && (ConfirmScreen) (Object) this instanceof ClientCommonNetworkHandler.ConfirmServerResourcePackScreen) {
             ButtonWidget spoofButton = ButtonWidget.builder(Text.literal("Подмена"), button -> {
                 if (mc.getNetworkHandler() instanceof ClientCommonNetworkHandler handler) {
                     UUID id = currentResourcePackId != null ? currentResourcePackId : UUID.randomUUID();
