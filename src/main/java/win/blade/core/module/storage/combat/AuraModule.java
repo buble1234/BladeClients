@@ -124,7 +124,7 @@ public class AuraModule extends Module {
     private void clearTarget() {
         currentTarget = null;
         aimTicks = 0;
-        AimManager.INSTANCE.disableWithSmooth();
+        AimManager.INSTANCE.disableWithSmooth(0.9f);
     }
 
     private void updateTargetTypes() {
@@ -145,7 +145,7 @@ public class AuraModule extends Module {
         updateCurrentTarget();
 
         if (currentTarget == null) {
-            AimManager.INSTANCE.disableWithSmooth();
+            AimManager.INSTANCE.disableWithSmooth(0.9f);
             return;
         }
 
@@ -185,7 +185,7 @@ public class AuraModule extends Module {
 
     private void handleAimLogic() {
         if (!aimGroup.getValue()) {
-            AimManager.INSTANCE.disableWithSmooth();
+            AimManager.INSTANCE.disableWithSmooth(0.9f);
             return;
         }
 
@@ -194,7 +194,7 @@ public class AuraModule extends Module {
                 aimTicks--;
                 aimAtTarget();
             } else {
-                AimManager.INSTANCE.disableWithSmooth();
+                AimManager.INSTANCE.disableWithSmooth(0.9f);
             }
 
             if (currentTarget instanceof LivingEntity livingTarget) {

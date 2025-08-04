@@ -81,6 +81,25 @@ public class AimManager {
         execute(disableTask);
     }
 
+    public void disableWithSmooth(float speed) {
+        if (!isActive || activeTask == null) {
+            disable();
+            return;
+        }
+
+        ViewDirection direction = getPlayerDirection();
+
+        AimSettings aimSettings = new AimSettings(
+                new AdaptiveSmooth(speed),
+                false,
+                true,
+                true
+        );
+
+        TargetTask disableTask = aimSettings.buildTask(direction, null, null);
+        execute(disableTask);
+    }
+
     public void forceRotation(ViewDirection direction) {
         this.currentDirection = direction;
         this.previousDirection = direction;
