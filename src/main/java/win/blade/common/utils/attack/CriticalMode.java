@@ -4,7 +4,8 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import win.blade.common.utils.minecraft.MinecraftInstance;
-import win.blade.common.utils.player.PlayerUtility;
+import win.blade.core.Manager;
+import win.blade.core.module.storage.combat.CriticalsModule;
 
 /**
  * Автор: NoCap
@@ -20,12 +21,18 @@ public enum CriticalMode implements MinecraftInstance {
     ALWAYS {
         @Override
         public boolean canCritical(AttackSettings settings, AttackState state) {
+            if (isCriticalsModule()) {
+                return !mc.player.isOnGround() && mc.player.fallDistance == 0 && !mc.player.isGliding() && !mc.player.isSubmergedInWater();
+            }
             return isPlayerInCriticalState() || mc.player.isSubmergedInWater() || mc.player.isInSwimmingPose() || (System.currentTimeMillis() - state.getLastJumpTime() < 200);
         }
     },
     ADAPTIVE {
         @Override
         public boolean canCritical(AttackSettings settings, AttackState state) {
+            if (isCriticalsModule()) {
+                return !mc.player.isOnGround() && mc.player.fallDistance == 0 && !mc.player.isGliding() && !mc.player.isSubmergedInWater();
+            }
 
             boolean reasonForSkipCrit = mc.player.getAbilities().flying || mc.player.isGliding() || mc.player.hasStatusEffect(StatusEffects.BLINDNESS) || mc.player.hasStatusEffect(StatusEffects.SLOW_FALLING);
 
@@ -59,6 +66,11 @@ public enum CriticalMode implements MinecraftInstance {
     };
 
     public abstract boolean canCritical(AttackSettings settings, AttackState state);
+
+    private static boolean isCriticalsModule() {
+        CriticalsModule criticalsModule = Manager.getModuleManagement().get(CriticalsModule.class);
+        return criticalsModule.isEnabled();
+    }
 
     private static boolean isPlayerInCriticalState() {
         if (mc.player.isGliding()) {
