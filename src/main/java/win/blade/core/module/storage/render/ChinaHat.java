@@ -10,7 +10,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
 import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.friends.FriendManager;
 import win.blade.core.module.api.Category;
@@ -19,16 +18,6 @@ import win.blade.core.module.api.ModuleInfo;
 
 @ModuleInfo(name = "ChinaHat", category = Category.RENDER)
 public class ChinaHat extends Module {
-
-    private static ChinaHat instance;
-
-    public ChinaHat() {
-        instance = this;
-    }
-
-    public static ChinaHat getInstance() {
-        return instance;
-    }
 
     public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, PlayerEntity player, ModelWithHead model) {
         if (!(player instanceof ClientPlayerEntity) && !FriendManager.instance.hasFriend(player.getName().getString())) {

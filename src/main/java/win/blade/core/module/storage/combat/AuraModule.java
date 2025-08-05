@@ -66,6 +66,7 @@ public class AuraModule extends Module {
             new BooleanSetting("Игроки с бронёй", "").setValue(true),
             new BooleanSetting("Невидимые игроки", "").setValue(false),
             new BooleanSetting("Тиммейты", "").setValue(false),
+            new BooleanSetting("Друзья", "").setValue(false),
             new BooleanSetting("Мобы", "").setValue(true),
             new BooleanSetting("Животные", "").setValue(false),
             new BooleanSetting("Жители", "").setValue(false)
@@ -86,6 +87,7 @@ public class AuraModule extends Module {
 
     private final GroupSetting moveCorrectionGroup = new GroupSetting("Коррекция движений", "")
             .visible(() -> aimGroup.getValue())
+            .setValue(true)
             .settings(moveCorrectionMode);
 
 
