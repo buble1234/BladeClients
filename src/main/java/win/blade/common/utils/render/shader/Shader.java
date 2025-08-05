@@ -2,11 +2,14 @@ package win.blade.common.utils.render.shader;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.apache.commons.io.IOUtils;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL33;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.InputStream;
+import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,11 +22,11 @@ public class Shader {
     private final int programId;
     private final Map<String, Integer> uniformCache = new HashMap<>();
 
-    public Shader(String shaderName) {
+    public Shader(String path,String shaderName) {
         int program = glCreateProgram();
 
         try {
-            String basePath = "/assets/blade/shaders/core/common/";
+            String basePath = "/assets/blade/shaders/core/" + path + "/";
             String vertexShaderSource = readShaderSource(basePath + shaderName + ".vsh");
             String fragmentShaderSource = readShaderSource(basePath + shaderName + ".fsh");
 
@@ -97,6 +100,15 @@ public class Shader {
     public void setUniform3f(String name, Vector3f vector) {
         RenderSystem.assertOnRenderThread();
         glUniform3f(getUniformLocation(name), vector.x, vector.y, vector.z);
+    }
+
+    public void setUniformMatrix4f(String name, boolean transpose, Matrix4f matrix) {
+        RenderSystem.assertOnRenderThread();
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(16);
+            matrix.get(buffer);
+            glUniformMatrix4fv(getUniformLocation(name), transpose, buffer);
+        }
     }
 
     public void setUniformBool(String name, boolean value) {
