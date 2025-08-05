@@ -27,5 +27,6 @@ accessible method net/minecraft/client/world/ClientWorld getPendingUpdateManager
 accessible method net/minecraft/client/render/entity/LivingEntityRenderer getRenderLayer (Lnet/minecraft/entity/LivingEntity;ZZZ)Lnet/minecraft/client/render/RenderLayer;
 accessible method net/minecraft/entity/LivingEntity getHandSwingDuration ()I
 accessible method net/minecraft/client/input/KeyboardInput getMovementMultiplier (ZZ)F
+accessible method net/minecraft/client/render/GameRenderer renderHand (Lnet/minecraft/client/render/Camera;FLorg/joml/Matrix4f;)V
 
 
