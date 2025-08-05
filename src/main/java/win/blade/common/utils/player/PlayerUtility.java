@@ -15,6 +15,8 @@ import net.minecraft.scoreboard.ScoreboardDisplaySlot;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import win.blade.common.utils.minecraft.MinecraftInstance;
@@ -128,5 +130,23 @@ public class PlayerUtility implements MinecraftInstance {
                 !mc.player.isSubmergedInWater() &&
                 !mc.player.hasStatusEffect(StatusEffects.BLINDNESS) &&
                 !mc.player.hasVehicle();
+    }
+
+    public static Vec2f getRotations(Vec3d vec) {
+        if (mc.player == null) return Vec2f.ZERO;
+
+        Vec3d eyesPos = mc.player.getEyePos();
+        double diffX = vec.x - eyesPos.x;
+        double diffY = vec.y - eyesPos.y;
+        double diffZ = vec.z - eyesPos.z;
+        double diff = Math.sqrt(diffX * diffX + diffZ * diffZ);
+
+        float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90.0F;
+        float pitch = (float) -Math.toDegrees(Math.atan2(diffY, diff));
+
+        return new Vec2f(
+                mc.player.getPitch() + MathHelper.wrapDegrees(pitch - mc.player.getPitch()),
+                mc.player.getYaw() + MathHelper.wrapDegrees(yaw - mc.player.getYaw())
+        );
     }
 }
