@@ -13,6 +13,8 @@ import java.util.Optional;
 
 public class Blade implements ModInitializer {
 
+
+
     public static Manager manager = new Manager();
 
     @Override

@@ -10,6 +10,7 @@
     "accessor.PlayerPositionLookS2CPacketAccessor",
     "accessor.WorldRendererAccessor",
     "minecraft.client.MixinChatInputSuggestor",
+    "minecraft.client.MixinScoreboard",
     "minecraft.entity.MixinEntity",
     "minecraft.entity.MixinFireWorkEntity",
     "minecraft.entity.MixinLivingEntity",

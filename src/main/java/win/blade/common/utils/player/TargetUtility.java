@@ -10,6 +10,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
+import win.blade.common.utils.friends.FriendManager;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 
 import java.util.*;
@@ -26,9 +27,10 @@ public class TargetUtility implements MinecraftInstance {
         ARMORED_PLAYERS,
         INVISIBLE_PLAYERS,
         TEAMMATES,
+        FRIENDS,
         MOBS,
         ANIMALS,
-        VILLAGERS
+        VILLAGERS,
     }
 
     private static final Set<TargetType> selectedTypes = new HashSet<>();
@@ -48,6 +50,9 @@ public class TargetUtility implements MinecraftInstance {
             boolean isTeammate = PlayerUtility.isTeammate(player);
             if (isTeammate) {
                 return selectedTypes.contains(TargetType.TEAMMATES);
+            }
+            if (FriendManager.instance.hasFriend(player.getName().getString())) {
+                return selectedTypes.contains(TargetType.FRIENDS);
             }
             if (player.isInvisible()) {
                 return selectedTypes.contains(TargetType.INVISIBLE_PLAYERS);
@@ -91,6 +96,7 @@ public class TargetUtility implements MinecraftInstance {
                     case "Игроки с бронёй" -> TargetType.ARMORED_PLAYERS;
                     case "Невидимые игроки" -> TargetType.INVISIBLE_PLAYERS;
                     case "Тиммейты" -> TargetType.TEAMMATES;
+                    case "Друзья" -> TargetType.FRIENDS;
                     case "Мобы" -> TargetType.MOBS;
                     case "Животные" -> TargetType.ANIMALS;
                     case "Жители" -> TargetType.VILLAGERS;
