@@ -12,13 +12,14 @@ public class ShaderHelper implements MinecraftInstance {
     private static Shader passThroughShader;
     private static TintShader tintShader;
     private static ReflectionShader reflectionShader;
-
+    private static ColorGradingShader colorGradingShader;
     private static SimpleFramebuffer copyFbo;
     private static SimpleFramebuffer fbo1;
     private static SimpleFramebuffer fbo2;
     private static SimpleFramebuffer depthFbo;
     private static SimpleFramebuffer tintFbo;
     private static SimpleFramebuffer reflectionFbo;
+    private static SimpleFramebuffer colorGradingFbo;
 
     private static boolean initialized = false;
 
@@ -30,6 +31,7 @@ public class ShaderHelper implements MinecraftInstance {
             passThroughShader = new PassThroughShader();
             tintShader = new TintShader();
             reflectionShader = new ReflectionShader();
+            colorGradingShader = new ColorGradingShader();
             initialized = true;
         } catch (Exception e) {
             System.err.println("Failed to initialize shaders!");
@@ -48,6 +50,7 @@ public class ShaderHelper implements MinecraftInstance {
                 depthFbo.delete();
                 tintFbo.delete();
                 reflectionFbo.delete();
+                if (colorGradingFbo != null) colorGradingFbo.delete();
             }
             copyFbo = new SimpleFramebuffer(width, height, true);
             fbo1 = new SimpleFramebuffer(width, height, true);
@@ -55,6 +58,7 @@ public class ShaderHelper implements MinecraftInstance {
             depthFbo = new SimpleFramebuffer(width, height, true);
             tintFbo = new SimpleFramebuffer(width, height, true);
             reflectionFbo = new SimpleFramebuffer(width, height, true);
+            colorGradingFbo = new SimpleFramebuffer(width, height, true);
         }
     }
 
@@ -90,6 +94,11 @@ public class ShaderHelper implements MinecraftInstance {
 
     public static ReflectionShader getReflectionShader() {
         return reflectionShader;
+    }
+
+    // --- ИЗМЕНЕНО: Геттер для нового шейдера ---
+    public static ColorGradingShader getColorGradingShader() {
+        return colorGradingShader;
     }
 
     public static SimpleFramebuffer getCopyFbo() {

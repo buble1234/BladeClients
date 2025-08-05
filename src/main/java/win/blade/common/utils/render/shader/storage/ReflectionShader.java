@@ -8,32 +8,28 @@ import net.minecraft.client.render.*;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.render.shader.Shader;
 import win.blade.common.utils.render.shader.ShaderHelper;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import static win.blade.common.utils.minecraft.MinecraftInstance.mc;
-
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
-import static win.blade.common.utils.render.shader.ShaderHelper.*;
 
-/**
- * Автор: NoCap
- * Дата создания: 05.08.2025
- */
-public class ReflectionShader extends Shader {
+public class ReflectionShader extends Shader implements MinecraftInstance {
 
     public ReflectionShader() {
-        super("effects", "reflection");
+        super("effects","reflection");
     }
 
-    public static void startTorusRender(Shader shader, SimpleFramebuffer fbo, SimpleFramebuffer copyFbo, boolean useDepth) {
-        initShadersIfNeeded();
+    public static void startTorusRender(boolean useDepth) {
+        ShaderHelper.initShadersIfNeeded();
         if (!ShaderHelper.isInitialized()) return;
 
-        checkFramebuffers();
+        ShaderHelper.checkFramebuffers();
+        SimpleFramebuffer torusFbo = ShaderHelper.getReflectionFbo();
+        SimpleFramebuffer copyFbo = ShaderHelper.getCopyFbo();
 
         Framebuffer mainFbo = mc.getFramebuffer();
         GlStateManager._glBindFramebuffer(GL_READ_FRAMEBUFFER, mainFbo.fbo);
@@ -44,33 +40,19 @@ public class ReflectionShader extends Shader {
                 GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST
         );
 
-        fbo.clear();
+        torusFbo.clear();
         if (useDepth) {
-            fbo.copyDepthFrom(mc.getFramebuffer());
+            torusFbo.copyDepthFrom(mc.getFramebuffer());
             RenderSystem.enableDepthTest();
         }
-        fbo.beginWrite(false);
+        torusFbo.beginWrite(false);
     }
 
-    public static void endTorusRender(Shader shader, SimpleFramebuffer fbo, boolean useDepth) {
-        if (useDepth) RenderSystem.disableDepthTest();
+    public static void renderTorus(Matrix4f modelViewMat, Matrix4f projMat, float frequency, float outerRad, float innerRad) {
+        if (!ShaderHelper.isInitialized()) return;
 
-        mc.getFramebuffer().beginWrite(false);
-        shader.bind();
-        shader.setUniform1i("Tex0", 0);
-        shader.setUniformBool("Alpha", true);
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.bindTexture(fbo.getColorAttachment());
-        drawFullScreenQuad();
-        RenderSystem.disableBlend();
-
-        shader.unbind();
-    }
-
-    public static void renderTorus(Shader shader, SimpleFramebuffer copyFbo, Matrix4f modelViewMat, Matrix4f projMat, float frequency, float outerRad, float innerRad) {
-        if (!ShaderHelper.isInitialized() || shader == null) return;
+        ReflectionShader shader = ShaderHelper.getReflectionShader();
+        SimpleFramebuffer copyFbo = ShaderHelper.getCopyFbo();
 
         shader.bind();
         shader.setUniformMatrix4f("ModelViewMat", false, modelViewMat);
@@ -129,4 +111,34 @@ public class ReflectionShader extends Shader {
         BufferRenderer.draw(bufferBuilder.end());
         shader.unbind();
     }
+
+    public static void endTorusRender(boolean useDepth) {
+        if (useDepth) RenderSystem.disableDepthTest();
+
+        SimpleFramebuffer torusFbo = ShaderHelper.getReflectionFbo();
+        Shader passThroughShader = ShaderHelper.getPassThroughShader();
+
+        mc.getFramebuffer().beginWrite(false);
+        passThroughShader.bind();
+        passThroughShader.setUniform1i("Tex0", 0);
+        passThroughShader.setUniformBool("Alpha", true);
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.bindTexture(torusFbo.getColorAttachment());
+        ShaderHelper.drawFullScreenQuad();
+        RenderSystem.disableBlend();
+
+        passThroughShader.unbind();
+    }
+
+    public void setupHandUniforms(float opacity, float refraction) {
+        bind();
+        setUniformBool("is2D", true);
+        setUniform1i("Tex0", 0);
+        setUniform1i("normalMap", 1);
+        setUniform1f("opacity", opacity);
+        setUniform1f("refractionStrength", refraction);
+    }
+
 }
