@@ -2,66 +2,65 @@ package win.blade.common.utils.render.shader;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.apache.commons.io.IOUtils;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL33;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.InputStream;
+import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
 
 public class Shader {
     private final int programId;
     private final Map<String, Integer> uniformCache = new HashMap<>();
 
-    public Shader(String path, String shaderName) throws Exception {
-        programId = glCreateProgram();
-        if (programId == 0) {
-            throw new Exception("Не удалось создать шейдерную программу");
-        }
+    public Shader(String path,String shaderName) {
+        int program = glCreateProgram();
 
         try {
             String basePath = "/assets/blade/shaders/core/" + path + "/";
             String vertexShaderSource = readShaderSource(basePath + shaderName + ".vsh");
             String fragmentShaderSource = readShaderSource(basePath + shaderName + ".fsh");
 
-            glAttachShader(programId, createShader(vertexShaderSource, GL_VERTEX_SHADER));
-            glAttachShader(programId, createShader(fragmentShaderSource, GL_FRAGMENT_SHADER));
+            glAttachShader(program, createShader(vertexShaderSource, GL_VERTEX_SHADER));
+            glAttachShader(program, createShader(fragmentShaderSource, GL_FRAGMENT_SHADER));
 
-            glLinkProgram(programId);
+            glLinkProgram(program);
 
-            if (glGetProgrami(programId, GL_LINK_STATUS) == 0) {
-                throw new IllegalStateException("Ошибка связывания шейдера: " + glGetProgramInfoLog(programId));
+            if (glGetProgrami(program, GL_LINK_STATUS) == 0) {
+                throw new IllegalStateException("Shader linking failed: " + glGetProgramInfoLog(program));
             }
         } catch (Exception e) {
-            glDeleteProgram(programId);
-            throw new RuntimeException("Не удалось создать шейдер: " + shaderName, e);
+            glDeleteProgram(program);
+            throw new RuntimeException("Failed to create shader: " + shaderName, e);
         }
+
+        this.programId = program;
     }
 
     private String readShaderSource(String path) throws Exception {
         InputStream stream = Shader.class.getResourceAsStream(path);
-        if (stream == null) {
-            throw new Exception("Файл шейдера не найден: " + path);
-        }
+        if (stream == null) throw new Exception("Shader file not found: " + path);
         return IOUtils.toString(stream, StandardCharsets.UTF_8);
     }
 
     private int createShader(String source, int type) throws Exception {
         int shader = glCreateShader(type);
         if (shader == 0) {
-            throw new Exception("Ошибка при создании шейдера типа " + type);
+            throw new Exception("Error creating shader of type " + type);
         }
         glShaderSource(shader, source);
         glCompileShader(shader);
         if (glGetShaderi(shader, GL_COMPILE_STATUS) == 0) {
-            String log = glGetShaderInfoLog(shader, 1024);
-            glDeleteShader(shader);
-            throw new Exception("Ошибка компиляции шейдера типа " + type + ": " + log);
+            throw new Exception("Error compiling shader type " + type + ": " + glGetShaderInfoLog(shader, 1024));
         }
         return shader;
     }
@@ -103,13 +102,20 @@ public class Shader {
         glUniform3f(getUniformLocation(name), vector.x, vector.y, vector.z);
     }
 
+    public void setUniformMatrix4f(String name, boolean transpose, Matrix4f matrix) {
+        RenderSystem.assertOnRenderThread();
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(16);
+            matrix.get(buffer);
+            glUniformMatrix4fv(getUniformLocation(name), transpose, buffer);
+        }
+    }
+
     public void setUniformBool(String name, boolean value) {
         setUniform1i(name, value ? 1 : 0);
     }
 
     public void delete() {
-        if (programId != 0) {
-            glDeleteProgram(this.programId);
-        }
+        glDeleteProgram(this.programId);
     }
 }
