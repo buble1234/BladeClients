@@ -13,51 +13,55 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
 
 public class Shader {
     private final int programId;
     private final Map<String, Integer> uniformCache = new HashMap<>();
 
-    public Shader(String shaderName) {
-        int program = glCreateProgram();
+    public Shader(String path, String shaderName) throws Exception {
+        programId = glCreateProgram();
+        if (programId == 0) {
+            throw new Exception("Не удалось создать шейдерную программу");
+        }
 
         try {
-            String basePath = "/assets/blade/shaders/core/common/";
+            String basePath = "/assets/blade/shaders/core/" + path + "/";
             String vertexShaderSource = readShaderSource(basePath + shaderName + ".vsh");
             String fragmentShaderSource = readShaderSource(basePath + shaderName + ".fsh");
 
-            glAttachShader(program, createShader(vertexShaderSource, GL_VERTEX_SHADER));
-            glAttachShader(program, createShader(fragmentShaderSource, GL_FRAGMENT_SHADER));
+            glAttachShader(programId, createShader(vertexShaderSource, GL_VERTEX_SHADER));
+            glAttachShader(programId, createShader(fragmentShaderSource, GL_FRAGMENT_SHADER));
 
-            glLinkProgram(program);
+            glLinkProgram(programId);
 
-            if (glGetProgrami(program, GL_LINK_STATUS) == 0) {
-                throw new IllegalStateException("Shader linking failed: " + glGetProgramInfoLog(program));
+            if (glGetProgrami(programId, GL_LINK_STATUS) == 0) {
+                throw new IllegalStateException("Ошибка связывания шейдера: " + glGetProgramInfoLog(programId));
             }
         } catch (Exception e) {
-            glDeleteProgram(program);
-            throw new RuntimeException("Failed to create shader: " + shaderName, e);
+            glDeleteProgram(programId);
+            throw new RuntimeException("Не удалось создать шейдер: " + shaderName, e);
         }
-
-        this.programId = program;
     }
 
     private String readShaderSource(String path) throws Exception {
         InputStream stream = Shader.class.getResourceAsStream(path);
-        if (stream == null) throw new Exception("Shader file not found: " + path);
+        if (stream == null) {
+            throw new Exception("Файл шейдера не найден: " + path);
+        }
         return IOUtils.toString(stream, StandardCharsets.UTF_8);
     }
 
     private int createShader(String source, int type) throws Exception {
         int shader = glCreateShader(type);
         if (shader == 0) {
-            throw new Exception("Error creating shader of type " + type);
+            throw new Exception("Ошибка при создании шейдера типа " + type);
         }
         glShaderSource(shader, source);
         glCompileShader(shader);
         if (glGetShaderi(shader, GL_COMPILE_STATUS) == 0) {
-            throw new Exception("Error compiling shader type " + type + ": " + glGetShaderInfoLog(shader, 1024));
+            String log = glGetShaderInfoLog(shader, 1024);
+            glDeleteShader(shader);
+            throw new Exception("Ошибка компиляции шейдера типа " + type + ": " + log);
         }
         return shader;
     }
@@ -104,6 +108,8 @@ public class Shader {
     }
 
     public void delete() {
-        glDeleteProgram(this.programId);
+        if (programId != 0) {
+            glDeleteProgram(this.programId);
+        }
     }
 }

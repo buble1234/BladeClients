@@ -18,14 +18,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
-import win.blade.common.utils.render.shader.ShaderHelper;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
 import win.blade.core.event.impl.render.FovEvent;
 import win.blade.core.event.impl.render.RenderCancelEvents;
 import win.blade.core.event.impl.render.WorldChangeEvent;
 import win.blade.core.module.storage.render.AspectRatioModule;
-import win.blade.core.module.storage.render.FogBlur;
 
 @Mixin(GameRenderer.class)
 public abstract class MixinGameRenderer implements MinecraftInstance {
