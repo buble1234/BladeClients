@@ -1,4 +1,3 @@
-// Замените ваш файл: win/blade/Blade.java
 package win.blade;
 
 import com.mojang.authlib.exceptions.AuthenticationException;

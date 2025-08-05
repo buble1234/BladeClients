@@ -234,7 +234,7 @@ public class AuraModule extends Module {
         }
 
         AimSettings aimSettings = new AimSettings(
-                new AdaptiveSmooth(12f),
+                new AdaptiveSmooth(52),
                 enableViewSync,
                 enableMovementCorrection,
                 enableSilent

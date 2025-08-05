@@ -95,9 +95,10 @@ public class Hotkey extends Module implements MinecraftInstance, NonRegistrable 
             float gap = 2f;
             float lineW = 1f;
 
+            // ИСПРАВЛЕНИЕ: изменено условие фильтрации, чтобы отбирать только модули с назначенным биндом.
             List<Module> activeModules = Manager.moduleManager.values().stream()
                     .filter(Module::isEnabled)
-                    .filter(m -> m.keybind() != 0)
+                    .filter(m -> m.keybind() > 0) // Было m.keybind() != 0
                     .filter(m -> !(m instanceof InterfaceModule))
                     .sorted(Comparator.comparing(Module::name))
                     .collect(Collectors.toList());
