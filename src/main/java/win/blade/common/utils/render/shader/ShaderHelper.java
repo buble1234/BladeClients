@@ -20,6 +20,8 @@ public class ShaderHelper implements MinecraftInstance {
     private static SimpleFramebuffer tintFbo;
     private static SimpleFramebuffer reflectionFbo;
     private static SimpleFramebuffer colorGradingFbo;
+    private static JumpCircleShader jumpCircleShader;
+
 
     private static boolean initialized = false;
 
@@ -32,6 +34,7 @@ public class ShaderHelper implements MinecraftInstance {
             tintShader = new TintShader();
             reflectionShader = new ReflectionShader();
             colorGradingShader = new ColorGradingShader();
+            jumpCircleShader = new JumpCircleShader();
             initialized = true;
         } catch (Exception e) {
             System.err.println("Failed to initialize shaders!");
@@ -95,8 +98,6 @@ public class ShaderHelper implements MinecraftInstance {
     public static ReflectionShader getReflectionShader() {
         return reflectionShader;
     }
-
-    // --- ИЗМЕНЕНО: Геттер для нового шейдера ---
     public static ColorGradingShader getColorGradingShader() {
         return colorGradingShader;
     }
@@ -124,4 +125,8 @@ public class ShaderHelper implements MinecraftInstance {
     public static SimpleFramebuffer getReflectionFbo() {
         return reflectionFbo;
     }
+    public static JumpCircleShader getJumpCircleShader() {
+        return jumpCircleShader;
+    }
+
 }
