@@ -1,6 +1,10 @@
 package win.blade.core.module.storage.render;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.SimpleFramebuffer;
 import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
 import org.lwjgl.opengl.GL30;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
@@ -17,6 +21,10 @@ import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
 import java.awt.Color;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.GL_DRAW_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.GL_READ_FRAMEBUFFER;
 
 @ModuleInfo(name = "CustomWorld", category = Category.RENDER, desc = "Визуально меняет мир (время и цветокоррекция)")
 public class CustomWorld extends Module {
@@ -63,12 +71,22 @@ public class CustomWorld extends Module {
         ShaderHelper.initShadersIfNeeded();
         if (!ShaderHelper.isInitialized()) return;
 
+        ShaderHelper.checkFramebuffers();
+
+        Framebuffer mainFbo = mc.getFramebuffer();
+        SimpleFramebuffer tempFbo = ShaderHelper.getTintFbo();
         ColorGradingShader shader = ShaderHelper.getColorGradingShader();
 
-        shader.bind();
-        RenderSystem.activeTexture(GL30.GL_TEXTURE0);
-        mc.getFramebuffer().beginRead();
+        GlStateManager._glBindFramebuffer(GL_READ_FRAMEBUFFER, mainFbo.fbo);
+        GlStateManager._glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tempFbo.fbo);
+        GlStateManager._glBlitFrameBuffer(
+                0, 0, mainFbo.textureWidth, mainFbo.textureHeight,
+                0, 0, tempFbo.textureWidth, tempFbo.textureHeight,
+                GL_COLOR_BUFFER_BIT, GL_NEAREST
+        );
 
+        mainFbo.beginWrite(false);
+        shader.bind();
         shader.setUniforms(
                 brightness.getValue() / 100f,
                 contrast.getValue() / 100f,
@@ -79,9 +97,15 @@ public class CustomWorld extends Module {
                 lift, gamma, gain, offset
         );
 
+        RenderSystem.bindTexture(tempFbo.getColorAttachment());
         ShaderHelper.drawFullScreenQuad();
 
         shader.unbind();
-        mc.getFramebuffer().endRead();
+        mainFbo.endWrite();
+
+        // --- ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ ---
+        // Очищаем буфер глубины вручную, чтобы рука и предметы рендерились поверх мира.
+        mainFbo.beginWrite(false); // Убедимся, что главный FBO активен для записи
+        GlStateManager._clear(GL_DEPTH_BUFFER_BIT);
     }
 }

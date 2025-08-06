@@ -20,9 +20,6 @@ public class ShaderHelper implements MinecraftInstance {
     private static SimpleFramebuffer tintFbo;
     private static SimpleFramebuffer reflectionFbo;
     private static SimpleFramebuffer colorGradingFbo;
-    private static HandShader handShader;
-    private static SimpleFramebuffer handFbo;
-    private static BlurredShader blurredShader;
 
     private static boolean initialized = false;
 
@@ -35,8 +32,6 @@ public class ShaderHelper implements MinecraftInstance {
             tintShader = new TintShader();
             reflectionShader = new ReflectionShader();
             colorGradingShader = new ColorGradingShader();
-            handShader = new HandShader();
-            blurredShader = new BlurredShader();
             initialized = true;
         } catch (Exception e) {
             System.err.println("Failed to initialize shaders!");
@@ -56,7 +51,6 @@ public class ShaderHelper implements MinecraftInstance {
                 tintFbo.delete();
                 reflectionFbo.delete();
                 if (colorGradingFbo != null) colorGradingFbo.delete();
-                if (handFbo != null) handFbo.delete();
             }
             copyFbo = new SimpleFramebuffer(width, height, true);
             fbo1 = new SimpleFramebuffer(width, height, true);
@@ -65,7 +59,6 @@ public class ShaderHelper implements MinecraftInstance {
             tintFbo = new SimpleFramebuffer(width, height, true);
             reflectionFbo = new SimpleFramebuffer(width, height, true);
             colorGradingFbo = new SimpleFramebuffer(width, height, true);
-            handFbo = new SimpleFramebuffer(width, height, true);
         }
     }
 
@@ -103,6 +96,7 @@ public class ShaderHelper implements MinecraftInstance {
         return reflectionShader;
     }
 
+    // --- ИЗМЕНЕНО: Геттер для нового шейдера ---
     public static ColorGradingShader getColorGradingShader() {
         return colorGradingShader;
     }
@@ -129,17 +123,5 @@ public class ShaderHelper implements MinecraftInstance {
 
     public static SimpleFramebuffer getReflectionFbo() {
         return reflectionFbo;
-    }
-
-    public static HandShader getHandShader() {
-        return handShader;
-    }
-
-    public static SimpleFramebuffer getHandFbo() {
-        return handFbo;
-    }
-
-    public static BlurredShader getBlurredShader() {
-        return blurredShader;
     }
 }
