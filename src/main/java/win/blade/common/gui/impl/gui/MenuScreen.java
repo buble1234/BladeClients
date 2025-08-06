@@ -162,6 +162,7 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                     windowManager.delete(abstractWindow);
                 }
             });
+
             super.close();
         }
     }
