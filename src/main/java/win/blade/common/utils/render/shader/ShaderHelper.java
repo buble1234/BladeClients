@@ -13,6 +13,8 @@ public class ShaderHelper implements MinecraftInstance {
     private static TintShader tintShader;
     private static ReflectionShader reflectionShader;
     private static ColorGradingShader colorGradingShader;
+    private static HandShader handShader;
+    private static BlurredShader blurredShader;
     private static SimpleFramebuffer copyFbo;
     private static SimpleFramebuffer fbo1;
     private static SimpleFramebuffer fbo2;
@@ -32,6 +34,8 @@ public class ShaderHelper implements MinecraftInstance {
             tintShader = new TintShader();
             reflectionShader = new ReflectionShader();
             colorGradingShader = new ColorGradingShader();
+            handShader = new HandShader();
+            blurredShader = new BlurredShader();
             initialized = true;
         } catch (Exception e) {
             System.err.println("Failed to initialize shaders!");
@@ -96,9 +100,16 @@ public class ShaderHelper implements MinecraftInstance {
         return reflectionShader;
     }
 
-    // --- ИЗМЕНЕНО: Геттер для нового шейдера ---
     public static ColorGradingShader getColorGradingShader() {
         return colorGradingShader;
+    }
+
+    public static HandShader getHandShader() {
+        return handShader;
+    }
+
+    public static BlurredShader getBlurredShader() {
+        return blurredShader;
     }
 
     public static SimpleFramebuffer getCopyFbo() {
