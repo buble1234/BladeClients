@@ -23,6 +23,7 @@ public class ShaderHelper implements MinecraftInstance {
     private static JumpCircleShader jumpCircleShader;
 
 
+
     private static boolean initialized = false;
 
     public static void initShadersIfNeeded() {
@@ -128,5 +129,5 @@ public class ShaderHelper implements MinecraftInstance {
     public static JumpCircleShader getJumpCircleShader() {
         return jumpCircleShader;
     }
-
+    
 }
