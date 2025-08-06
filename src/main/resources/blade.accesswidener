@@ -28,5 +28,6 @@ accessible method net/minecraft/client/render/entity/LivingEntityRenderer getRen
 accessible method net/minecraft/entity/LivingEntity getHandSwingDuration ()I
 accessible method net/minecraft/client/input/KeyboardInput getMovementMultiplier (ZZ)F
 accessible method net/minecraft/client/render/GameRenderer renderHand (Lnet/minecraft/client/render/Camera;FLorg/joml/Matrix4f;)V
-
+accessible method net/minecraft/client/render/GameRenderer tiltViewWhenHurt (Lnet/minecraft/client/util/math/MatrixStack;F)V
+accessible method net/minecraft/client/render/GameRenderer bobView (Lnet/minecraft/client/util/math/MatrixStack;F)V
 

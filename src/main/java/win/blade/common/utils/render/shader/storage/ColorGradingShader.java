@@ -23,7 +23,7 @@ public class ColorGradingShader extends Shader {
         setUniform3f("Gain", colorToVec3(gain.getColor()));
         setUniform3f("Offset", colorToVec3(offset.getColor()));
     }
-    
+
     private Vector3f colorToVec3(int color) {
         float r = ((color >> 16) & 0xFF) / 255.0f;
         float g = ((color >> 8) & 0xFF) / 255.0f;

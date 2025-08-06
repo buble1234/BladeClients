@@ -19,7 +19,7 @@ import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
 
 public class Shader {
-    private final int programId;
+    public final int programId;
     private final Map<String, Integer> uniformCache = new HashMap<>();
 
     public Shader(String path,String shaderName) {

@@ -42,7 +42,7 @@ public class GaussianShader extends Shader {
         shader.unbind();
     }
 
-    private static Vector3f calculateGaussian(float sigma) {
+    public static Vector3f calculateGaussian(float sigma) {
         final float sqrt2PI = 2.50662f;
         float y = (float) Math.exp(-0.5f / (sigma * sigma));
         return new Vector3f(1 / (sqrt2PI * sigma), y, y * y);
