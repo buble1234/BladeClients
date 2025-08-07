@@ -13,7 +13,6 @@ public class ShaderHelper implements MinecraftInstance {
     private static TintShader tintShader;
     private static ReflectionShader reflectionShader;
     private static ColorGradingShader colorGradingShader;
-    private static HandShader handShader;
     private static BlurredShader blurredShader;
     private static JumpCircleShader jumpCircleShader;
     private static SimpleFramebuffer copyFbo;
@@ -23,6 +22,7 @@ public class ShaderHelper implements MinecraftInstance {
     private static SimpleFramebuffer tintFbo;
     private static SimpleFramebuffer reflectionFbo;
     private static SimpleFramebuffer colorGradingFbo;
+    private static SolidShader solidShader;
 
     private static boolean initialized = false;
 
@@ -35,9 +35,9 @@ public class ShaderHelper implements MinecraftInstance {
             tintShader = new TintShader();
             reflectionShader = new ReflectionShader();
             colorGradingShader = new ColorGradingShader();
-            handShader = new HandShader();
             blurredShader = new BlurredShader();
             jumpCircleShader = new JumpCircleShader();
+            solidShader = new SolidShader();
             initialized = true;
         } catch (Exception e) {
             System.err.println("Failed to initialize shaders!");
@@ -106,10 +106,6 @@ public class ShaderHelper implements MinecraftInstance {
         return colorGradingShader;
     }
 
-    public static HandShader getHandShader() {
-        return handShader;
-    }
-
     public static BlurredShader getBlurredShader() {
         return blurredShader;
     }
@@ -140,5 +136,9 @@ public class ShaderHelper implements MinecraftInstance {
 
     public static JumpCircleShader getJumpCircleShader() {
         return jumpCircleShader;
+    }
+
+    public static SolidShader getSolidShader() {
+        return solidShader;
     }
 }

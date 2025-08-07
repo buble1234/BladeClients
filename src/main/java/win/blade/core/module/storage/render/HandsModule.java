@@ -54,7 +54,7 @@ public class HandsModule extends Module {
 
 
     private static void renderNormal(float FarPlaneDistance) {
-        HandShader handShader = ShaderHelper.getHandShader();
+        SolidShader handShader = ShaderHelper.getSolidShader();
         Framebuffer mainFbo = mc.getFramebuffer();
         if (handShader == null || mainFbo == null) return;
 

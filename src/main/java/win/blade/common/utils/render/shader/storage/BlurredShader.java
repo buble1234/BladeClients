@@ -8,6 +8,6 @@ import win.blade.common.utils.render.shader.Shader;
  */
 public class BlurredShader extends Shader {
     public BlurredShader() {
-        super("hand", "blurred");
+        super("material", "blurred");
     }
 }
