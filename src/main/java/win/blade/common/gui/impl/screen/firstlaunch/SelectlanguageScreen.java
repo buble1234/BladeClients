@@ -78,7 +78,7 @@ public class SelectlanguageScreen extends BaseScreen {
         yOffsetAnimation.update();
         buttonsAlpha.update();
 
-        nextButton.setMessage(Text.of(selectedButton == ru ? "Продолжить" : "Continue"));
+        nextButton.setMessage(Text.of(selectedButton == eng ? "Continue" : "Продолжить"));
 
         ru.isSelected = (selectedButton == ru);
         eng.isSelected = (selectedButton == eng);

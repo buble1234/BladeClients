@@ -85,7 +85,7 @@ public class ColorComponent extends AbstractSettingComponent {
             } else {
                 AbstractWindow colorWindow = new ColorWindow(setting)
                         .position((int) (mouseX + 20), (int) (mouseY - 82))
-                        .size(150, 165)
+                        .size(104, 177)
                         .draggable(true);
                 windowManager.add(colorWindow);
             }

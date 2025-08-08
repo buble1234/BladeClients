@@ -78,12 +78,42 @@ public class ModuleComponent extends AbstractComponent {
                 .radius(new QuadRadiusState(6))
                 .build()
                 .render(x, y);
+
+
         Builder.rectangle()
                 .size(new SizeState(width, 18.5f))
                 .color(new QuadColorState(new Color(23,19,39)))
                 .radius(new QuadRadiusState(6, 0, 0, 6))
                 .build()
                 .render(x, y);
+
+
+
+        Builder.border()
+                .size(new SizeState(width - 0.5f, height - 0.5f))
+                .color(new QuadColorState(
+                        new Color(255, 255, 255, 5),
+                        new Color(255, 255, 255, 5),
+                        new Color(255, 255, 255, 10),
+                        new Color(255, 255, 255, 10)
+                ))
+                .thickness(0.5f)
+                .radius(new QuadRadiusState(6))
+                .build()
+                .render(x + 0.25f, y + 0.25f);
+
+
+        Builder.rectangle()
+                .size(new SizeState(width, 1))
+                .color(new QuadColorState(
+                        new Color(255, 255, 255, 10),
+                        new Color(255, 255, 255, 10),
+                        new Color(255, 255, 255, 35),
+                        new Color(255, 255, 255, 35)
+                ))
+                .radius(new QuadRadiusState(0))
+                .build()
+                .render(x, y + 18f);
 
 
         Builder.border()

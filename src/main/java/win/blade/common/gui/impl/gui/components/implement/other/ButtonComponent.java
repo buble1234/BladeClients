@@ -58,10 +58,10 @@ public class ButtonComponent extends AbstractComponent {
         Builder.text()
                 .font(fontRegular)
                 .text(text)
-                .size(6)
+                .size(4)
                 .color(Color.WHITE)
                 .build()
-                .render( centeredX -0.5f, y + 2.5f);
+                .render( centeredX + 1.5f, y + 3.25f);
     }
 
     @Override

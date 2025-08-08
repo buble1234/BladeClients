@@ -57,7 +57,6 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                 .setMenuScreen(this)
                 .initializeCategoryComponents()
                 .loadScrollValues(scroll, smoothedScroll)
-
         ;
 
         components.addAll(
