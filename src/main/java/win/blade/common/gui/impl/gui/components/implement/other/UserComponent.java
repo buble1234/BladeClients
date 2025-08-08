@@ -37,6 +37,8 @@ public class UserComponent extends AbstractComponent {
                 .peek()
                 .getPositionMatrix();
 
+        float x = this.x + 3.5f;
+
         Builder.rectangle()
                 .size(new SizeState(15, 15))
                 .color(new QuadColorState(new Color(255,255,255,25)))
@@ -54,34 +56,42 @@ public class UserComponent extends AbstractComponent {
         Builder.text()
                 .font(fontRegular)
                 .text("cutthroat")
-                .size(6)
+                .size(5)
                 .color(new Color(0xFFD4D6E1))
                 .build()
-                .render( x + 25, y - 24);
+                .render( x + 24, y - 22.5f);
 
         Builder.text()
                 .font(fontRegular)
                 .text("Developer")
-                .size(5)
+                .size(3.5f)
                 .color(new Color(140,136,154))
                 .build()
-                .render( x + 25, y - 16.5f);
-
-        AbstractTexture settingsTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/settings.png"));
+                .render( x + 24.5f, y - 16f);
+//
+//        AbstractTexture settingsTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/settings.png"));
+//
+//        Builder.texture()
+//                .size(new SizeState(6.5f, 6.5f))
+//                .color(new QuadColorState(new Color(0xFFafb0bc)))
+//                .texture(0f, 0f, 1f, 1f, settingsTexture)
+//                .radius(new QuadRadiusState(0f))
+//                .build()
+//                .render(x + 72, y - 20);
 
         Builder.texture()
-                .size(new SizeState(6.5f, 6.5f))
-                .color(new QuadColorState(new Color(0xFFafb0bc)))
-                .texture(0f, 0f, 1f, 1f, settingsTexture)
+                .size(new SizeState(6, 6))
+                .color(new QuadColorState(-1))
+                .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/svg/gui/setting.svg"))
                 .radius(new QuadRadiusState(0f))
                 .build()
-                .render(x + 72, y - 20);
+                .render(this.x + 71, y - 19);
 
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (MathUtility.isHovered(mouseX, mouseY, x + 72, y - 20, 6.5F, 6.5F) && button == 0) {
+        if (MathUtility.isHovered(mouseX, mouseY, x + 71, y - 19, 6F, 6F) && button == 0) {
             AbstractWindow infoWindow = new InfoWindow()
                     .position(menuScreen.x - 150, menuScreen.y)
                     .size(140, 184);

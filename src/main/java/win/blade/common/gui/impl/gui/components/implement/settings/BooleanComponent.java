@@ -53,7 +53,7 @@ public class BooleanComponent extends AbstractSettingComponent {
                 .setState(setting.getValue())
                 .render(context, mouseX, mouseY, delta);
 
-        ((SettingComponent) settingComponent.position(x + width - 28, y + 8))
+        ((SettingComponent) settingComponent.position(x + width - 26, y + 8))
                 .setRunnable(() -> spawnWindow(mouseX, mouseY))
                 .render(context, mouseX, mouseY, delta);
     }

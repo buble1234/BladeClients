@@ -8,14 +8,20 @@ import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
+import win.blade.common.gui.impl.gui.components.implement.category.CategoryComponent;
 import win.blade.common.gui.impl.gui.components.implement.other.*;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.module.InfoWindow;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.settings.PopUpWindow;
 import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
+import win.blade.common.utils.render.builders.Builder;
+import win.blade.common.utils.render.builders.states.QuadColorState;
+import win.blade.common.utils.render.builders.states.QuadRadiusState;
+import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.core.module.api.Category;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,16 +37,28 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
     public int x, y, width, height;
 
-    public Category category = Category.COMBAT;
+    public static Category category = Category.COMBAT;
+    private static List<Double> scroll = new ArrayList<>(6);
+    private static List<Double> smoothedScroll = new ArrayList<>(6);
 
     private boolean closing = false;
 
     public MenuScreen() {
         super(Text.of("Delta"));
 
+        if(scroll.isEmpty()) {
+            for (double i = 0; i < 6; i++) {
+                scroll.add(0d);
+                smoothedScroll.add(0d);
+            }
+        }
+
         categoryContainerComponent
                 .setMenuScreen(this)
-                .initializeCategoryComponents();
+                .initializeCategoryComponents()
+                .loadScrollValues(scroll, smoothedScroll)
+
+        ;
 
         components.addAll(
                 Arrays.asList(
@@ -88,8 +106,8 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                 .position(this.x, this.y)
                 .size(this.width, this.height);
 
-//        userComponent.setMenuScreen(this)
-//                .position(this.x, this.y + this.height);
+        userComponent.setMenuScreen(this)
+                .position(this.x, this.y + this.height);
 
         searchComponent.position(this.x + 300, this.y + 6);
 
@@ -97,6 +115,11 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
         components.forEach(component -> component.render(context, mouseX, mouseY, delta));
         windowManager.render(context, mouseX, mouseY, delta);
+
+//        var state2 = new QuadColorState(new Color(23, 20, 38, 0),  new Color(17, 15, 23, 255), new Color(17, 15, 23, 255), new Color( 20, 18, 27, 0));
+//        Builder.rectangle().size(new SizeState(313.5f, 150.5f)).color(state2).radius(new QuadRadiusState(0, 0, 10, 10)).smoothness(5).build().render(x + 85, y + 148);
+
+//        backgroundComponent.render(context, mouseX, mouseY, delta);
     }
 
     @Override
@@ -162,6 +185,14 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                     windowManager.delete(abstractWindow);
                 }
             });
+
+            List<CategoryComponent> components = categoryContainerComponent.categoryComponents;
+
+            for (int i = 0; i < components.size(); i++) {
+                CategoryComponent component = components.get(i);
+                scroll.set(i, component.scroll);
+                smoothedScroll.set(i, component.smoothedScroll);
+            }
 
             super.close();
         }

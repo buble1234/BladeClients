@@ -1,20 +1,33 @@
 <svg width="797" height="497" viewBox="0 0 797 497" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M0 17C0 7.61117 7.61116 0 17 0H780C789.389 0 797 7.61116 797 17V480C797 489.389 789.389 497 780 497H17C7.61117 497 0 489.389 0 480V17Z" fill="#14121B"/>
-<path d="M0 17C0 7.61117 7.61116 0 17 0H780C789.389 0 797 7.61116 797 17V480C797 489.389 789.389 497 780 497H17C7.61117 497 0 489.389 0 480V17Z" fill="url(#paint0_linear_314_2)" fill-opacity="0.2"/>
-<path d="M0 17C0 7.61117 7.61116 0 17 0H780C789.389 0 797 7.61116 797 17V480C797 489.389 789.389 497 780 497H17C7.61117 497 0 489.389 0 480V17Z" fill="url(#paint1_radial_314_2)" fill-opacity="0.4"/>
-<path d="M0 17C0 7.61117 7.61116 0 17 0H780C789.389 0 797 7.61116 797 17V480C797 489.389 789.389 497 780 497H17C7.61117 497 0 489.389 0 480V17Z" fill="url(#paint2_radial_314_2)" fill-opacity="0.2" style="mix-blend-mode:overlay"/>
-<defs>
-<linearGradient id="paint0_linear_314_2" x1="174.389" y1="1.34539e-05" x2="622.611" y2="497" gradientUnits="userSpaceOnUse">
-<stop offset="0" stop-color="#100A25"/>
-<stop offset="1" stop-color="#100A25"/>
-</linearGradient>
-<radialGradient id="paint1_radial_314_2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(49.5 47.5) rotate(-135) scale(204.354 204.354)">
-<stop offset="0" stop-color="#663CFF" stop-opacity="0.4"/>
-<stop offset="1" stop-color="#663CFF" stop-opacity="0"/>
-</radialGradient>
-<radialGradient id="paint2_radial_314_2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="rotate(-135) scale(149.907)">
-<stop offset="0" stop-color="white"/>
-<stop offset="1" stop-color="white"/>
-</radialGradient>
-</defs>
+    <!-- Слой 4 (нижний): Сплошной цвет фона -->
+    <path d="M0 17C0 7.61117 7.61116 0 17 0H780C789.389 0 797 7.61116 797 17V480C797 489.389 789.389 497 780 497H17C7.61117 497 0 489.389 0 480V17Z" fill="#14121B"/>
+
+    <!-- Слой 3: Линейный градиент -->
+    <path d="M0 17C0 7.61117 7.61116 0 17 0H780C789.389 0 797 7.61116 797 17V480C797 489.389 789.389 497 780 497H17C7.61117 497 0 489.389 0 480V17Z" fill="url(#paint0_linear_from_css)"/>
+
+    <!-- Слой 2: Фиолетовое свечение -->
+    <path d="M0 17C0 7.61117 7.61116 0 17 0H780C789.389 0 797 7.61116 797 17V480C797 489.389 789.389 497 780 497H17C7.61117 497 0 489.389 0 480V17Z" fill="url(#paint1_radial_from_css)"/>
+
+    <!-- Слой 1 (верхний): Эффект обводки/свечения -->
+    <path d="M0 17C0 7.61117 7.61116 0 17 0H780C789.389 0 797 7.61116 797 17V480C797 489.389 789.389 497 780 497H17C7.61117 497 0 489.389 0 480V17Z" fill="url(#paint2_radial_outline_from_css)" style="mix-blend-mode:overlay"/>
+
+    <defs>
+        <!-- Градиент для слоя 3 (перевод из CSS) -->
+        <linearGradient id="paint0_linear_from_css" x1="797" y1="0" x2="0" y2="497" gradientUnits="userSpaceOnUse" gradientTransform="rotate(124.66, 398.5, 248.5) translate(250, 0)">
+            <stop offset="0.1294" stop-color="#100A25" stop-opacity="0"/>
+            <stop offset="0.8706" stop-color="#100A25" stop-opacity="0.2"/>
+        </linearGradient>
+
+        <!-- Градиент для слоя 2 (фиолетовое свечение из CSS) -->
+        <radialGradient id="paint1_radial_from_css" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(49.5, 47.5) scale(144.49 144.48)">
+            <stop stop-color="#663CFF" stop-opacity="0.16"/>
+            <stop offset="1" stop-color="#663CFF" stop-opacity="0"/>
+        </radialGradient>
+
+        <!-- Градиент для слоя 1 (ЭФФЕКТ ОБВОДКИ из CSS) -->
+        <radialGradient id="paint2_radial_outline_from_css" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0, 0) scale(106, 106)">
+            <stop stop-color="white" stop-opacity="0.2"/>
+            <stop offset="1" stop-color="white" stop-opacity="0"/>
+        </radialGradient>
+    </defs>
 </svg>

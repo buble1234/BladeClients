@@ -5,8 +5,8 @@ public enum Category {
     MOVE("Move", "I"),
     PLAYER("Player", "J"),
     RENDER("Render", "L"),
-    MISC("Misc", "C"),
-    THEME("Theme", "a");
+    MISC("Misc", "C");
+//    THEME("Theme", "a");
 
 
 

@@ -6,6 +6,7 @@ import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.util.Identifier;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.setting.implement.SelectSetting;
+import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
@@ -46,50 +47,31 @@ public class SelectedButton extends AbstractComponent {
             alphaAnimation.run(0, 0.4, Easing.EASE_OUT_EXPO);
         }
 
-        int opacity = (int) alphaAnimation.get();
-
-        int selectedOpacity = applyOpacity(
-                applyOpacity(0xFF2D2E41, opacity),
-                alpha
-        );
-
-        if ((selectedOpacity & 0xFF000000) != 0) {
-            Builder.rectangle()
-                    .size(new SizeState(width, height))
-                    .color(new QuadColorState(new Color(selectedOpacity, true)))
-                    .build()
-                    .render(x, y);
-        }
-
-        int checkOpacity = applyOpacity(
-                applyOpacity(Color.WHITE.getRGB(), Math.min(255, opacity * 5)),
-                alpha
-        );
-
-        if ((checkOpacity & 0xFF000000) != 0) {
-            AbstractTexture checkTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/check.png"));
-            if (checkTexture != null) {
-                Builder.texture()
-                        .size(new SizeState(4, 4))
-                        .color(new QuadColorState(new Color(checkOpacity, true)))
-                        .texture(0f, 0f, 1f, 1f, checkTexture)
-                        .build()
-                        .render(x + width - 8, y + 4.5f);
-            }
-        }
+        boolean isFirst = setting.getList().get(0).equalsIgnoreCase(text);
 
         Builder.text()
                 .font(fontRegular)
                 .text(text)
-                .size(6)
-                .color(new Color(applyOpacity(0xFFD4D6E1, alpha), true))
+                .size(4)
+                .color(setting.isSelected(text) ? new Color(255, 255, 255, 255) : new Color(175, 174, 178, 255))
                 .build()
-                .render(x + 4, y + 5);
+                .render(x + 4.75f, y + 5);
+
+
+        if(isFirst) return;
+
+        Builder.rectangle()
+                .size(new SizeState(width - 8, 0.65f))
+                .radius(0)
+                .color(ColorUtility.pack(255, 255, 255, 76))
+                .build()
+                .render(x + 4, y + 2.9f);
+
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (MathUtility.isHovered(mouseX, mouseY, x, y, width, height) && button == 0) {
+        if (MathUtility.isHovered(mouseX, mouseY, x + 4, y + 5, fontRegular.getWidth(text, 4) + 2, height) && button == 0) {
             setting.setSelected(text);
             return true;
         }

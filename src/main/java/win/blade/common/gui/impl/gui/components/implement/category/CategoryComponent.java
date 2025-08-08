@@ -26,27 +26,30 @@ import win.blade.core.module.api.Module;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CategoryComponent extends AbstractComponent {
     private final List<ModuleComponent> moduleComponents = new ArrayList<>();
+
+//    public static double scroll = 0;
+//    public static double smoothedScroll = 0;
 
     private final Category category;
     private final MenuScreen menuScreen;
 
     private final MsdfFont fontBold = FontType.popins_regular.get();
+
     public CategoryComponent(Category category, MenuScreen menuScreen) {
         this.category = category;
         this.menuScreen = menuScreen;
 
-        List<Module> allModules = Manager.getModuleManagement().all();
-        for (Module module : allModules) {
+        for (Module module : Manager.getModuleManagement().all()) {
             moduleComponents.add(new ModuleComponent(module));
         }
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-//        RenderSystem.enableScissor((int) x, (int) y, (int) (x + width), (int) (y + height));
         Matrix4f positionMatrix = context
                 .getMatrices()
                 .peek()
@@ -54,70 +57,60 @@ public class CategoryComponent extends AbstractComponent {
 
         drawCategoryTab(context, positionMatrix);
 
-        if (menuScreen.category != this.category) {
-            boolean searchTextEmpty = menuScreen.getSearchComponent().getText().isEmpty();
-
-            if(searchTextEmpty || (!searchTextEmpty && menuScreen.category != this.category)){
-//                RenderSystem.disableScissor();
-            }
-
-            if (searchTextEmpty) {
-                return;
-            }
-            if (!searchTextEmpty && menuScreen.category != this.category) {
-                return;
-            }
+        boolean searchTextEmpty = menuScreen.getSearchComponent().getText().isEmpty();
+        if (menuScreen.category != this.category && searchTextEmpty) {
+            return;
         }
 
-        int[] offsets = calculateOffsets();
-        int columnWidth = 137;
-        int column = 0;
-        int maxScroll = 0;
-
         int panelX = menuScreen.x + 95;
-        int panelY = menuScreen.y + 30;
-        int panelWidth = (columnWidth * 2) + 24;
+        int panelY = menuScreen.y + 33;
+        int columnWidth = 142;
+        int panelWidth = (columnWidth * 2) + 12;
         int panelHeight = menuScreen.height - 40;
 
         Window window = mc.getWindow();
         double scale = window.getScaleFactor();
 
         RenderSystem.enableScissor(
-                (int)(panelX * scale),
-                (int)(window.getFramebufferHeight() - (panelY + panelHeight) * scale),
-                (int)(panelWidth * scale),
-                (int)(panelHeight * scale)
+                (int) (panelX * scale),
+                (int) (window.getFramebufferHeight() - (panelY + panelHeight) * scale),
+                (int) (panelWidth * scale),
+                (int) (panelHeight * scale)
         );
 
-        for (int i = moduleComponents.size() - 1; i >= 0; i--) {
-            ModuleComponent component = moduleComponents.get(i);
+        float[] yOffsets = {panelY, panelY};
+        int column = 0;
 
-            if (shouldRenderComponent(component)) {
-                int componentHeight = (int) (component.getComponentHeight() + 6);
+        List<ModuleComponent> componentsToRender = moduleComponents.stream()
+                .filter(this::shouldRenderComponent)
+                .collect(Collectors.toList());
 
-                component.x = menuScreen.x + 95 + (column * (columnWidth + 14));
-                component.y = (float) (menuScreen.y + 30 + offsets[column] - componentHeight + smoothedScroll);
-                component.width = columnWidth;
+        for (ModuleComponent component : componentsToRender) {
+            component.x = panelX + (column * (columnWidth + 9.5f));
+            component.y = (float) (yOffsets[column] + smoothedScroll);
+            component.width = columnWidth;
 
-                component.render(context, mouseX, mouseY, delta);
-                offsets[column] -= componentHeight;
-                maxScroll = Math.max(maxScroll + 1, offsets[column]);
+            component.render(context, mouseX, mouseY, delta);
+            yOffsets[column] += component.getComponentHeight() + 6.5f;
 
-                column = (column + 1) % 2;
-            }
+            column = (column + 1) % 2;
         }
+
         RenderSystem.disableScissor();
 
-        int clamped = MathHelper.clamp(maxScroll - (menuScreen.height / 2 - 70), 0, maxScroll);
-        scroll = MathHelper.clamp(scroll, -clamped, 0);
-        smoothedScroll = MathHelper.lerp(0.1F, smoothedScroll, scroll);
+        float maxContentHeight = Math.max(yOffsets[0], yOffsets[1]) - panelY;
+        float maxScroll = Math.max(0, maxContentHeight - panelHeight);
 
+        scroll = MathHelper.clamp(scroll, -maxScroll, 0);
+        smoothedScroll = MathHelper.lerp(0.1F, smoothedScroll, scroll);
     }
+
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (MathUtility.isHovered(mouseX, mouseY, x, y, width, height) && button == 0) {
             menuScreen.category = category;
+//            menuScreen.setSc(0);
         }
 
         if (menuScreen.category == this.category || !menuScreen.getSearchComponent().getText().isEmpty()) {
@@ -202,13 +195,13 @@ public class CategoryComponent extends AbstractComponent {
 
     private void drawCategoryTab(DrawContext context, Matrix4f positionMatrix) {
 
-        if (menuScreen.category == this.category) {
+        if (MenuScreen.category == this.category) {
             Builder.texture()
-                    .size(new SizeState(66, 20))
+                    .size(new SizeState(72, 20))
                     .svgTexture(Identifier.of("blade", "textures/svg/gui/category/selected.svg"))
-                    .color(new QuadColorState(-1))
                     .build()
-                    .render(x + 3, y - 5.5);
+                    .render(x, y - 5.5);
+
         }
 
         Builder.texture()
@@ -216,7 +209,7 @@ public class CategoryComponent extends AbstractComponent {
                 .svgTexture(Identifier.of("blade", "textures/svg/gui/category/" + category.getName().toLowerCase() + ".svg"))
                 .color(new QuadColorState(-1))
                 .build()
-                .render(x + 12, y -0.5f );
+                .render(x + 12, y - 0.5f);
 
         Builder.text()
                 .font(fontBold)
@@ -224,24 +217,7 @@ public class CategoryComponent extends AbstractComponent {
                 .size(5.5f)
                 .color(ColorUtility.fromHex("EEEEEE"))
                 .build()
-                .render( x + 25.5f, y +0.5f );
-    }
-
-    private int[] calculateOffsets() {
-        int[] offsets = new int[2];
-        int column = 0;
-
-        for (int i = moduleComponents.size() - 1; i >= 0; i--) {
-            ModuleComponent component = moduleComponents.get(i);
-
-            if (shouldRenderComponent(component)) {
-                int componentHeight = component.getComponentHeight() + 9;
-                offsets[column] += componentHeight;
-                column = (column + 1) % 2;
-            }
-        }
-
-        return offsets;
+                .render(x + 25.5f, y + 0.5f);
     }
 
     private boolean shouldRenderComponent(ModuleComponent component) {

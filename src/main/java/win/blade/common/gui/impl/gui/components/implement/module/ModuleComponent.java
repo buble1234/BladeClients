@@ -13,6 +13,7 @@ import win.blade.common.gui.impl.gui.setting.SettingComponentAdder;
 import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.keyboard.Keyboard;
 import win.blade.common.utils.math.MathUtility;
+import win.blade.common.utils.minecraft.ChatUtility;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
@@ -113,10 +114,10 @@ public class ModuleComponent extends AbstractComponent {
         Builder.text()
                 .font(fontRegular)
                 .text("Description")
-                .size(5)
+                .size(4)
                 .color(new Color(0xFF878894))
                 .build()
-                .render( x + 9, y + 32);
+                .render( x + 9, y + 33);
 
         ((CheckComponent) checkComponent.position(x + width - 16, y + 28))
                 .setRunnable(() -> module.toggleWithoutNotification(!module.isEnabled()))
@@ -124,27 +125,25 @@ public class ModuleComponent extends AbstractComponent {
                 .render(context, mouseX, mouseY, delta);
 
 
-        ((SettingComponent) settingComponent.position(x + width - 26.5f, y + 28.25F))
+        ((SettingComponent) settingComponent.position(x + width - 26f, y + 28.25F))
                 .setRunnable(() -> spawnWindow(mouseX, mouseY))
                 .render(context, mouseX, mouseY, delta);
 
         drawBind(context, positionMatrix);
 
-        float offset = y + 42;
-        for (int i = components.size() - 1; i >= 0; i--) {
-            AbstractSettingComponent component = components.get(i);
-
-            if (component.isAvailable()) {
+        float offset = y + 38f;
+        for (AbstractSettingComponent component : components) {
+            var visible = component.getSetting().getVisible();
+            if (visible != null && !visible.get()) {
                 continue;
             }
 
             component.x = x;
-            component.y = offset + (getComponentHeight() - 46 - component.height);
+            component.y = offset;
             component.width = width;
-
             component.render(context, mouseX, mouseY, delta);
 
-            offset -= component.height + 1;
+            offset += component.height + 1;
         }
     }
 
@@ -229,43 +228,33 @@ public class ModuleComponent extends AbstractComponent {
                 continue;
             }
 
-            offsetY += component.height;
+            offsetY += component.height + 1;
         }
         return (int) (offsetY + 46);
     }
 
     private void drawBind(DrawContext context, Matrix4f positionMatrix) {
         String bindName = Keyboard.getKeyName(module.keybind());
-        float stringWidth = fontRegular.getWidth(bindName, 5);
-
+        float stringWidth = fontRegular.getWidth(bindName, 4);
 
         Builder.rectangle()
-                .size(new SizeState(stringWidth + 8, 11.5f))
+                .size(new SizeState(stringWidth + 4.8, 8.5f))
                 .color(new QuadColorState(new Color(28,26,37,255)))
-                .radius(new QuadRadiusState(4.5f))
+                .radius(new QuadRadiusState(3f))
                 .build()
-                .render(x + width - stringWidth - 16, y + 2.5f);
-
+                .render(x + width - stringWidth - 15, y + 4f);
 
 
         Builder.text()
                 .font(fontRegular)
                 .text(bindName)
-                .size(4.5f)
-                .color(ColorUtility.fromHex("8C889A"))
+                .size(3.5f)
+                .color(ColorUtility.fromHex(module.keybind() == -1 ? "8C889A" : "663CFF"))
                 .build()
-                .render( x + width - 11.5f - stringWidth, y + 5);
+                .render( x + width - 12f - stringWidth, y + 5.75f);
     }
 
     private void spawnWindow(int mouseX, int mouseY) {
-//        AbstractWindow existingWindow = null;
-//
-//        for (AbstractWindow window : windowManager.getWindows()) {
-//            if (window instanceof ModuleBindWindow) {
-//                existingWindow = window;
-//                break;
-//            }
-//        }
         var existingWindow = windowManager.findWindow("bindWindow");
 
         if (existingWindow != null) {
