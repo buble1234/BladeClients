@@ -18,15 +18,15 @@ import win.blade.core.module.api.ModuleInfo;
  */
 @ModuleInfo(
         name = "Fullbright",
-        desc = "Делает мир ярким",
+        desc = "Убирает темноту в мире.",
         category = Category.RENDER
 )
 public class FullbrightModule extends Module {
 
-    private final SelectSetting mode = new SelectSetting("Мод", "")
+    private final SelectSetting mode = new SelectSetting("Мод", "Метод осветления.")
             .value("Яркость", "Зелье");
 
-    private final ValueSetting brightness = new ValueSetting("Яркость", "")
+    private final ValueSetting brightness = new ValueSetting("Яркость", "Уровень яркости для режима \"Яркость\".")
             .setValue(15.0f).range(1.0f, 20.0f)
             .visible(() -> mode.isSelected("Яркость"));
 

@@ -47,7 +47,8 @@ public class GroupWindow extends AbstractWindow {
 
     @Override
     public void drawWindow(DrawContext context, int mouseX, int mouseY, float delta) {
-        height = MathHelper.clamp(getComponentHeight(), 0, 200);
+        height = MathHelper.clamp(getComponentHeight() +5, 0, 200);
+        width = 120;
 //
 //        Builder.rectangle()
 //                .size(new SizeState(width, height))
@@ -63,11 +64,11 @@ public class GroupWindow extends AbstractWindow {
 //                .build()
 //                .render(x, y);
 
-        WindowManager._renderBackground(x, y, width, height, 12, true, null);
+        WindowManager._renderBackground(x, y, width, height, 8, true, null);
 
         Builder.text()
                 .font(fontRegular)
-                .text("Settings " + setting.getName())
+                .text("Настройка " + setting.getName())
                 .size(7)
                 .color(Color.WHITE)
                 .build()

@@ -27,11 +27,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @ModuleInfo(name = "Torus", category = Category.RENDER, desc = "Рендерит тор с эффектом отражения при ударе.")
 public class TorusModule extends Module {
 
-    private final BooleanSetting depth = new BooleanSetting("Глубина", "Рендерить тор с учетом глубины.").setValue(false);
-    private final ValueSetting frequency = new ValueSetting("Частота шума", "Сила эффекта шума на поверхности.").setValue(50f).range(0f, 100f);
+    private final BooleanSetting depth = new BooleanSetting("Глубина", "Учитывать глубину при рендере.").setValue(false);
+    private final ValueSetting frequency = new ValueSetting("Частота шума", "Сила эффекта шума.").setValue(50f).range(0f, 100f);
     private final ValueSetting lifetime = new ValueSetting("Время жизни", "Как долго тор остается видимым.").setValue(1000f).range(500f, 5000f);
-
-    private final ValueSetting size = new ValueSetting("Размер", "Общий множитель размера тора.").setValue(0.5f).range(0.2f, 2.0f);
+    private final ValueSetting size = new ValueSetting("Размер", "Общий размер тора.").setValue(0.5f).range(0.2f, 2.0f);
 
     private final CopyOnWriteArrayList<TorusRenderer> toruses = new CopyOnWriteArrayList<>();
 
@@ -105,14 +104,12 @@ public class TorusModule extends Module {
         private final Animation outerRadAnim = new Animation();
         private final Animation innerRadAnim = new Animation();
 
-        // --- ИЗМЕНЕНО: Конструктор теперь принимает размер ---
         public TorusRenderer(Vec3d pos, Vec2f rotation, double lifetime, float size) {
             this.pos = pos;
             this.rotation = rotation;
             this.lifetime = lifetime;
             this.spawnTime = System.currentTimeMillis();
 
-            // --- ИЗМЕНЕНО: Применяем множитель размера к радиусам ---
             outerRadAnim.set(0.6 * size);
             innerRadAnim.set(0.4 * size);
 

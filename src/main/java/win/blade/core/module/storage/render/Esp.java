@@ -35,21 +35,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Collections;
 
-@ModuleInfo(name = "Esp", category = Category.RENDER)
+@ModuleInfo(name = "Esp", category = Category.RENDER, desc = "Отображает информацию о сущностях.")
 public class Esp extends Module {
 
-    private final GroupSetting checks = new GroupSetting("Элементы", "").settings(
-            new BooleanSetting("Игроки", "").setValue(true),
-            new BooleanSetting("Предметы", "").setValue(false)
+    private final GroupSetting checks = new GroupSetting("Элементы", "Какие сущности подсвечивать.").settings(
+            new BooleanSetting("Игроки", "Отображать игроков.").setValue(true),
+            new BooleanSetting("Предметы", "Отображать предметы.").setValue(false)
     );
 
-    private final ValueSetting fontSize = new ValueSetting("Размер шрифта", "")
+    private final ValueSetting fontSize = new ValueSetting("Размер шрифта", "Размер текста для тегов.")
             .setValue(8.0f).range(6.0f, 12.0f);
 
-    private final BooleanSetting showArmor = new BooleanSetting("Отображать броню", "")
+    private final BooleanSetting showArmor = new BooleanSetting("Отображать броню", "Показывать броню и предметы игрока.")
             .setValue(true);
 
-    private final BooleanSetting funTimeHP = new BooleanSetting("Здоровье на FT", "")
+    private final BooleanSetting funTimeHP = new BooleanSetting("Здоровье на FT", "Берет здоровье из скорборда на FunTime.")
             .setValue(true);
 
     private final Color back = new Color(0, 0, 0, 128);

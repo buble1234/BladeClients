@@ -17,9 +17,9 @@ import win.blade.core.module.api.ModuleInfo;
  * Автор Ieo117
  * Дата создания: 01.08.2025, в 18:14:09
  */
-@ModuleInfo(name = "FreeLook", desc = "", category = Category.PLAYER)
+@ModuleInfo(name = "FreeLook", desc = "Позволяет смотреть по сторонам, не меняя направления движения.", category = Category.PLAYER)
 public class FreeLookModule extends Module {
-    BooleanSetting blockSideWays = new BooleanSetting("Блокировать ходьбу в бок", "").setValue(true);
+    BooleanSetting blockSideWays = new BooleanSetting("Блокировать ходьбу в бок", "Блокирует движение вбок при активации.").setValue(true);
     public float startYaw = 0, startPitch = 0;
 
     public FreeLookModule(){

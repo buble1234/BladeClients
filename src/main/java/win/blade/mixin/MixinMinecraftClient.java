@@ -32,12 +32,6 @@ public class MixinMinecraftClient {
     }
 
 
-    @Inject(method = "createInitScreens", at = @At("HEAD"))
-    private void ons(CallbackInfo ci){
-        ((MinecraftClient) (Object) this).options.onboardAccessibility = true;
-    }
-
-
     @ModifyVariable(method = "setScreen", at = @At("HEAD"), argsOnly = true)
     private Screen onSetScreen(Screen screen) {
         if (screen instanceof AccessibilityOnboardingScreen) {
@@ -60,6 +54,11 @@ public class MixinMinecraftClient {
 
     @Inject(method = "scheduleStop", at = @At("HEAD"), cancellable = true)
     private void onQuit(CallbackInfo ci){
+        try {
+            win.blade.core.Manager.executorService.execute(() -> win.blade.common.utils.config.ConfigManager.instance.saveConfig("default"));
+        } catch (Throwable ignored) {
+            try { win.blade.common.utils.config.ConfigManager.instance.saveConfig("default"); } catch (Throwable ignored2) {}
+        }
         if(!Manager.canQuit()){
             ci.cancel();
         }

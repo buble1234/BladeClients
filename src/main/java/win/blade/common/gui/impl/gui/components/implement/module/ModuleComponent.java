@@ -135,7 +135,7 @@ public class ModuleComponent extends AbstractComponent {
 
         Builder.text()
                 .font(fontRegular)
-                .text("Checkbox")
+                .text("Enable")
                 .size(5.5f)
                 .color(new Color(0xFFD4D6E1))
                 .build()
@@ -143,7 +143,7 @@ public class ModuleComponent extends AbstractComponent {
 
         Builder.text()
                 .font(fontRegular)
-                .text("Description")
+                .text("Enable the feature")
                 .size(4)
                 .color(new Color(0xFF878894))
                 .build()

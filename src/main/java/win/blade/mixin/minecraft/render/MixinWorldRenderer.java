@@ -48,17 +48,6 @@ public class MixinWorldRenderer implements WorldRendererAccessor {
         }
     }
 
-    private static final Identifier CUSTOM_ENTITY_OUTLINE = Identifier.of("blade", "entity_outline");
-
-    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/ShaderLoader;loadPostEffect(Lnet/minecraft/util/Identifier;Ljava/util/Set;)Lnet/minecraft/client/gl/PostEffectProcessor;"), index = 0)
-    private Identifier modifyEntityOutlineShader(Identifier original) {
-        if (Manager.getModuleManagement().get(ShaderESP.class).isEnabled()) {
-            return CUSTOM_ENTITY_OUTLINE;
-        } else {
-            return original;
-        }
-    }
-
     @WrapOperation(
             method = "renderLayer",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/GlUniform;set(FFF)V")

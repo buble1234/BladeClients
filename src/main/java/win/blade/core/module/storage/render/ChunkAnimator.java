@@ -17,20 +17,20 @@ import win.blade.core.module.storage.render.chunkanimator.easing.*;
 import java.util.Arrays;
 import java.util.Objects;
 
-@ModuleInfo(name = "ChunkAnimator", category = Category.RENDER)
+@ModuleInfo(name = "ChunkAnimator", category = Category.RENDER, desc = "Добавляет анимацию загрузки чанков.")
 public class ChunkAnimator extends Module {
 
     private static ChunkAnimator instance;
 
     private final ChunkManager chunkManager;
 
-    private final ValueSetting animationDuration = new ValueSetting("Длительность анимации", "")
+    private final ValueSetting animationDuration = new ValueSetting("Длительность анимации", "Как долго длится анимация появления чанков.")
             .setValue(1000f).range(100f, 5000f);
 
-    private final SelectSetting animationMode = new SelectSetting("Режим анимации", "")
+    private final SelectSetting animationMode = new SelectSetting("Режим анимации", "Стиль анимации появления чанков.")
             .value(Arrays.stream(AnimationMode.values()).map(AnimationMode::toString).toArray(String[]::new));
 
-    private final SelectSetting easingMode = new SelectSetting("Режим интерполяции", "")
+    private final SelectSetting easingMode = new SelectSetting("Режим интерполяции", "Тип плавности для анимации.")
             .value("Sine", "Linear", "Quad", "Cubic", "Quart", "Quint", "Expo", "Circ", "Back", "Bounce", "Elastic");
 
     public ChunkAnimator() {

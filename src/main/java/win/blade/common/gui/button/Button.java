@@ -22,7 +22,6 @@ import java.awt.*;
 
 public class Button extends ClickableWidget {
     private final Runnable onClick;
-    private final MsdfFont fontRegular = FontType.sf_regular.get();
 
     private RenderAction onRender = (context, mouseX, mouseY, delta) -> {
         Color black = new Color(20, 18, 27);
@@ -46,7 +45,7 @@ public class Button extends ClickableWidget {
         border.render(matrix, getX(), getY());
 
         String textToRender = getMessage().getString();
-        float textWidth = fontRegular.getWidth(textToRender, 7.5f);
+        float textWidth = FontType.sf_regular.get().getWidth(textToRender, 7.5f);
 
         float textX = getX() + (getWidth() - textWidth) / 2.0f;
         float textY = getY() + getHeight() / 2.0f - 5;

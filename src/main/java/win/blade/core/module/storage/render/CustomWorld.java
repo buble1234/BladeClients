@@ -26,22 +26,22 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.GL_DRAW_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30.GL_READ_FRAMEBUFFER;
 
-@ModuleInfo(name = "CustomWorld", category = Category.RENDER, desc = "Визуально меняет мир (время и цветокоррекция)")
+@ModuleInfo(name = "CustomWorld", category = Category.RENDER, desc = "Изменяет время и цвета в мире.")
 public class CustomWorld extends Module {
     private final BooleanSetting customTime = new BooleanSetting("Свое время", "Включает смену времени суток.").setValue(true);
-    public ValueSetting time = new ValueSetting("Время", "Устанавливает выбранное время в мире").range(0, 24000).setValue(16000).visible(customTime::getValue);
+    public ValueSetting time = new ValueSetting("Время", "Выбор времени суток.").range(0, 24000).setValue(16000).visible(customTime::getValue);
 
     private final BooleanSetting colorGrading = new BooleanSetting("Цветокоррекция", "Включает эффекты цветокоррекции.").setValue(false);
-    private final ValueSetting brightness = new ValueSetting("Яркость", "%").range(-100, 100).setValue(-50f).visible(colorGrading::getValue);
-    private final ValueSetting contrast = new ValueSetting("Контраст", "%").range(0, 200).setValue(55f).visible(colorGrading::getValue);
-    private final ValueSetting exposure = new ValueSetting("Экспозиция", "%").range(-100, 100).setValue(0f).visible(colorGrading::getValue);
-    private final ValueSetting saturation = new ValueSetting("Насыщенность", "%").range(0, 200).setValue(110f).visible(colorGrading::getValue);
-    private final ValueSetting hue = new ValueSetting("Оттенок", "°").range(-180, 180).setValue(0f).visible(colorGrading::getValue);
-    private final ValueSetting temperature = new ValueSetting("Температура", "K").range(1000, 40000).setValue(1000f).visible(colorGrading::getValue);
-    private final ColorSetting lift = new ColorSetting("Тени", "").value(new Color(0, 0, 0).getRGB()).visible(colorGrading::getValue);
-    private final ColorSetting gamma = new ColorSetting("Средние тона", "").value(new Color(0, 35, 0).getRGB()).visible(colorGrading::getValue);
-    private final ColorSetting gain = new ColorSetting("Светлые участки", "").value(new Color(0, 0, 255).getRGB()).visible(colorGrading::getValue);
-    private final ColorSetting offset = new ColorSetting("Смещение", "").value(new Color(0, 0, 0).getRGB()).visible(colorGrading::getValue);
+    private final ValueSetting brightness = new ValueSetting("Яркость", "Общая яркость.").range(-100, 100).setValue(-50f).visible(colorGrading::getValue);
+    private final ValueSetting contrast = new ValueSetting("Контраст", "Контрастность изображения.").range(0, 200).setValue(55f).visible(colorGrading::getValue);
+    private final ValueSetting exposure = new ValueSetting("Экспозиция", "Освещенность сцены.").range(-100, 100).setValue(0f).visible(colorGrading::getValue);
+    private final ValueSetting saturation = new ValueSetting("Насыщенность", "Насыщенность цветов.").range(0, 200).setValue(110f).visible(colorGrading::getValue);
+    private final ValueSetting hue = new ValueSetting("Оттенок", "Сдвиг оттенков.").range(-180, 180).setValue(0f).visible(colorGrading::getValue);
+    private final ValueSetting temperature = new ValueSetting("Температура", "Цветовая температура.").range(1000, 40000).setValue(1000f).visible(colorGrading::getValue);
+    private final ColorSetting lift = new ColorSetting("Тени", "Цвет темных участков.").value(new Color(0, 0, 0).getRGB()).visible(colorGrading::getValue);
+    private final ColorSetting gamma = new ColorSetting("Средние тона", "Цвет средних тонов.").value(new Color(0, 35, 0).getRGB()).visible(colorGrading::getValue);
+    private final ColorSetting gain = new ColorSetting("Светлые участки", "Цвет светлых участков.").value(new Color(0, 0, 255).getRGB()).visible(colorGrading::getValue);
+    private final ColorSetting offset = new ColorSetting("Смещение", "Общее смещение цвета.").value(new Color(0, 0, 0).getRGB()).visible(colorGrading::getValue);
 
     public CustomWorld() {
         addSettings(
@@ -102,10 +102,7 @@ public class CustomWorld extends Module {
 
         shader.unbind();
         mainFbo.endWrite();
-
-        // --- ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ ---
-        // Очищаем буфер глубины вручную, чтобы рука и предметы рендерились поверх мира.
-        mainFbo.beginWrite(false); // Убедимся, что главный FBO активен для записи
+        mainFbo.beginWrite(false);
         GlStateManager._clear(GL_DEPTH_BUFFER_BIT);
     }
 }

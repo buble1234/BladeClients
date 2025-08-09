@@ -62,6 +62,23 @@ public class Manager implements MinecraftInstance {
         EVENT_BUS.subscribe(commandManager);
 
         moduleManager.initialize();
+
+        // Load default config (Excellent-like boot behavior)
+        try {
+            ConfigManager.instance.loadConfig("default");
+        } catch (Throwable ignored) {
+        }
+
+        // Auto-save on JVM shutdown/crash
+        try {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    ConfigManager.instance.saveConfig("default");
+                } catch (Throwable ignored) {
+                }
+            }));
+        } catch (Throwable ignored) {
+        }
     }
 
 
@@ -108,6 +125,8 @@ public class Manager implements MinecraftInstance {
             wasKeyPressed.put(module.name(), isPress);
         }
     }
+
+    // No periodic autosave to match Excellent behavior exactly
 
     public static MenuScreen getMenuScreen() {
         return menuScreen == null  ? menuScreen = new MenuScreen() : menuScreen;

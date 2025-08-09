@@ -28,13 +28,13 @@ import java.awt.Color;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@ModuleInfo(name = "JumpCircles", category = Category.RENDER)
+@ModuleInfo(name = "JumpCircles", category = Category.RENDER, desc = "Показывает круги под ногами при прыжке.")
 public class JumpCirclesModule extends Module {
 
-    private final ValueSetting lifetime = new ValueSetting("Время жизни", "").setValue(800f).range(200f, 3000f);
+    private final ValueSetting lifetime = new ValueSetting("Время жизни", "Как долго живет круг.").setValue(800f).range(200f, 3000f);
     private final ValueSetting radius = new ValueSetting("Радиус", "Конечный радиус круга.").setValue(1.2f).range(0.5f, 5f);
-    private final ValueSetting thickness = new ValueSetting("Толщина", "Толщина светящейся линии.").setValue(0.2f).range(0.02f, 1f);
-    private final ColorSetting color = new ColorSetting("Цвет", "").value(new Color(255, 170, 240).getRGB());
+    private final ValueSetting thickness = new ValueSetting("Толщина", "Толщина линии круга.").setValue(0.2f).range(0.02f, 1f);
+    private final ColorSetting color = new ColorSetting("Цвет", "Цвет круга.").value(new Color(255, 170, 240).getRGB());
 
     private final List<Circle> circles = new CopyOnWriteArrayList<>();
 

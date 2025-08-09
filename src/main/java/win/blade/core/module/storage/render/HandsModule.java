@@ -26,13 +26,14 @@ import static org.lwjgl.opengl.GL13C.*;
 @ModuleInfo(
         name = "Hands",
         category = Category.RENDER,
+        desc = "Применяет эффекты шейдеров к рукам и предметам.",
         bind = GLFW.GLFW_KEY_G
 )
 public class HandsModule extends Module {
 
-    public static final SelectSetting shaderType = new SelectSetting("Шейдер", "Тип шейдера для рук").value("Сплошной", "Размытый");
-    public static final ValueSetting blurStrength = new ValueSetting("Сила размытия", "").range(2, 20).visible(() -> shaderType.isSelected("Размытый"));
-    public static final BooleanSetting fogRGBPuke = new BooleanSetting("Fog RGB Puke", "Добавляет радужный эффект к туману.").setValue(false).visible(() -> shaderType.isSelected("Размытый"));
+    public static final SelectSetting shaderType = new SelectSetting("Шейдер", "Тип шейдера для рук.").value("Сплошной", "Размытый");
+    public static final ValueSetting blurStrength = new ValueSetting("Сила размытия", "Сила размытия для шейдера.").range(2, 20).visible(() -> shaderType.isSelected("Размытый"));
+    public static final BooleanSetting fogRGBPuke = new BooleanSetting("Fog RGB Puke", "Добавляет радужный эффект.").setValue(false).visible(() -> shaderType.isSelected("Размытый"));
     public static final ValueSetting fogRGBPukeOpacity = new ValueSetting("RGB прозр.", "Прозрачность радужного эффекта.").setValue(30f).range(1f, 100f).visible(() -> fogRGBPuke.getValue());
     public static final ValueSetting fogRGBPukeSaturation = new ValueSetting("RGB насыщенность", "Насыщенность радужного эффекта.").setValue(70f).range(0f, 100f).visible(() -> fogRGBPuke.getValue());
     public static final ValueSetting fogRGBPukeBrightness = new ValueSetting("RGB яркость", "Яркость радужного эффекта.").setValue(100f).range(0f, 100f).visible(() -> fogRGBPuke.getValue());

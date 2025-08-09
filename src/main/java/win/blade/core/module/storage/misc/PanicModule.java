@@ -28,12 +28,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@ModuleInfo(name = "Panic", category = Category.MISC)
+@ModuleInfo(
+        name = "Panic",
+        category = Category.MISC,
+        desc = "Экстренно отключает все модули и чистит следы."
+)
 public class PanicModule extends Module {
 
     private final BooleanSetting globalCleanup = new BooleanSetting(
             "Глобальная очистка",
-            "Удаляет все следы клиента"
+            "ВНИМАНИЕ: Необратимо удаляет файлы и чистит логи."
     ).setValue(false);
 
     public PanicModule() {

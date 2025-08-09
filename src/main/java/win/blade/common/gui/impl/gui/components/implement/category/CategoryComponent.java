@@ -1,9 +1,7 @@
 package win.blade.common.gui.impl.gui.components.implement.category;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.util.Window;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
@@ -23,20 +21,13 @@ import win.blade.core.Manager;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class CategoryComponent extends AbstractComponent {
     private final List<ModuleComponent> moduleComponents = new ArrayList<>();
-
-//    public static double scroll = 0;
-//    public static double smoothedScroll = 0;
-
     private final Category category;
     private final MenuScreen menuScreen;
-
     private final MsdfFont fontBold = FontType.popins_regular.get();
 
     public CategoryComponent(Category category, MenuScreen menuScreen) {
@@ -81,19 +72,17 @@ public class CategoryComponent extends AbstractComponent {
         float[] yOffsets = {panelY, panelY};
         int column = 0;
 
-        List<ModuleComponent> componentsToRender = moduleComponents.stream()
-                .filter(this::shouldRenderComponent)
-                .collect(Collectors.toList());
+        for (ModuleComponent component : moduleComponents) {
+            if (shouldRenderComponent(component)) {
+                component.x = panelX + (column * (columnWidth + 9.5f));
+                component.y = (float) (yOffsets[column] + smoothedScroll);
+                component.width = columnWidth;
 
-        for (ModuleComponent component : componentsToRender) {
-            component.x = panelX + (column * (columnWidth + 9.5f));
-            component.y = (float) (yOffsets[column] + smoothedScroll);
-            component.width = columnWidth;
+                component.render(context, mouseX, mouseY, delta);
+                yOffsets[column] += component.getComponentHeight() + 6.5f;
 
-            component.render(context, mouseX, mouseY, delta);
-            yOffsets[column] += component.getComponentHeight() + 6.5f;
-
-            column = (column + 1) % 2;
+                column = (column + 1) % 2;
+            }
         }
 
         RenderSystem.disableScissor();
@@ -110,7 +99,6 @@ public class CategoryComponent extends AbstractComponent {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (MathUtility.isHovered(mouseX, mouseY, x, y, width, height) && button == 0) {
             menuScreen.category = category;
-//            menuScreen.setSc(0);
         }
 
         if (menuScreen.category == this.category || !menuScreen.getSearchComponent().getText().isEmpty()) {
@@ -194,14 +182,12 @@ public class CategoryComponent extends AbstractComponent {
     }
 
     private void drawCategoryTab(DrawContext context, Matrix4f positionMatrix) {
-
         if (MenuScreen.category == this.category) {
             Builder.texture()
                     .size(new SizeState(72, 20))
                     .svgTexture(Identifier.of("blade", "textures/svg/gui/category/selected.svg"))
                     .build()
                     .render(x, y - 5.5);
-
         }
 
         Builder.texture()

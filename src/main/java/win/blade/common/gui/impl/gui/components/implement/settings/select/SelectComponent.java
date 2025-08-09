@@ -1,13 +1,9 @@
 package win.blade.common.gui.impl.gui.components.implement.settings.select;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.RotationAxis;
+import win.blade.common.gui.impl.gui.MenuScreen;
 import win.blade.common.gui.impl.gui.components.implement.settings.AbstractSettingComponent;
-import win.blade.common.gui.impl.gui.components.implement.window.AbstractWindow;
 import win.blade.common.gui.impl.gui.setting.implement.SelectSetting;
 import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
@@ -48,7 +44,7 @@ public class SelectComponent extends AbstractSettingComponent {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         alphaAnimation.update();
 
-        String wrapped = StringUtil.wrap(setting.getDescription(), 45, 6);
+        String wrapped = StringUtil.wrap(setting.getDescription(), 100, 6);
         height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
 
         List<String> fullSettingsList = setting.getList();
@@ -64,18 +60,24 @@ public class SelectComponent extends AbstractSettingComponent {
         }
 
         renderSelected();
-        renderSelectList(context, mouseX, mouseY, delta);
+
+        if (mc.currentScreen instanceof MenuScreen) {
+            ((MenuScreen) mc.currentScreen).addPostRenderTask(() -> renderSelectList(context, mouseX, mouseY, delta));
+        }
 
         Builder.text()
-                .font(fontRegular).text(setting.getName()).size(6)
+                .font(fontRegular).text(setting.getName()).size(5.5f)
                 .color(new Color(0xFFD4D6E1)).build()
                 .render(x + 9, y + 8 + addJust());
 
-//        if (shouldRenderDescription)
-            Builder.text()
-                    .font(fontRegular).text(setting.getDescription()).size(5)
-                    .color(new Color(0xFF878894)).build()
-                    .render(x + 9, y + 15);
+        // ----- ВОТ ИСПРАВЛЕНИЕ -----
+        // Было: .text(setting.getDescription())
+        // Стало: .text(wrapped)
+        // Теперь для рендера используется текст с переносами.
+        Builder.text()
+                .font(fontRegular).text(wrapped).size(4)
+                .color(new Color(0xFF878894)).build()
+                .render(x + 9, y + 15);
     }
 
 
@@ -84,16 +86,19 @@ public class SelectComponent extends AbstractSettingComponent {
         if (button == 0) {
             if (MathUtility.isHovered(mouseX, mouseY, x + width - 75, y + 4, 66, 14)) {
                 open = !open;
-
-            } else if (open && !isHoveredList(mouseX, mouseY)) {
-                open = false;
+                return true;
             }
 
             if (open) {
-                for (SelectedButton selectedButton : selectedButtons) {
-                    if(selectedButton.mouseClicked(mouseX, mouseY, button)){
-                        return true;
+                if (isHoveredList(mouseX, mouseY)) {
+                    for (SelectedButton selectedButton : selectedButtons) {
+                        if (selectedButton.mouseClicked(mouseX, mouseY, button)) {
+                            return true;
+                        }
                     }
+                } else {
+                    open = false;
+                    return true;
                 }
             }
         }
@@ -129,8 +134,6 @@ public class SelectComponent extends AbstractSettingComponent {
 
         Stencil.pop();
 
-
-
         Builder.texture()
                 .size(new SizeState(4, 4))
                 .color(new QuadColorState(Color.WHITE))
@@ -138,55 +141,32 @@ public class SelectComponent extends AbstractSettingComponent {
                 .radius(new QuadRadiusState(0f))
                 .build()
                 .render(x+ 8 + width - 24, y+12);
-
-
-
-//        gradientOverlay.render(x + width - 74, y + 5);
     }
 
     private void renderSelectList(DrawContext context, int mouseX, int mouseY, float delta) {
-        AbstractWindow selectWindow = new AbstractWindow() {
+        int opacity = (int) alphaAnimation.get();
+        if (opacity > 0) {
+            Builder.rectangle()
+                    .size(new SizeState(dropDownListWidth, dropDownListHeight))
+                    .color(new QuadColorState(new Color(ColorUtility.applyOpacity(ColorUtility.fromHex("1C1A25").getRGB(), opacity), true)))
+                    .radius(new QuadRadiusState(4))
+                    .build()
+                    .render(dropdownListX, dropDownListY);
 
-            @Override
-            protected void drawWindow(DrawContext context, int mouseX, int mouseY, float delta) {
-                windowName = "selectWindow";
-                int opacity = (int) alphaAnimation.get();
-                if (opacity > 0) {
-                    Builder.rectangle()
-                            .size(new SizeState(dropDownListWidth, dropDownListHeight))
-                            .color(new QuadColorState(ColorUtility.fromHex("1C1A25")))
-                            .radius(new QuadRadiusState(4))
-                            .build()
-                            .render(dropdownListX, dropDownListY);
-
-                    float offset = dropDownListY - 1.5f;
-                    for (SelectedButton button : selectedButtons) {
-                        button.x = dropdownListX;
-                        button.y = offset;
-                        button.width = dropDownListWidth;
-                        button.height = 8f;
-                        button.setAlpha(opacity);
-                        button.render(context, mouseX, mouseY, delta);
-                        offset += 8f;
-                    }
-                }
+            float offset = dropDownListY - 1.5f;
+            for (SelectedButton button : selectedButtons) {
+                button.x = dropdownListX;
+                button.y = offset;
+                button.width = dropDownListWidth;
+                button.height = 8f;
+                button.setAlpha(opacity);
+                button.render(context, mouseX, mouseY, delta);
+                offset += 8f;
             }
-
-
-        };
-
-
-        var window = windowManager.findWindow("selectWindow");
-
-        if(window != null){
-            windowManager.delete(window);
         }
-
-        windowManager.add(selectWindow);
-
     }
 
     private boolean isHoveredList(double mouseX, double mouseY) {
-        return MathUtility.isHovered(mouseX, mouseY, dropdownListX, dropDownListY - 16, dropDownListWidth, dropDownListHeight + 16);
+        return MathUtility.isHovered(mouseX, mouseY, dropdownListX, dropDownListY, dropDownListWidth, dropDownListHeight);
     }
 }

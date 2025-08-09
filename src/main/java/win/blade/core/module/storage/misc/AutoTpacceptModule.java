@@ -17,11 +17,11 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(
         name = "AutoTpaccept",
         category = Category.MISC,
-        desc = "Автоматически принимает запрос на телепортацию"
+        desc = "Автоматически принимает запросы на телепортацию."
 )
 public class AutoTpacceptModule extends Module {
 
-    private final BooleanSetting onlyFriends = new BooleanSetting("Только друзья", "Принимает телепорт только от друзей").setValue(false);
+    private final BooleanSetting onlyFriends = new BooleanSetting("Только друзья", "Принимать телепорт только от друзей.").setValue(false);
 
     public AutoTpacceptModule() {
         addSettings(onlyFriends);

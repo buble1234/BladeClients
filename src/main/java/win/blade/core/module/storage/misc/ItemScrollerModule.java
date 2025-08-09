@@ -8,11 +8,10 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(
         name = "ItemScroller",
         category = Category.MISC,
-        desc = "Быстрое перемещение и выбрасывание предметов"
+        desc = "Быстрое перемещение и выбрасывание предметов."
 )
 public class ItemScrollerModule extends Module {
-    public final ValueSetting delay = new ValueSetting("Задержка", "").setValue(50f).range(0f, 100f);
-
+    public final ValueSetting delay = new ValueSetting("Задержка", "Задержка при быстром перемещении предметов.").setValue(50f).range(0f, 100f);
 
     public ItemScrollerModule() {
         addSettings(delay);

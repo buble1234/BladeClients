@@ -22,13 +22,13 @@ import win.blade.mixin.accessor.MinecraftClientAccessor;
  */
 @ModuleInfo(name = "NoDelay",
         category = Category.PLAYER,
-        desc = "Убирает задержку на выбранные вещи")
+        desc = "Убирает различные игровые задержки.")
 public class NoDelayModule extends Module {
 
-    private final GroupSetting delayOptions = new GroupSetting("Убирать задержку на", "").setToggleable().settings(
-            new BooleanSetting("Прыжок", "").setValue(true),
-            new BooleanSetting("Правый клик", "").setValue(true),
-            new BooleanSetting("Ломание блоков", "").setValue(true)
+    private final GroupSetting delayOptions = new GroupSetting("Убирать задержку на", "Выбор отключаемых задержек.").setToggleable().settings(
+            new BooleanSetting("Прыжок", "Убирает задержку между прыжками.").setValue(true),
+            new BooleanSetting("Правый клик", "Убирает задержку на правый клик.").setValue(true),
+            new BooleanSetting("Ломание блоков", "Ускоряет ломание блоков.").setValue(true)
     );
 
     public NoDelayModule() {

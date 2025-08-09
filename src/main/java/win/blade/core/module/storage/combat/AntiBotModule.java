@@ -18,11 +18,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Автор Ieo117
  * Дата создания: 24.07.2025, в 14:59:06
  */
-@ModuleInfo(name = "AntiBot", category = Category.COMBAT, desc = "")
-public class AntiBotModule extends Module {
-     public static final CopyOnWriteArrayList<PlayerEntity> bots = Lists.newCopyOnWriteArrayList();
 
-    public final BooleanSetting remove = new BooleanSetting("Удалять из мира", "Удаляет бота из мира").setValue(false);
+@ModuleInfo(name = "AntiBot", category = Category.COMBAT, desc = "Игнорирует ботов от анти-читов.")
+public class AntiBotModule extends Module {
+    public static final CopyOnWriteArrayList<PlayerEntity> bots = Lists.newCopyOnWriteArrayList();
+
+    public final BooleanSetting remove = new BooleanSetting("Удалять из мира", "Полностью скрывает обнаруженных ботов.").setValue(false);
 
     @Override
     protected void onEnable() {
@@ -61,4 +62,3 @@ public class AntiBotModule extends Module {
         return false;
     }
 }
-

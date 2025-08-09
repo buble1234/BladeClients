@@ -133,21 +133,21 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
                     .build()
                     .render(matrix, infoX, tYStart);
 
-            float hpY = tYStart + 6.5f + 4;
+            float hpY = tYStart + 7.5f + 4;
             Builder.text()
                     .font(FontType.popins_regular.get())
                     .text(Math.round(target.getHealth()) + "hp")
                     .color(new Color(102, 60, 255))
                     .size(6)
                     .build()
-                    .render(matrix, infoX, hpY);
+                    .render(matrix, infoX, hpY );
 
-            float barY = hpY + 6 + 3;
+            float barY = hpY + 6 + 3.5f;
 
             Builder.rectangle()
-                    .size(new SizeState(healthBarWidth, 4))
+                    .size(new SizeState(healthBarWidth, 3))
                     .color(new QuadColorState(new Color(60, 60, 60, 150)))
-                    .radius(new QuadRadiusState(1))
+                    .radius(new QuadRadiusState(0.5f))
                     .smoothness(1.0f)
                     .build()
                     .render(matrix, infoX, barY);
@@ -155,9 +155,9 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
             float barFillW = healthBarWidth * healthPercent;
             if (barFillW > 0) {
                 Builder.rectangle()
-                        .size(new SizeState(barFillW, 4))
+                        .size(new SizeState(barFillW, 3))
                         .color(new QuadColorState(new Color(102, 60, 255)))
-                        .radius(new QuadRadiusState(1))
+                        .radius(new QuadRadiusState(0.5f))
                         .build()
                         .render(matrix, infoX, barY);
             }

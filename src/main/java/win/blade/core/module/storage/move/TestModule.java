@@ -19,10 +19,16 @@ public class TestModule extends Module {
     public TextSetting textSetting = new TextSetting("Input Text", "Description").setMax(24);
     public GroupSetting groupSetting = new GroupSetting("Checkbox", "Description").setSubSettings(List.of(textSetting));
     public ValueSetting valueSetting = new ValueSetting("Slider", "Description").range(0, 100).setValue(50);
-    public ColorSetting colorSetting = new ColorSetting("Color Picker", "");
+    public ValueSetting valueSettings = new ValueSetting("Slider", "Description").range(0, 100).setValue(50);
+
+    public ValueSetting valueSettings1 = new ValueSetting("Slider", "Description").range(0, 100).setValue(50).withAttachments(valueSettings);
+
+    public ColorSetting colorSetting = (ColorSetting) new ColorSetting("Color Picker", "").withAttachments(valueSettings);
+
+
 
     public TestModule (){
         colorSetting.presets(1, 2);
-        addSettings(groupSetting, textSetting, valueSetting, colorSetting);
+        addSettings(groupSetting, textSetting, valueSettings1, colorSetting);
     }
 }

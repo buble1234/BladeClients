@@ -57,7 +57,7 @@ public class GroupComponent extends AbstractSettingComponent {
                         .setRunnable(() -> spawnWindow(mouseX, mouseY))
                         .render(context, mouseX, mouseY, delta);
             } else {
-                ((SettingComponent) settingComponent.position(x + width - 16, y + 7.75f))
+                ((SettingComponent) settingComponent.position(x + width - 18, y + 7.75f))
                         .setRunnable(() -> spawnWindow(mouseX, mouseY))
                         .render(context, mouseX, mouseY, delta);
             }

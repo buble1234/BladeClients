@@ -1,6 +1,5 @@
 package win.blade.common.gui.impl.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.Window;
@@ -13,21 +12,16 @@ import win.blade.common.gui.impl.gui.components.implement.other.*;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.module.InfoWindow;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.settings.PopUpWindow;
 import win.blade.common.gui.impl.gui.setting.Setting;
-import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
-import win.blade.common.utils.render.builders.Builder;
-import win.blade.common.utils.render.builders.states.QuadColorState;
-import win.blade.common.utils.render.builders.states.QuadRadiusState;
-import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.core.module.api.Category;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class MenuScreen extends Screen implements MinecraftInstance {
     private final List<AbstractComponent> components = new ArrayList<>();
+    private final List<Runnable> postRenderTasks = new ArrayList<>();
 
     private final BackgroundComponent backgroundComponent = new BackgroundComponent();
     private final UserComponent userComponent = new UserComponent();
@@ -67,8 +61,10 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                         categoryContainerComponent
                 )
         );
+    }
 
-
+    public void addPostRenderTask(Runnable task) {
+        postRenderTasks.add(task);
     }
 
     public SearchComponent getSearchComponent() {
@@ -112,13 +108,11 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
         categoryContainerComponent.position(this.x, this.y);
 
+        postRenderTasks.clear();
         components.forEach(component -> component.render(context, mouseX, mouseY, delta));
         windowManager.render(context, mouseX, mouseY, delta);
 
-//        var state2 = new QuadColorState(new Color(23, 20, 38, 0),  new Color(17, 15, 23, 255), new Color(17, 15, 23, 255), new Color( 20, 18, 27, 0));
-//        Builder.rectangle().size(new SizeState(313.5f, 150.5f)).color(state2).radius(new QuadRadiusState(0, 0, 10, 10)).smoothness(5).build().render(x + 85, y + 148);
-
-//        backgroundComponent.render(context, mouseX, mouseY, delta);
+        postRenderTasks.forEach(Runnable::run);
     }
 
     @Override

@@ -47,6 +47,9 @@ dependencies {
         exclude group: 'xml-apis', module: 'xml-apis'
     }
 
+
+    modImplementation "dev.redstones.mediaplayerinfo:media-player-info:0.1.0"
+
     implementation("org.apache.xmlgraphics:batik-parser:$batikVersion", batikExclude)
     implementation("org.apache.xmlgraphics:batik-awt-util:$batikVersion", batikExclude)
     implementation("org.apache.xmlgraphics:batik-transcoder:$batikVersion", batikExclude)

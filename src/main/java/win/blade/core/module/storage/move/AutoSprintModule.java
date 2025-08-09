@@ -12,11 +12,15 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(
         name = "AutoSprint",
         category = Category.MOVE,
-        desc = "Автоматически включает спринт"
+        desc = "Автоматически включает бег при движении."
 )
 public class AutoSprintModule extends Module {
 
-    private final BooleanSetting keepSprintOption = new BooleanSetting("Сбрасывать спринт", "").setValue(false);
+    private final BooleanSetting keepSprintOption = new BooleanSetting("Сбрасывать спринт", "Сохранять бег во время атаки.").setValue(false);
+
+    public AutoSprintModule() {
+        addSettings(keepSprintOption);
+    }
 
     @EventHandler
     public void onTick(UpdateEvents.Update event) {

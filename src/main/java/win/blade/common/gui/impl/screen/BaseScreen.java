@@ -7,6 +7,7 @@ import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
+import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.SizeState;
@@ -39,8 +40,6 @@ public abstract class BaseScreen extends Screen implements MinecraftInstance {
     protected void renderFooter(DrawContext context, int screenW, int screenH) {
         String footer = "Everything is the same as before, the best\nBlade Client SM25";
 
-        Color textColor = new Color(100, 100, 100, 200);
-
         String[] lines = footer.split("\n");
         int numLines = lines.length;
 
@@ -56,7 +55,7 @@ public abstract class BaseScreen extends Screen implements MinecraftInstance {
             BuiltText builtLine = Builder.text()
                     .font(FontType.sf_regular.get())
                     .text(line)
-                    .color(textColor)
+                    .color(new Color(140,136,154,25))
                     .size(fontsize)
                     .thickness(0.05f)
                     .build();

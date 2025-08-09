@@ -12,6 +12,8 @@ public class FontType {
 
     public static final Supplier<MsdfFont> sf_regular = Suppliers.memoize(() -> MsdfFont.builder().atlas("sfregular").data("sfregular").build());
 
+    public static final Supplier<MsdfFont> sf_medium = Suppliers.memoize(() -> MsdfFont.builder().atlas("sf_medium").data("sf_medium").build());
+
     public static final Supplier<MsdfFont> popins_regular = Suppliers.memoize(() -> MsdfFont.builder().atlas("popinsr").data("popinsr").build());
 
     public static final Supplier<MsdfFont> popins_medium = Suppliers.memoize(() -> MsdfFont.builder().atlas("popinsm").data("popinsm").build());

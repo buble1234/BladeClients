@@ -105,7 +105,7 @@ public class BindWindow extends AbstractWindow {
                 .build()
                 .render(x + 10, y + 54.25f);
 
-        ((ButtonComponent) createButton.size(12, 12).position(x + width - 40, y + 37.5f)).setColor(ColorUtility.fromHex("663CFF").getRGB())
+        ((ButtonComponent) createButton.size(21, 9.5f).position(x + width - 40, y + 37.5f)).setColor(ColorUtility.fromHex("663CFF").getRGB())
                 .render(context, mouseX, mouseY, delta);
 
         ((ButtonComponent) deleteButton.size(12, 12).position(x + width - 40, y + 53.5f)).setColor(ColorUtility.fromHex("1C1A25").getRGB())
