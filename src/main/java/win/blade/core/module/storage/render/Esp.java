@@ -38,7 +38,7 @@ import java.util.Collections;
 @ModuleInfo(name = "Esp", category = Category.RENDER, desc = "Отображает информацию о сущностях.")
 public class Esp extends Module {
 
-    private final GroupSetting checks = new GroupSetting("Элементы", "Какие сущности подсвечивать.").settings(
+    private final GroupSetting checks = new GroupSetting("Элементы", "Какие сущности подсвечивать.").setToggleable().settings(
             new BooleanSetting("Игроки", "Отображать игроков.").setValue(true),
             new BooleanSetting("Предметы", "Отображать предметы.").setValue(false)
     );
@@ -145,13 +145,14 @@ public class Esp extends Module {
                 .size(new SizeState(nameWidth + 2, fontHeight + 1))
                 .color(new QuadColorState(back))
                 .build()
-                .render(centerX - (nameWidth / 2F) - 1, y +0.5f);
+                .render(centerX - (nameWidth / 2F) - 1, y + 1);
 
         Builder.text()
                 .font(FontType.sf_regular.get())
                 .text(tagComponent.getString())
                 .color(Color.WHITE)
                 .size(fontHeight)
+                .thickness(0.0f)
                 .build()
                 .render(centerX - nameWidth / 2F, y);
     }

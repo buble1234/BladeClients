@@ -23,10 +23,6 @@ import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-/**
- * Автор Ieo117
- * Дата создания: 16.07.2025, в 00:13:36
- */
 public class ConfigManager implements MinecraftInstance {
 
     public static final List<InteractiveUIElement> draggableList = new CopyOnWriteArrayList<>();
@@ -89,14 +85,11 @@ public class ConfigManager implements MinecraftInstance {
 
         JsonObject root = new JsonObject();
 
-        // Theme placeholder for 1:1 schema
         root.addProperty("theme", "DEFAULT");
 
-        // Save modules in Excellent-like format
         for (Module module : Manager.getModuleManagement().all()) {
             JsonObject moduleJsonObject = new JsonObject();
 
-            // state and keyCode
             moduleJsonObject.addProperty("state", module.isEnabled());
             moduleJsonObject.addProperty("keyCode", module.keybind());
 
@@ -109,6 +102,8 @@ public class ConfigManager implements MinecraftInstance {
                     valueJsonObject.addProperty("value", enumValue.getSelected());
                 } else if (value instanceof BooleanSetting booleanValue) {
                     valueJsonObject.addProperty("value", booleanValue.getValue());
+                } else if (value instanceof GroupSetting groupValue) {
+                    valueJsonObject.addProperty("value", groupValue.getValue());
                 } else if (value instanceof BindSetting keyValue) {
                     valueJsonObject.addProperty("value", keyValue.getKey());
                 } else if (value instanceof ValueSetting numberValue) {
@@ -125,7 +120,6 @@ public class ConfigManager implements MinecraftInstance {
                     valueJsonObject.addProperty("blue", c.getBlue());
                     valueJsonObject.addProperty("alpha", c.getAlpha());
                 } else if (value instanceof MultiSelectSetting multi) {
-                    // map to MultiBooleanValue style: value-0, value-1, ...
                     List<String> list = multi.getList();
                     if (list != null) {
                         int i = 0;
@@ -142,7 +136,6 @@ public class ConfigManager implements MinecraftInstance {
             root.add(module.name(), moduleJsonObject);
         }
 
-        // Preserve draggable UI elements (project-specific)
         JsonObject draggableElementsObject = new JsonObject();
         for (InteractiveUIElement drag : draggableList) {
             JsonObject dragObject = new JsonObject();
@@ -181,12 +174,10 @@ public class ConfigManager implements MinecraftInstance {
         try (FileReader reader = new FileReader(configFile.toFile())) {
             JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
 
-            // theme (optional)
             if (root.has("theme")) {
-                // hook up to your theme manager if present
+
             }
 
-            // Load modules from Excellent-like format
             for (Module module : Manager.getModuleManagement().all()) {
                 if (!root.has(module.name())) {
                     continue;
@@ -194,7 +185,6 @@ public class ConfigManager implements MinecraftInstance {
 
                 JsonObject moduleJsonObject = root.getAsJsonObject(module.name());
 
-                // temporarily disable before applying values
                 if (module.isEnabled()) {
                     module.toggleWithoutNotification(false);
                 }
@@ -215,6 +205,10 @@ public class ConfigManager implements MinecraftInstance {
                             if (valueJsonObject.has("value")) {
                                 booleanValue.setValue(valueJsonObject.get("value").getAsBoolean());
                             }
+                        } else if (value instanceof GroupSetting groupValue) {
+                            if (valueJsonObject.has("value")) {
+                                groupValue.setValue(valueJsonObject.get("value").getAsBoolean());
+                            }
                         } else if (value instanceof BindSetting keyValue) {
                             if (valueJsonObject.has("value")) {
                                 keyValue.setKey(valueJsonObject.get("value").getAsInt());
@@ -228,7 +222,6 @@ public class ConfigManager implements MinecraftInstance {
                         } else if (value instanceof ValueSetting numberValue) {
                             if (valueJsonObject.has("value")) {
                                 float v = (float) valueJsonObject.get("value").getAsDouble();
-                                // clamp
                                 float clamped = Math.max(numberValue.getMin(), Math.min(numberValue.getMax(), v));
                                 numberValue.setValue(clamped);
                             }
@@ -240,7 +233,6 @@ public class ConfigManager implements MinecraftInstance {
                             int argb = (alpha & 0xFF) << 24 | (red & 0xFF) << 16 | (green & 0xFF) << 8 | (blue & 0xFF);
                             colorValue.setColor(argb);
                         } else if (value instanceof MultiSelectSetting multi) {
-                            // collect selected according to booleans
                             List<String> selectedList = new ArrayList<>();
                             List<String> list = multi.getList();
                             if (list != null) {
@@ -259,7 +251,6 @@ public class ConfigManager implements MinecraftInstance {
                     }
                 }
 
-                // state
                 try {
                     if (moduleJsonObject.has("state")) {
                         boolean state = moduleJsonObject.get("state").getAsBoolean();
@@ -268,7 +259,6 @@ public class ConfigManager implements MinecraftInstance {
                 } catch (Exception ignored) {
                 }
 
-                // keyCode
                 if (moduleJsonObject.has("keyCode")) {
                     try {
                         module.setKeybind(moduleJsonObject.get("keyCode").getAsInt());
@@ -277,7 +267,6 @@ public class ConfigManager implements MinecraftInstance {
                 }
             }
 
-            // Backward compatibility: old Blade format under root.modules
             if (root.has("modules")) {
                 JsonObject modulesObject = root.getAsJsonObject("modules");
                 for (Module module : Manager.getModuleManagement().all()) {
@@ -330,7 +319,6 @@ public class ConfigManager implements MinecraftInstance {
     }
 
     private JsonObject saveTheme() {
-        // Темок нету пока
         return null;
     }
 
@@ -338,8 +326,6 @@ public class ConfigManager implements MinecraftInstance {
 
     }
 
-    // Flatten settings in the same manner as Excellent's getAllValues():
-    // include main settings, then all attachments and group sub-settings in order
     private List<Setting> flattenSettings(List<Setting> source) {
         List<Setting> result = new ArrayList<>();
         Deque<Setting> stack = new ArrayDeque<>(source);
@@ -364,7 +350,6 @@ public class ConfigManager implements MinecraftInstance {
         return result;
     }
 
-    // Legacy loader for old Blade config format
     private void loadSettingLegacy(JsonElement settingElement, Setting setting) {
         if (setting instanceof BooleanSetting s) {
             JsonObject boolObject = settingElement.getAsJsonObject();
@@ -387,10 +372,22 @@ public class ConfigManager implements MinecraftInstance {
             settingElement.getAsJsonArray().forEach(selected -> selectedList.add(selected.getAsString()));
             s.setSelected(selectedList);
         } else if (setting instanceof GroupSetting groupSetting) {
-            JsonObject subSettings = settingElement.getAsJsonObject();
-            for (Setting subSetting : groupSetting.getSubSettings()) {
-                if (subSettings.has(subSetting.getName())) {
-                    loadSettingLegacy(subSettings.get(subSetting.getName()), subSetting);
+            JsonObject groupObject = settingElement.getAsJsonObject();
+            if (groupObject.has("value")) {
+                groupSetting.setValue(groupObject.get("value").getAsBoolean());
+            }
+            if (groupObject.has("subSettings")) {
+                JsonObject subSettings = groupObject.getAsJsonObject("subSettings");
+                for (Setting subSetting : groupSetting.getSubSettings()) {
+                    if (subSettings.has(subSetting.getName())) {
+                        loadSettingLegacy(subSettings.get(subSetting.getName()), subSetting);
+                    }
+                }
+            } else {
+                for (Setting subSetting : groupSetting.getSubSettings()) {
+                    if (groupObject.has(subSetting.getName())) {
+                        loadSettingLegacy(groupObject.get(subSetting.getName()), subSetting);
+                    }
                 }
             }
         }

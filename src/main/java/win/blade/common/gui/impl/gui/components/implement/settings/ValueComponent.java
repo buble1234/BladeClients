@@ -109,7 +109,7 @@ public class ValueComponent extends AbstractSettingComponent {
                 .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/svg/gui/setting.svg"))
                 .radius(new QuadRadiusState(0f))
                 .build()
-                .render(x + width - SLIDER_WIDTH - 15.5, y + 11.5f);
+                .render(x + width - SLIDER_WIDTH - 16.5, y + 11.5f);
 
         Builder.rectangle()
                 .size(new SizeState(SLIDER_WIDTH, 3))

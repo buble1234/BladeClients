@@ -16,7 +16,7 @@ import java.awt.Color;
 
 public class TextBox implements IMouse, MinecraftInstance {
 
-    public static final String VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?@#$%^&*()-_=+[]{}|\\;:'\"<>,./`~ ";
+    public static final String VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?@#$%^&*()-_=+[]{}|\\;:'\"<>,./`~ АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
     public static final String NUMBERS_ONLY = "0123456789.";
 
     public String text = "";

@@ -44,8 +44,8 @@ public class SelectComponent extends AbstractSettingComponent {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         alphaAnimation.update();
 
-        String wrapped = StringUtil.wrap(setting.getDescription(), 100, 6);
-        height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
+        String wrapped = StringUtil.wrap(setting.getDescription(), 80, 6);
+        height = (int) (18 + fontRegular.getFontHeight(fontRegular, 4) * (wrapped.split("\n").length - 1));
 
         List<String> fullSettingsList = setting.getList();
         this.dropdownListX = x + width - 51;

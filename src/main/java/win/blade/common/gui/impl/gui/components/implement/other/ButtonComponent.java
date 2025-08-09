@@ -50,7 +50,7 @@ public class ButtonComponent extends AbstractComponent {
                 .color(new QuadColorState(color))
                 .radius(new QuadRadiusState(1.5f))
                 .build()
-                .render(x, y);
+                .render(x+7, y);
 
         float textWidth = fontRegular.getWidth(text, 6);
         float centeredX = x + (width - textWidth) / 2;
@@ -61,7 +61,7 @@ public class ButtonComponent extends AbstractComponent {
                 .size(4)
                 .color(Color.WHITE)
                 .build()
-                .render( centeredX + 1.5f, y + 2);
+                .render( centeredX +7f, y + 1.5f);
     }
 
     @Override
