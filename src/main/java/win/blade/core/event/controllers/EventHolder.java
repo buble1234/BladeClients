@@ -8,6 +8,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.screen.slot.SlotActionType;
 import win.blade.core.event.impl.input.InputEvents;
 import win.blade.core.event.impl.minecraft.OptionEvents;
+import win.blade.core.event.impl.minecraft.MotionEvents;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.event.impl.player.PlayerActionEvents;
 import win.blade.core.event.impl.render.RenderEvents;
@@ -74,5 +75,13 @@ public class EventHolder {
 
     public static OptionEvents.Gamma getGammaEvent(float gamma) {
         return new OptionEvents.Gamma(gamma);
+    }
+
+    public static MotionEvents.Pre getPreMotionEvent(double x, double y, double z, float yaw, float pitch, boolean onGround) {
+        return new MotionEvents.Pre(x, y, z, yaw, pitch, onGround);
+    }
+
+    public static MotionEvents.Post getPostMotionEvent(double x, double y, double z, float yaw, float pitch, boolean onGround) {
+        return new MotionEvents.Post(x, y, z, yaw, pitch, onGround);
     }
 }
