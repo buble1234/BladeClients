@@ -33,19 +33,19 @@ public class GroupComponent extends AbstractSettingComponent {
             Builder.text()
                     .font(fontRegular)
                     .text(setting.getName())
-                    .size(6)
+                    .size(5.5f)
                     .color(new Color(0xFFD4D6E1))
                     .build()
-                    .render(x + 9, y + 8 + addJust());
+                    .render(x + 8.75f, y + 8.5f + addJust());
 
             if (shouldRenderDescription)
                 Builder.text()
                         .font(fontRegular)
                         .text(wrapped)
-                        .size(5)
+                        .size(4)
                         .color(new Color(0xFF878894))
                         .build()
-                        .render(x + 9, y + 15);
+                        .render(x + 9, y + 16);
 
             if (setting.isToggleable()) {
                 ((CheckComponent) checkComponent.position(x + width - 16, y + 7.5F))
@@ -57,7 +57,7 @@ public class GroupComponent extends AbstractSettingComponent {
                         .setRunnable(() -> spawnWindow(mouseX, mouseY))
                         .render(context, mouseX, mouseY, delta);
             } else {
-                ((SettingComponent) settingComponent.position(x + width - 16, y + 7.75f))
+                ((SettingComponent) settingComponent.position(x + width - 18, y + 7.75f))
                         .setRunnable(() -> spawnWindow(mouseX, mouseY))
                         .render(context, mouseX, mouseY, delta);
             }

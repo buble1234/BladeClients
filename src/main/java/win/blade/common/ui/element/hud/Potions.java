@@ -1,6 +1,7 @@
 package win.blade.common.ui.element.hud;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -10,6 +11,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.StringHelper;
 import org.joml.Matrix4f;
 import win.blade.common.ui.element.InteractiveUIElement;
+import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.render.Stencil;
@@ -70,6 +72,8 @@ public class Potions extends Module implements MinecraftInstance, NonRegistrable
 
     private class wUIElement extends InteractiveUIElement {
 
+        private final Animation scaleAnimation = new Animation();
+        private final Animation widthAnimation = new Animation(70);
         private AbstractTexture maskTexture = null;
 
         public wUIElement(String id, float x, float y, float width, float height) {
@@ -78,13 +82,41 @@ public class Potions extends Module implements MinecraftInstance, NonRegistrable
 
         @Override
         public void renderContent(DrawContext context) {
+            List<StatusEffectInstance> activeEffects = getActiveEffects();
+            boolean isInChat = mc.currentScreen instanceof ChatScreen;
+            boolean shouldShow = !activeEffects.isEmpty() || isInChat;
+
+            if (shouldShow && scaleAnimation.getToValue() != 1.0) {
+                scaleAnimation.run(1.0, 0.35, Easing.EASE_OUT_BACK);
+                widthAnimation.run(107, 0.35, Easing.EASE_OUT_BACK);
+            } else if (!shouldShow && scaleAnimation.getToValue() != 0.0) {
+                scaleAnimation.run(0.0, 0.35, Easing.EASE_IN_BACK);
+                widthAnimation.run(70, 0.35, Easing.EASE_IN_BACK);
+            }
+
+            scaleAnimation.update();
+            widthAnimation.update();
+
+            if (scaleAnimation.get() <= 0.01f) return;
 
             if (maskTexture == null) {
                 maskTexture = mc.getTextureManager().getTexture(Identifier.of("blade", "textures/potmask.png"));
             }
 
-            Matrix4f matrix = context.getMatrices()
-                    .peek().getPositionMatrix();
+            Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
+
+            float scale = scaleAnimation.get();
+            float animatedWidth = widthAnimation.get();
+
+            float centerX = getX() + getWidth() / 2f;
+            float centerY = getY() + getHeight() / 2f;
+
+            context.getMatrices().push();
+            context.getMatrices().translate(centerX, centerY, 0);
+            context.getMatrices().scale(scale, scale, 1f);
+            context.getMatrices().translate(-centerX, -centerY, 0);
+
+            matrix = context.getMatrices().peek().getPositionMatrix();
 
             Color gray = new Color(255, 255, 255, 64);
 
@@ -98,53 +130,25 @@ public class Potions extends Module implements MinecraftInstance, NonRegistrable
             float gap = 2f;
             float lineW = 1f;
 
-            Collection<StatusEffectInstance> effectsCollection = new ArrayList<>(mc.player.getStatusEffects());
-            List<StatusEffectInstance> effects = effectsCollection.stream()
-                    .sorted(Comparator.comparingInt(StatusEffectInstance::getDuration).reversed())
-                    .collect(Collectors.toList());
-
-            List<String> names = new ArrayList<>();
-            List<String> durations = new ArrayList<>();
-            List<Identifier> icons = new ArrayList<>();
-            float iconSize = 10f;
-
-            for (StatusEffectInstance effect : effects) {
-                StatusEffect type = effect.getEffectType().value();
-                String effectId = Registries.STATUS_EFFECT.getId(type).getPath();
-                String englishName = Stream.of(effectId.split("_"))
-                        .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1))
-                        .collect(Collectors.joining(" "));
-                int level = effect.getAmplifier() + 1;
-                String levelStr = "";
-                if (level > 1) {
-                    if (level <= 10) {
-                        levelStr = " " + Text.translatable("enchantment.level." + level).getString();
-                    } else {
-                        levelStr = " " + level;
-                    }
-                }
-                String nameStr = englishName + levelStr;
-                String durationStr;
-                if (effect.isInfinite()) {
-                    durationStr = "Infinite";
-                } else {
-                    durationStr = StringHelper.formatTicks(effect.getDuration(), mc.world.getTickManager().getTickRate());
-                }
-                Identifier iconId = Identifier.ofVanilla("textures/mob_effect/" + effectId + ".png");
-                names.add(nameStr);
-                durations.add(durationStr);
-                icons.add(iconId);
+            List<EffectInfo> displayEffects;
+            if (isInChat && activeEffects.isEmpty()) {
+                displayEffects = getExampleEffects();
+            } else {
+                displayEffects = activeEffects.stream()
+                        .map(this::createEffectInfo)
+                        .collect(Collectors.toList());
             }
 
             float headerH = titleSize + 2f;
             float itemH = itemSize + 6;
+            float iconSize = 10f;
 
-            setWidth(107);
+            setWidth(animatedWidth);
 
-            if (effects.isEmpty()) {
+            if (displayEffects.isEmpty()) {
                 setHeight(23);
             } else {
-                float totalH = vPadding + headerH + vPadding + headerGap + lineW + headerGap + (itemH * effects.size()) + (gap * (effects.size() - 1));
+                float totalH = vPadding + headerH + vPadding + headerGap + lineW + headerGap + (itemH * displayEffects.size()) + (gap * (displayEffects.size() - 1));
                 setHeight(totalH);
             }
 
@@ -185,7 +189,7 @@ public class Potions extends Module implements MinecraftInstance, NonRegistrable
 
             hot.render(matrix, getX() + hPadding, curY + (headerH - titleSize) / 2f - 1f);
 
-            if (!effects.isEmpty()) {
+            if (!displayEffects.isEmpty()) {
                 curY += headerH + headerGap;
 
                 BuiltRectangle line = Builder.rectangle()
@@ -196,10 +200,11 @@ public class Potions extends Module implements MinecraftInstance, NonRegistrable
 
                 curY += lineW + headerGap;
 
-                for (int i = 0; i < effects.size(); i++) {
-                    String name = names.get(i);
-                    String durationStr = durations.get(i);
-                    Identifier iconId = icons.get(i);
+                for (int i = 0; i < displayEffects.size(); i++) {
+                    EffectInfo effectInfo = displayEffects.get(i);
+                    String name = effectInfo.name;
+                    String durationStr = effectInfo.duration;
+                    Identifier iconId = effectInfo.iconId;
 
                     AbstractTexture iconTexture = mc.getTextureManager().getTexture(iconId);
 
@@ -227,15 +232,15 @@ public class Potions extends Module implements MinecraftInstance, NonRegistrable
                             .build();
                     timeText.render(matrix, getX() + getWidth() - hPadding - timeW, curY + (itemH - itemSize) / 2f - 1);
 
-                    if (i < effects.size() - 1) {
+                    if (i < displayEffects.size() - 1) {
                         curY += itemH + gap;
                     } else {
                         curY += itemH;
                     }
                 }
             }
-            Stencil.pop();
 
+            Stencil.pop();
 
             BuiltBorder border = Builder.border()
                     .size(new SizeState(getWidth(), getHeight()))
@@ -244,6 +249,62 @@ public class Potions extends Module implements MinecraftInstance, NonRegistrable
                     .thickness(1)
                     .build();
             border.render(matrix, getX(), getY());
+
+            context.getMatrices().pop();
+        }
+
+        private List<StatusEffectInstance> getActiveEffects() {
+            Collection<StatusEffectInstance> effectsCollection = new ArrayList<>(mc.player.getStatusEffects());
+            return effectsCollection.stream()
+                    .sorted(Comparator.comparingInt(StatusEffectInstance::getDuration).reversed())
+                    .collect(Collectors.toList());
+        }
+
+        private EffectInfo createEffectInfo(StatusEffectInstance effect) {
+            StatusEffect type = effect.getEffectType().value();
+            String effectId = Registries.STATUS_EFFECT.getId(type).getPath();
+            String englishName = Stream.of(effectId.split("_"))
+                    .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1))
+                    .collect(Collectors.joining(" "));
+            int level = effect.getAmplifier() + 1;
+            String levelStr = "";
+            if (level > 1) {
+                if (level <= 10) {
+                    levelStr = " " + Text.translatable("enchantment.level." + level).getString();
+                } else {
+                    levelStr = " " + level;
+                }
+            }
+            String nameStr = englishName + levelStr;
+            String durationStr;
+            if (effect.isInfinite()) {
+                durationStr = "Infinite";
+            } else {
+                durationStr = StringHelper.formatTicks(effect.getDuration(), mc.world.getTickManager().getTickRate());
+            }
+            Identifier iconId = Identifier.ofVanilla("textures/mob_effect/" + effectId + ".png");
+
+            return new EffectInfo(nameStr, durationStr, iconId);
+        }
+
+        private List<EffectInfo> getExampleEffects() {
+            return List.of(
+                    new EffectInfo("Example II", "2:30", Identifier.ofVanilla("textures/mob_effect/speed.png")),
+                    new EffectInfo("Example III", "1:45", Identifier.ofVanilla("textures/mob_effect/strength.png")),
+                    new EffectInfo("Example IV", "0:45", Identifier.ofVanilla("textures/mob_effect/regeneration.png"))
+            );
+        }
+
+        private static class EffectInfo {
+            final String name;
+            final String duration;
+            final Identifier iconId;
+
+            EffectInfo(String name, String duration, Identifier iconId) {
+                this.name = name;
+                this.duration = duration;
+                this.iconId = iconId;
+            }
         }
 
         @Override

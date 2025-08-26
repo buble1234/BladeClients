@@ -52,7 +52,7 @@ public class ChinaHat extends Module {
                         .build(false));
 
         VertexConsumer fanConsumer = vertexConsumerProvider.getBuffer(fanLayer);
-        int clientColor = ColorUtility.pack(255, 0, 0, 255);
+        int clientColor = ColorUtility.pack(102, 60, 255, 255);
         fanConsumer.vertex(matrix, 0, 0.3f, 0).color(ColorUtility.applyAlpha(clientColor, alpha));
         for (int i = 0, size = 360; i <= size; i++) {
             int color = ColorUtility.fade(i * multiplier);

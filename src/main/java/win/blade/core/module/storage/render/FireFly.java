@@ -33,21 +33,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-@ModuleInfo(name = "FireFly", category = Category.RENDER)
+@ModuleInfo(name = "FireFly", category = Category.RENDER, desc = "Создает частицы-светлячки вокруг игрока.")
 public class FireFly extends Module {
 
-    private final ValueSetting count = new ValueSetting("Кол-во", "").setValue(5f).range(1f, 25f);
-    private final ValueSetting size = new ValueSetting("Размер", "").setValue(0.5F).range(0.0F, 1F);
-    private final ValueSetting range = new ValueSetting("Дистанция", "").setValue(16f).range(4f, 32f);
-    private final ValueSetting duration = new ValueSetting("Время жизни", "").setValue(3500f).range(500f, 5000f);
-    private final ValueSetting strength = new ValueSetting("Сила движения", "").setValue(1.0F).range(0.1F, 2.0F);
-    private final ValueSetting opacity = new ValueSetting("Прозрачность", "").setValue(1.0F).range(0.1F, 1.0F);
-    private final BooleanSetting glowing = new BooleanSetting("Свечение", "").setValue(true);
-    private final BooleanSetting onlyMove = new BooleanSetting("Только в движении", "").setValue(false);
-    private final BooleanSetting ground = new BooleanSetting("Спавнить на земле", "").setValue(false);
-    private final BooleanSetting physic = new BooleanSetting("Физика", "").setValue(false);
-    private final SelectSetting colorMode = new SelectSetting("Режим цвета", "").value("Клиентский", "Радужный");
-    private final SelectSetting particleMode = new SelectSetting("Тип частиц", "")
+    private final ValueSetting count = new ValueSetting("Кол-во", "Количество частиц.").setValue(5f).range(1f, 25f);
+    private final ValueSetting size = new ValueSetting("Размер", "Размер частиц.").setValue(0.5F).range(0.0F, 1F);
+    private final ValueSetting range = new ValueSetting("Дистанция", "Дистанция спавна частиц.").setValue(16f).range(4f, 32f);
+    private final ValueSetting duration = new ValueSetting("Время жизни", "Как долго живут частицы.").setValue(3500f).range(500f, 5000f);
+    private final ValueSetting strength = new ValueSetting("Сила движения", "Скорость движения частиц.").setValue(1.0F).range(0.1F, 2.0F);
+    private final ValueSetting opacity = new ValueSetting("Прозрачность", "Прозрачность частиц.").setValue(1.0F).range(0.1F, 1.0F);
+    private final BooleanSetting glowing = new BooleanSetting("Свечение", "Добавляет свечение частицам.").setValue(true);
+    private final BooleanSetting onlyMove = new BooleanSetting("Только в движении", "Создавать частицы только в движении.").setValue(false);
+    private final BooleanSetting ground = new BooleanSetting("Спавнить на земле", "Создавать частицы на земле.").setValue(false);
+    private final BooleanSetting physic = new BooleanSetting("Физика", "Включает физику для частиц (отскоки).").setValue(false);
+    private final SelectSetting colorMode = new SelectSetting("Режим цвета", "Цветовая схема частиц.").value("Клиентский", "Радужный");
+    private final SelectSetting particleMode = new SelectSetting("Тип частиц", "Форма частиц.")
             .value("Bloom", "Random", "Amongus", "Circle", "Crown", "Dollar", "Heart",
                     "Polygon", "Quad", "Skull", "Star", "Cross", "Triangle");
 

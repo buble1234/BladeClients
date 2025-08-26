@@ -28,14 +28,15 @@ import win.blade.mixin.accessor.PlayerPositionLookS2CPacketAccessor;
  */
 @ModuleInfo(
         name = "ServerTweaks",
-        category = Category.COMBAT
+        category = Category.COMBAT,
+        desc = "Блокирует нежелательные действия сервера."
 )
 public class ServerTweaksModule extends Module {
 
-    private final GroupSetting tweaks = new GroupSetting("Убрать", "").settings(
-            new BooleanSetting("Серверный поворот", "").setValue(true),
-            new BooleanSetting("Серверный свап слотов", "").setValue(false),
-            new BooleanSetting("Урон по друзьям", "").setValue(false)
+    private final GroupSetting tweaks = new GroupSetting("Убрать", "Отключает различные серверные механики.").settings(
+            new BooleanSetting("Серверный поворот", "Блокирует принудительный поворот камеры.").setValue(true),
+            new BooleanSetting("Серверный свап слотов", "Игнорирует смену активного слота сервером.").setValue(false),
+            new BooleanSetting("Урон по друзьям", "Блокирует атаку по друзьям.").setValue(false)
     );
 
     public ServerTweaksModule() {

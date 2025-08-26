@@ -1,6 +1,7 @@
 package win.blade.common.gui.impl.gui.components.implement.settings;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
@@ -51,7 +52,7 @@ public class ValueComponent extends AbstractSettingComponent {
             Builder.text()
                     .font(fontRegular)
                     .text(value)
-                    .size(5.25f)
+                    .size(4)
                     .color(ColorUtility.fromHex("663CFF"))
                     .build()
                     .render(x + width - 9 - fontRegular.getWidth(value, 6), y + 8.5f);
@@ -63,7 +64,7 @@ public class ValueComponent extends AbstractSettingComponent {
         Builder.text()
                 .font(FontType.sf_regular.get())
                 .text(setting.getName())
-                .size(6)
+                .size(5.5f)
                 .color(new Color(0xFFD4D6E1))
                 .build()
                 .render(x + 9, y + 8 + addJust());
@@ -72,7 +73,7 @@ public class ValueComponent extends AbstractSettingComponent {
             Builder.text()
                 .font(fontRegular)
                 .text(wrapped)
-                .size(5)
+                .size(4)
                 .color(new Color(0xFF878894))
                 .build()
                 .render(x + 9, y + 15);
@@ -102,36 +103,38 @@ public class ValueComponent extends AbstractSettingComponent {
         attachmentX = x + width - SLIDER_WIDTH - 15;
         attachmentY = y + 15;
 
+        Builder.texture()
+                .size(new SizeState(6, 6))
+                .color(new QuadColorState(-1))
+                .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/svg/gui/setting.svg"))
+                .radius(new QuadRadiusState(0f))
+                .build()
+                .render(x + width - SLIDER_WIDTH - 16.5, y + 11.5f);
 
         Builder.rectangle()
-                .size(new SizeState(SLIDER_WIDTH, 2.5))
+                .size(new SizeState(SLIDER_WIDTH, 3))
                 .color(new QuadColorState(new Color(0x4D2E2E41, true)))
-                .radius(new QuadRadiusState(0))
+                .radius(new QuadRadiusState(0.5f))
                 .build()
                 .render(x + width - SLIDER_WIDTH - 9, y + 15);
 
         Builder.rectangle()
-                .size(new SizeState((float) animation, 2.5))
+                .size(new SizeState((float) animation, 3))
                 .color(new QuadColorState(ColorUtility.fromHex("663CFF")))
-                .radius(new QuadRadiusState(0))
+                .radius(new QuadRadiusState(0.5f))
                 .build()
                 .render(x + width - SLIDER_WIDTH - 9, y + 15);
 
         float handleX = x + width - SLIDER_WIDTH - 9 + (float) animation;
 
-        Builder.rectangle()
+        Builder.border()
                 .size(new SizeState(6, 6))
                 .color(new QuadColorState(ColorUtility.fromHex("1C1A25")))
-                .radius(new QuadRadiusState(2))
+                .outlineColor(new QuadColorState(ColorUtility.fromHex("663CFF")))
+                .radius(new QuadRadiusState(2f))
+                .thickness(0.5f)
                 .build()
-                .render(handleX - 3, y + 13.25f);
-
-        Builder.rectangle()
-                .size(new SizeState(4, 4))
-                .color(new QuadColorState(ColorUtility.fromHex("663CFF")))
-                .radius(new QuadRadiusState(1))
-                .build()
-                .render(handleX - 2, y + 14.25f);
+                .render(handleX - 2, y + 13.5f);
 
         return difference;
     }

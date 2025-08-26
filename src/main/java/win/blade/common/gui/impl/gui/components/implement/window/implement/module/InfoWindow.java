@@ -70,7 +70,7 @@ public class InfoWindow extends AbstractWindow {
     private final MsdfFont fontRegular = FontType.sf_regular.get();
 
     public InfoWindow() {
-        settingRepository.setup(cheapestItemColorSetting);
+
 
         new SettingComponentAdder().addSettingComponent(
                 settingRepository.settings(),

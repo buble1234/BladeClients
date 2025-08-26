@@ -13,17 +13,16 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(
         name = "NoPush",
         category = Category.MOVE,
-        desc = "Отключает коллизию"
+        desc = "Убирает отталкивание от различных источников."
 )
 public class NoPushModule extends Module {
 
-    public final GroupSetting options = new GroupSetting("Отключать коллизию для", "").setToggleable().settings(
-            new BooleanSetting("Сущностей", "").setValue(true),
-            new BooleanSetting("Блоков", "").setValue(true),
-            new BooleanSetting("Жидкостей", "").setValue(true),
-            new BooleanSetting("Удочек", "").setValue(true)
+    public final GroupSetting options = new GroupSetting("Отключать коллизию для", "Источники отталкивания.").setToggleable().settings(
+            new BooleanSetting("Сущностей", "От игроков и мобов.").setValue(true),
+            new BooleanSetting("Блоков", "Выталкивание из блоков.").setValue(true),
+            new BooleanSetting("Жидкостей", "Течение воды и лавы.").setValue(true),
+            new BooleanSetting("Удочек", "Притягивание удочкой.").setValue(true)
     );
-
     public NoPushModule() {
         addSettings(options);
     }

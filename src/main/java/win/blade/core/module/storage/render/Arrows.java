@@ -27,7 +27,11 @@ import win.blade.core.module.api.ModuleInfo;
 
 import java.awt.Color;
 
-@ModuleInfo(name = "Arrows", category = Category.RENDER)
+@ModuleInfo(
+        name = "Arrows",
+        category = Category.RENDER,
+        desc = "Показывает стрелки, указывающие на игроков рядом."
+)
 public class Arrows extends Module {
 
     private final Animation openAnimation = new Animation();
@@ -113,7 +117,7 @@ public class Arrows extends Module {
 
     private void drawArrow(DrawContext context, double x, double y, double angle, int color) {
         float alpha = (float) openAnimation.get();
-        int top = ColorUtility.applyAlpha(new Color(196, 24, 24).getRGB(), (ColorUtility.getAlpha(new Color(196, 24, 24).getRGB()) / 255.0f) * alpha);
+        int top = ColorUtility.applyAlpha(new Color(102, 60, 255).getRGB(), (ColorUtility.getAlpha(new Color(196, 24, 24).getRGB()) / 255.0f) * alpha);
         int back = ColorUtility.applyAlpha(top, 0);
 
         context.getMatrices().push();

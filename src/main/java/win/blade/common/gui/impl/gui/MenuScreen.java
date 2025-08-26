@@ -1,6 +1,5 @@
 package win.blade.common.gui.impl.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.Window;
@@ -8,11 +7,11 @@ import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
+import win.blade.common.gui.impl.gui.components.implement.category.CategoryComponent;
 import win.blade.common.gui.impl.gui.components.implement.other.*;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.module.InfoWindow;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.settings.PopUpWindow;
 import win.blade.common.gui.impl.gui.setting.Setting;
-import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.module.api.Category;
 
@@ -22,6 +21,7 @@ import java.util.List;
 
 public class MenuScreen extends Screen implements MinecraftInstance {
     private final List<AbstractComponent> components = new ArrayList<>();
+    private final List<Runnable> postRenderTasks = new ArrayList<>();
 
     private final BackgroundComponent backgroundComponent = new BackgroundComponent();
     private final UserComponent userComponent = new UserComponent();
@@ -31,16 +31,27 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
     public int x, y, width, height;
 
-    public Category category = Category.COMBAT;
+    public static Category category = Category.COMBAT;
+    private static List<Double> scroll = new ArrayList<>(6);
+    private static List<Double> smoothedScroll = new ArrayList<>(6);
 
     private boolean closing = false;
 
     public MenuScreen() {
         super(Text.of("Delta"));
 
+        if(scroll.isEmpty()) {
+            for (double i = 0; i < 6; i++) {
+                scroll.add(0d);
+                smoothedScroll.add(0d);
+            }
+        }
+
         categoryContainerComponent
                 .setMenuScreen(this)
-                .initializeCategoryComponents();
+                .initializeCategoryComponents()
+                .loadScrollValues(scroll, smoothedScroll)
+        ;
 
         components.addAll(
                 Arrays.asList(
@@ -50,8 +61,10 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                         categoryContainerComponent
                 )
         );
+    }
 
-
+    public void addPostRenderTask(Runnable task) {
+        postRenderTasks.add(task);
     }
 
     public SearchComponent getSearchComponent() {
@@ -88,15 +101,18 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                 .position(this.x, this.y)
                 .size(this.width, this.height);
 
-//        userComponent.setMenuScreen(this)
-//                .position(this.x, this.y + this.height);
+        userComponent.setMenuScreen(this)
+                .position(this.x, this.y + this.height);
 
         searchComponent.position(this.x + 300, this.y + 6);
 
         categoryContainerComponent.position(this.x, this.y);
 
+        postRenderTasks.clear();
         components.forEach(component -> component.render(context, mouseX, mouseY, delta));
         windowManager.render(context, mouseX, mouseY, delta);
+
+        postRenderTasks.forEach(Runnable::run);
     }
 
     @Override
@@ -162,6 +178,14 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                     windowManager.delete(abstractWindow);
                 }
             });
+
+            List<CategoryComponent> components = categoryContainerComponent.categoryComponents;
+
+            for (int i = 0; i < components.size(); i++) {
+                CategoryComponent component = components.get(i);
+                scroll.set(i, component.scroll);
+                smoothedScroll.set(i, component.smoothedScroll);
+            }
 
             super.close();
         }

@@ -34,7 +34,7 @@ public class BooleanComponent extends AbstractSettingComponent {
         Builder.text()
                 .font(fontRegular)
                 .text(setting.getName())
-                .size(6)
+                .size(5.5f)
                 .color(new Color(0xFFD4D6E1))
                 .build()
                 .render(x + 9, y + 8 + addJust());
@@ -43,7 +43,7 @@ public class BooleanComponent extends AbstractSettingComponent {
             Builder.text()
                     .font(fontRegular)
                     .text(wrapped)
-                    .size(5)
+                    .size(4)
                     .color(new Color(0xFF878894))
                     .build()
                     .render(x + 9, y + 15);
@@ -53,7 +53,7 @@ public class BooleanComponent extends AbstractSettingComponent {
                 .setState(setting.getValue())
                 .render(context, mouseX, mouseY, delta);
 
-        ((SettingComponent) settingComponent.position(x + width - 28, y + 8))
+        ((SettingComponent) settingComponent.position(x + width - 26, y + 8))
                 .setRunnable(() -> spawnWindow(mouseX, mouseY))
                 .render(context, mouseX, mouseY, delta);
     }

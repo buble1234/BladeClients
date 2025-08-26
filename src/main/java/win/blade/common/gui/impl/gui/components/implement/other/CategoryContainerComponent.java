@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryContainerComponent extends AbstractComponent implements MinecraftInstance {
-    private final List<CategoryComponent> categoryComponents = new ArrayList<>();
+    public final List<CategoryComponent> categoryComponents = new ArrayList<>();
     private MenuScreen menuScreen;
 
     public CategoryContainerComponent setMenuScreen(MenuScreen menuScreen) {
@@ -24,11 +24,23 @@ public class CategoryContainerComponent extends AbstractComponent implements Min
         return this;
     }
 
-    public void initializeCategoryComponents() {
+    public void loadScrollValues(List<Double> scroll, List<Double> smooth){
+        for(int i = 0; i < categoryComponents.size(); i++){
+            CategoryComponent component =categoryComponents.get(i);
+            component.scroll = scroll.get(i);
+            component.smoothedScroll = smooth.get(i);
+        }
+
+    }
+
+    public CategoryContainerComponent initializeCategoryComponents() {
         categoryComponents.clear();
         for (Category category : Category.values()) {
             categoryComponents.add(new CategoryComponent(category, menuScreen));
         }
+
+
+        return this;
     }
 
     @Override

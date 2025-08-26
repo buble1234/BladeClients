@@ -16,7 +16,7 @@ import java.awt.Color;
 public class ButtonComponent extends AbstractComponent {
     private String text;
     private Runnable runnable;
-    private int color = 0xFF8187FF;
+    private int color = new Color(102,60,255).getRGB();
 
     private final MsdfFont fontRegular = FontType.sf_regular.get();
 
@@ -42,26 +42,26 @@ public class ButtonComponent extends AbstractComponent {
                 .peek()
                 .getPositionMatrix();
 
-        width = fontRegular.getWidth(text, 6) + 13;
-        height = 12;
+        width = FontType.popins_regular.get().getWidth(text, 6) +3;
+        height = 9.5f;
 
         Builder.rectangle()
-                .size(new SizeState(width, height))
+                .size(new SizeState(21, height))
                 .color(new QuadColorState(color))
                 .radius(new QuadRadiusState(1.5f))
                 .build()
-                .render(x, y);
+                .render(x+7, y);
 
         float textWidth = fontRegular.getWidth(text, 6);
         float centeredX = x + (width - textWidth) / 2;
 
         Builder.text()
-                .font(fontRegular)
+                .font(FontType.popins_regular.get())
                 .text(text)
-                .size(6)
+                .size(4)
                 .color(Color.WHITE)
                 .build()
-                .render( centeredX -0.5f, y + 2.5f);
+                .render( centeredX +7f, y + 1.5f);
     }
 
     @Override

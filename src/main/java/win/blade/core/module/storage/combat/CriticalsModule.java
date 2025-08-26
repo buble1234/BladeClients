@@ -19,7 +19,7 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(
         name = "Criticals",
         category = Category.COMBAT,
-        desc = "Всегда наносит критические удары"
+        desc = "Делает все атаки критическими без прыжка."
 )
 public class CriticalsModule extends Module {
 

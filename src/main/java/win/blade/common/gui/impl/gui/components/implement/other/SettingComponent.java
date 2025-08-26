@@ -24,17 +24,17 @@ public class SettingComponent extends AbstractComponent {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         Builder.texture()
-                .size(new SizeState(7, 7))
+                .size(new SizeState(6, 6))
                 .color(new QuadColorState(-1))
                 .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/svg/gui/setting.svg"))
                 .radius(new QuadRadiusState(0f))
                 .build()
-                .render(x, y);
+                .render(x + 2, y + 0.5f);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (MathUtility.isHovered(mouseX, mouseY, x, y, 7, 7) && button == 0) {
+        if (MathUtility.isHovered(mouseX, mouseY, x + 2, y + 0.5f, 6, 6) && button == 0) {
             runnable.run();
         }
         return super.mouseClicked(mouseX, mouseY, button);

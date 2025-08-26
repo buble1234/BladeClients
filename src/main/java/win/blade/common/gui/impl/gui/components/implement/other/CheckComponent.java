@@ -48,20 +48,19 @@ public class CheckComponent extends AbstractComponent {
         Builder.rectangle()
                 .size(new SizeState(8, 8))
                 .color(new QuadColorState(new Color(stateColor.getRGB())))
-                .radius(new QuadRadiusState(1.5f))
+                .radius(new QuadRadiusState(2f))
                 .build()
                 .render(x, y);
 
         if (state) {
 
             Builder.texture()
-                    .size(new SizeState(4.7, 4.7))
+                    .size(new SizeState(4, 4))
                     .color(new QuadColorState(Color.WHITE))
                     .svgTexture(0f, 0f, 1f, 1f, Identifier.of("blade", "textures/svg/gui/check.svg"))
                     .radius(new QuadRadiusState(0f))
                     .build()
-                    .render(x + 1.6f , y + 1.6f);
-
+                    .render(x + 1.9f , y + 1.9f);
 
         }
     }

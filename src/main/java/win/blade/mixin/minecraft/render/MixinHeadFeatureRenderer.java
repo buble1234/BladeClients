@@ -26,7 +26,7 @@ public abstract class MixinHeadFeatureRenderer<S extends LivingEntityRenderState
         super(context);
     }
 
-    @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/state/LivingEntityRenderState;FF)V", at = @At("TAIL"))
+    @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/state/LivingEntityRenderState;FF)V", at = @At("HEAD"))
     public void onRenderHead(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, S livingEntityRenderState, float f, float g, CallbackInfo ci) {
         if (Manager.getModuleManagement().get(ChinaHat.class) != null && Manager.getModuleManagement().get(ChinaHat.class).isEnabled() && livingEntityRenderState instanceof PlayerEntityRenderState) {
             Entity entity = MinecraftClient.getInstance().world.getEntityById(((PlayerEntityRenderState) livingEntityRenderState).id);

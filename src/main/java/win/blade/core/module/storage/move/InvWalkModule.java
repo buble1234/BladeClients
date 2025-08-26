@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 @ModuleInfo(
         name = "InvWalk",
         category = Category.MOVE,
-        desc = "Позволяет передвигаться с открытым инвентарём"
+        desc = "Позволяет двигаться в открытых интерфейсах."
 )
 public class InvWalkModule extends Module {
     private final List<Packet<?>> packets = Collections.synchronizedList(new ArrayList<>());

@@ -19,11 +19,12 @@ import win.blade.core.module.api.ModuleInfo;
  */
 @ModuleInfo(
         name = "FastBow",
-        category = Category.COMBAT
+        category = Category.COMBAT,
+        desc = "Ускоряет стрельбу из лука."
 )
 public class FastBowModule extends Module {
 
-    private final ValueSetting speed = new ValueSetting("Скорость", "")
+    private final ValueSetting speed = new ValueSetting("Скорость", "Время натяжения перед выстрелом.")
             .setValue(10f).range(1f, 10f);
 
     public FastBowModule() {

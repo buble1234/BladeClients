@@ -27,6 +27,7 @@ public class ColorComponent extends AbstractSettingComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+
         String wrapped = StringUtil.wrap(setting.getDescription(), 100, 6);
         height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
 
@@ -68,6 +69,8 @@ public class ColorComponent extends AbstractSettingComponent {
                 .radius(new QuadRadiusState(2))
                 .build()
                 .render(x + width - 16.5f, y + 7.2f);
+
+        super.render(context, mouseX, mouseY, delta);
     }
 
     @Override
@@ -85,7 +88,7 @@ public class ColorComponent extends AbstractSettingComponent {
             } else {
                 AbstractWindow colorWindow = new ColorWindow(setting)
                         .position((int) (mouseX + 20), (int) (mouseY - 82))
-                        .size(150, 165)
+                        .size(104, 177)
                         .draggable(true);
                 windowManager.add(colorWindow);
             }

@@ -21,17 +21,17 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(
         name = "AutoTotem",
         category = Category.COMBAT,
-        desc = "Автоматически берёт тотем"
+        desc = "Автоматически берет тотем в левую руку."
 )
 public class AutoTotemModule extends Module {
 
-    private final ValueSetting health = new ValueSetting("Здоровье для свапа", "")
+    private final ValueSetting health = new ValueSetting("Здоровье для свапа", "Уровень здоровья для активации.")
             .setValue(10.0f).range(1.0f, 20.0f);
 
-    private final GroupSetting swapOptions = new GroupSetting("Опции свапа", "").settings(
-            new BooleanSetting("Не прерывать использование", "").setValue(true),
-            new BooleanSetting("Не сменять при сфере в руке", "").setValue(true),
-            new BooleanSetting("Предпочитать не зачарованные", "").setValue(false)
+    private final GroupSetting swapOptions = new GroupSetting("Опции свапа", "Дополнительные условия для смены тотема.").settings(
+            new BooleanSetting("Не прерывать использование", "Не менять тотем во время использования предметов.").setValue(true),
+            new BooleanSetting("Не сменять при сфере в руке", "Не менять тотем, если в руке сфера.").setValue(true),
+            new BooleanSetting("Предпочитать не зачарованные", "Сначала использует тотемы без чар.").setValue(false)
     );
 
     public AutoTotemModule() {

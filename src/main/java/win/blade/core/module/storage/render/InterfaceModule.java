@@ -36,6 +36,7 @@ public class InterfaceModule extends Module {
     private void setupElements() {
         interfaceElements.put("Ватермарка", new Watermark());
         interfaceElements.put("Клавиши", new Hotkey());
+        interfaceElements.put("Музыка", new MusicHud());
         interfaceElements.put("Зелья", new Potions());
         interfaceElements.put("ТаргетХуд", new TargetHud());
         interfaceElements.put("Инфо", new InfoHud());

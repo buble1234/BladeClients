@@ -68,8 +68,13 @@ public abstract class Module implements MinecraftInstance {
     }
 
     public final Module toggle() {
-        ConfigManager.instance.saveConfig("default");
-        return setEnabled(!enabled);
+        Module result = setEnabled(!enabled);
+        try {
+            Manager.executorService.execute(() -> ConfigManager.instance.saveConfig("default"));
+        } catch (Throwable ignored) {
+            new Thread(() -> ConfigManager.instance.saveConfig("default")).start();
+        }
+        return result;
     }
 
     public final Module setEnabled(boolean enabled) {

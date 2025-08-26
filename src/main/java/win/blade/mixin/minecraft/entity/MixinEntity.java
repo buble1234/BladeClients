@@ -137,12 +137,4 @@ public abstract class MixinEntity implements MinecraftInstance, IEntity {
         );
     }
 
-    @Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true)
-    private void injGlowing(CallbackInfoReturnable<Boolean> cir) {
-        Entity entity = (Entity) (Object) this;
-
-        if (entity instanceof PlayerEntity && ShaderESP.show) {
-            cir.setReturnValue(true);
-        }
-    }
 }

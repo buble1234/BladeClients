@@ -23,10 +23,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
-import win.blade.common.gui.impl.gui.setting.implement.ColorSetting;
-import win.blade.common.gui.impl.gui.setting.implement.MultiSelectSetting;
-import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
+import win.blade.common.gui.impl.gui.setting.implement.*;
 import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
@@ -43,14 +40,14 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-@ModuleInfo(name = "Projectiles", category = Category.RENDER)
+@ModuleInfo(name = "Projectiles", category = Category.RENDER, desc = "Отображает траекторию летящих снарядов.")
 public class Projectiles extends Module {
 
-    private final BooleanSetting renderName = new BooleanSetting("Показывать владельца", "").setValue(true);
-    private final ValueSetting thickness = new ValueSetting("Толщина", "").setValue(1.0f).range(0.1f, 5.0f);
-    private final ColorSetting color = new ColorSetting("Цвет", "").value(new Color(200, 50, 255, 255).getRGB());
+    private final BooleanSetting renderName = new BooleanSetting("Показывать владельца", "Отображает имя владельца снаряда.").setValue(true);
+    private final ValueSetting thickness = new ValueSetting("Толщина", "Толщина линии траектории.").setValue(1.0f).range(0.1f, 5.0f);
+    private final ColorSetting color = new ColorSetting("Цвет", "Цвет траектории.").value(new Color(200, 50, 255, 255).getRGB());
 
-    private final MultiSelectSetting projectiles = new MultiSelectSetting("Снаряды", "").value(
+    private final SelectSetting projectiles = new SelectSetting("Снаряды", "Какие снаряды отслеживать.").value(
             "Эндер Пёрл",
             "Стрела",
             "Трезубец"

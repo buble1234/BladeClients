@@ -35,29 +35,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-@ModuleInfo(name = "Particles", category = Category.RENDER)
+@ModuleInfo(name = "Particles", category = Category.RENDER, desc = "Добавляет частицы при различных действиях.")
 public class Particles extends Module {
 
-    private final BooleanSetting moveSetting = new BooleanSetting("Движении", "").setValue(true);
-    private final BooleanSetting attackSetting = new BooleanSetting("Атаке", "").setValue(true);
-    private final BooleanSetting critSetting = new BooleanSetting("Крите", "").setValue(false).visible(attackSetting::getValue);
+    private final BooleanSetting moveSetting = new BooleanSetting("Движении", "При движении.").setValue(true);
+    private final BooleanSetting attackSetting = new BooleanSetting("Атаке", "При атаке.").setValue(true);
+    private final BooleanSetting critSetting = new BooleanSetting("Крите", "Только при крит. атаке.").setValue(false).visible(attackSetting::getValue);
 
-    private final GroupSetting events = new GroupSetting("Спавнить при", "").settings(
+    private final GroupSetting events = new GroupSetting("Спавнить при", "События для спавна частиц.").settings(
             moveSetting, attackSetting, critSetting
     );
 
-    private final ValueSetting countAttack = new ValueSetting("Кол-во при атаке", "")
+    private final ValueSetting countAttack = new ValueSetting("Кол-во при атаке", "Количество частиц при атаке.")
             .setValue(2f).range(1f, 25f).visible(attackSetting::getValue);
-    private final ValueSetting countMove = new ValueSetting("Кол-во при движении", "")
+    private final ValueSetting countMove = new ValueSetting("Кол-во при движении", "Количество частиц при движении.")
             .setValue(2f).range(1f, 25f).visible(moveSetting::getValue);
 
-    private final ValueSetting size = new ValueSetting("Размер", "").setValue(0.2F).range(0.0F, 1F);
-    private final ValueSetting strength = new ValueSetting("Сила движения", "").setValue(1.0F).range(0.1F, 2.0F);
-    private final ValueSetting opacity = new ValueSetting("Прозрачность", "").setValue(1.0F).range(0.1F, 1.0F);
-    private final BooleanSetting glowing = new BooleanSetting("Свечение", "").setValue(true);
-    private final BooleanSetting physic = new BooleanSetting("Физика", "").setValue(false);
-    private final SelectSetting colorMode = new SelectSetting("Режим цвета", "").value("Клиентский", "Радужный");
-    private final SelectSetting particleMode = new SelectSetting("Тип частиц", "")
+    private final ValueSetting size = new ValueSetting("Размер", "Размер частиц.").setValue(0.2F).range(0.0F, 1F);
+    private final ValueSetting strength = new ValueSetting("Сила движения", "Скорость движения частиц.").setValue(1.0F).range(0.1F, 2.0F);
+    private final ValueSetting opacity = new ValueSetting("Прозрачность", "Прозрачность частиц.").setValue(1.0F).range(0.1F, 1.0F);
+    private final BooleanSetting glowing = new BooleanSetting("Свечение", "Добавляет свечение частицам.").setValue(true);
+    private final BooleanSetting physic = new BooleanSetting("Физика", "Включает физику (отскоки).").setValue(false);
+    private final SelectSetting colorMode = new SelectSetting("Режим цвета", "Цветовая схема частиц.").value("Клиентский", "Радужный");
+    private final SelectSetting particleMode = new SelectSetting("Тип частиц", "Форма частиц.")
             .value("Bloom", "Random", "Amongus", "Circle", "Crown", "Dollar", "Heart",
                     "Polygon", "Quad", "Skull", "Star", "Cross", "Triangle");
 

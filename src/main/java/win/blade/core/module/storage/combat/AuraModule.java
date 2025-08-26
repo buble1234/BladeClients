@@ -27,71 +27,70 @@ import win.blade.core.module.api.ModuleInfo;
  * Автор: NoCap
  * Дата создания: 28.06.2025
  */
-@ModuleInfo(name = "Aura", category = Category.COMBAT)
+@ModuleInfo(name = "Aura", category = Category.COMBAT, desc = "Автоматически находит и атакует цели.")
 public class AuraModule extends Module {
 
-    private final SelectSetting aimModeSetting = new SelectSetting("Режим", "")
+    private final SelectSetting aimModeSetting = new SelectSetting("Режим", "Когда активировать прицеливание.")
             .value("Постоянный", "Во время удара");
 
-    public final GroupSetting aimGroup = new GroupSetting("Прицеливание", "")
+    public final GroupSetting aimGroup = new GroupSetting("Прицеливание", "Настройки наведения на цель.")
             .settings(aimModeSetting);
 
-    private final ValueSetting attackRange = new ValueSetting("Дистанция атаки", "")
+    private final ValueSetting attackRange = new ValueSetting("Дистанция атаки", "Максимальное расстояние для атаки.")
             .setValue(3.0f).range(1.0f, 6.0f);
 
-    private final ValueSetting aimRange = new ValueSetting("Дистанция прицеливания", "")
+    private final ValueSetting aimRange = new ValueSetting("Дистанция прицеливания", "Максимальное расстояние для наведения.")
             .setValue(4.5f).range(2.0f, 8.0f)
             .visible(() -> aimGroup.getValue());
 
-    private final ValueSetting rotateTick = new ValueSetting("Тики поворота", "")
+    private final ValueSetting rotateTick = new ValueSetting("Тики поворота", "Как долго (в тиках) наводиться перед ударом.")
             .setValue(5f).range(1f, 10f)
             .visible(() -> aimGroup.getValue() && aimModeSetting.isSelected("Во время удара"));
 
-    private final SelectSetting pvpMode = new SelectSetting("Режим PvP", "")
+    private final SelectSetting pvpMode = new SelectSetting("Режим PvP", "Адаптация под боевую систему 1.8 или 1.9+.")
             .value("1.9", "1.8");
 
-    private final ValueSetting cps = new ValueSetting("Скорость атаки", "")
+    private final ValueSetting cps = new ValueSetting("Скорость атаки", "Количество ударов в секунду (CPS) для PvP 1.8.")
             .setValue(12f).range(8f, 16f)
             .visible(() -> pvpMode.isSelected("1.8"));
 
-    private final SelectSetting criticalMode = new SelectSetting("Критические удары", "")
+    private final SelectSetting criticalMode = new SelectSetting("Критические удары", "Управляет нанесением критических ударов.")
             .value("Всегда", "Умные", "Нету");
 
-    private final SelectSetting pointMode = new SelectSetting("Точка прицеливания", "")
+    private final SelectSetting pointMode = new SelectSetting("Точка прицеливания", "Точка на теле цели для прицеливания.")
             .value("Умные", "Центр", "Мульти")
             .visible(() -> aimGroup.getValue());
 
-    private final GroupSetting targetTypes = new GroupSetting("Типы целей", "").setToggleable().settings(
-            new BooleanSetting("Игроки без брони", "").setValue(true),
-            new BooleanSetting("Игроки с бронёй", "").setValue(true),
-            new BooleanSetting("Невидимые игроки", "").setValue(false),
-            new BooleanSetting("Тиммейты", "").setValue(false),
-            new BooleanSetting("Друзья", "").setValue(false),
-            new BooleanSetting("Мобы", "").setValue(true),
-            new BooleanSetting("Животные", "").setValue(false),
-            new BooleanSetting("Жители", "").setValue(false)
+    private final GroupSetting targetTypes = new GroupSetting("Типы целей", "Какие типы существ атаковать.").setToggleable().settings(
+            new BooleanSetting("Игроки без брони", "Атаковать игроков без брони.").setValue(true),
+            new BooleanSetting("Игроки с бронёй", "Атаковать игроков в броне.").setValue(true),
+            new BooleanSetting("Невидимые игроки", "Атаковать невидимых игроков.").setValue(false),
+            new BooleanSetting("Тиммейты", "Атаковать союзников.").setValue(false),
+            new BooleanSetting("Друзья", "Атаковать друзей.").setValue(false),
+            new BooleanSetting("Мобы", "Атаковать враждебных мобов.").setValue(true),
+            new BooleanSetting("Животные", "Атаковать мирных животных.").setValue(false),
+            new BooleanSetting("Жители", "Атаковать деревенских жителей.").setValue(false)
     );
 
-    private final GroupSetting behaviorOptions = new GroupSetting("Опции", "").setToggleable().settings(
-            new BooleanSetting("Сбрасывать спринт", "").setValue(true),
-            new BooleanSetting("Бить сквозь блоки", "").setValue(false),
-            new BooleanSetting("Отжимать щит", "").setValue(true),
-            new BooleanSetting("Ломать щит", "").setValue(true),
-            new BooleanSetting("Проверять еду", "").setValue(true),
-            new BooleanSetting("Синхронизировать взгляд", "").setValue(false).visible(() -> aimGroup.getValue()),
-            new BooleanSetting("Фокусировать одну цель", "").setValue(false)
+    private final GroupSetting behaviorOptions = new GroupSetting("Опции", "Дополнительные настройки поведения.").setToggleable().settings(
+            new BooleanSetting("Сбрасывать спринт", "Сбрасывать спринт перед атакой.").setValue(true),
+            new BooleanSetting("Бить сквозь блоки", "Атаковать цели за блоками.").setValue(false),
+            new BooleanSetting("Отжимать щит", "Пытаться обойти защиту щитом.").setValue(true),
+            new BooleanSetting("Ломать щит", "Атаковать топором, если у цели поднят щит.").setValue(true),
+            new BooleanSetting("Проверять еду", "Не атаковать во время еды или питья зелий.").setValue(true),
+            new BooleanSetting("Синхронизировать взгляд", "Поворачивать всего персонажа, а не только камеру.").setValue(false).visible(() -> aimGroup.getValue()),
+            new BooleanSetting("Фокусировать одну цель", "Атаковать текущую цель, игнорируя других.").setValue(false)
     );
 
-    private final SelectSetting moveCorrectionMode = new SelectSetting("Режим", "")
+    private final SelectSetting moveCorrectionMode = new SelectSetting("Режим", "Тип коррекции: 'Сильная' поворачивает персонажа, 'Слабая' — незаметна.")
             .value("Слабая", "Сильная");
 
-    private final GroupSetting moveCorrectionGroup = new GroupSetting("Коррекция движений", "")
+    private final GroupSetting moveCorrectionGroup = new GroupSetting("Коррекция движений", "Помогает прицелу следовать за движущейся целью.")
             .visible(() -> aimGroup.getValue())
             .setValue(true)
             .settings(moveCorrectionMode);
 
-
-    private final SelectSetting sortMode = new SelectSetting("Сортировка целей", "")
+    private final SelectSetting sortMode = new SelectSetting("Сортировка целей", "Критерий выбора приоритетной цели.")
             .value("Дистанция", "Здоровье", "Броня", "Поле зрения", "Общая");
 
     private Entity currentTarget;

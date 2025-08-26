@@ -30,7 +30,7 @@ public class Setting {
     }
 
     public String getDescription() {
-        return description.isEmpty() ? "" : description;
+        return description.isEmpty() ? "Description" : description;
     }
 
     public Supplier<Boolean> getVisible() {

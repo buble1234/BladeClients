@@ -23,7 +23,7 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(
         name = "DiscordRPC",
         category = Category.MISC,
-        desc = "Показывает статус игры в Discord"
+        desc = "Интегрирует клиент с Discord, отображая детальный статус вашей активности."
 )
 public class DiscordRPCModule extends Module {
 

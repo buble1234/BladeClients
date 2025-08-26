@@ -12,10 +12,9 @@ import win.blade.core.module.api.ModuleInfo;
         desc = "Позволяет видеть невидимых существ и игроков"
 )
 public class BetterMinecraftModule extends Module {
-    public final BooleanSetting simpleChat = new BooleanSetting("Простой чат", "");
-    public final BooleanSetting chatHistory = new BooleanSetting("История чата", "");
-    public final BooleanSetting antiSpam = new BooleanSetting("АнтиСпам в чате", "");
-
+    public final BooleanSetting simpleChat = new BooleanSetting("Простой чат", "Убирает фон у поля ввода в чате.");
+    public final BooleanSetting chatHistory = new BooleanSetting("История чата", "Запрещает серверу очищать историю чата.");
+    public final BooleanSetting antiSpam = new BooleanSetting("АнтиСпам в чате", "Группирует одинаковые сообщения в одно.");
     public BetterMinecraftModule(){
         addSettings(simpleChat, chatHistory, antiSpam);
     }

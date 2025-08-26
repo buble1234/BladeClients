@@ -28,9 +28,9 @@ public class ColorUtility {
     }
 
     public static int fade(int index) {
-        int clientColor = pack(196, 24, 24, 255);
-        int darkColor = multDark(clientColor, 0.6f); // пример тёмного варианта, подкорректируй если нужно
-        return fade(5, index, clientColor, darkColor); // speed=5 как пример, в оригинале из Theme.getSpeed()
+        int clientColor = pack(102, 60, 255, 255);
+        int darkColor = multDark(clientColor, 0.6f);
+        return fade(5, index, clientColor, darkColor);
     }
 
 

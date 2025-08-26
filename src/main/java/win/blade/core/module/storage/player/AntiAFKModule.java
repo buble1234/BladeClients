@@ -18,11 +18,11 @@ import java.util.List;
 @ModuleInfo(
         name = "AntiAFK",
         category = Category.PLAYER,
-        desc = "Предотвращает кик за бездействие"
+        desc = "Предотвращает кик за бездействие, отправляя сообщения."
 )
 public class AntiAFKModule extends Module {
 
-    private final ValueSetting cooldown = new ValueSetting("Задержка в минутах", "").setValue(2f).range(1f, 10f);
+    private final ValueSetting cooldown = new ValueSetting("Задержка в минутах", "Интервал между действиями в минутах.").setValue(2f).range(1f, 10f);
 
     private long lastActionTime = 0;
 

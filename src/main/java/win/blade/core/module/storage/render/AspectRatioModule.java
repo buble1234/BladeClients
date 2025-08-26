@@ -10,11 +10,11 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(
         name = "AspectRatio",
         category = Category.RENDER,
-        desc = "Изменяет соотношение сторон в игре"
+        desc = "Изменяет соотношение сторон в игре."
 )
 public class AspectRatioModule extends Module {
 
-    public final SelectSetting multiplier = new SelectSetting("Соотношение", "").value(
+    public final SelectSetting multiplier = new SelectSetting("Соотношение", "Выбор предустановленного соотношения сторон.").value(
             "16:9",
             "16:10",
             "21:9",
@@ -22,11 +22,11 @@ public class AspectRatioModule extends Module {
             "Кастомное"
     );
 
-    public final ValueSetting customRatio = new ValueSetting("Значение", "").setValue(1.77f).range(0.5f, 2.0f);
+    public final ValueSetting customRatio = new ValueSetting("Значение", "Ручная настройка соотношения сторон.").setValue(1.77f).range(0.5f, 2.0f);
 
     public AspectRatioModule() {
-            customRatio.setVisible(() -> multiplier.isSelected("Кастомное"));
+        customRatio.setVisible(() -> multiplier.isSelected("Кастомное"));
 
-            addSettings(multiplier, customRatio);
+        addSettings(multiplier, customRatio);
     }
 }

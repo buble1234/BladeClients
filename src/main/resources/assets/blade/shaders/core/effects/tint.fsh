@@ -11,7 +11,6 @@ uniform float Time;
 uniform float Yaw;
 uniform float Pitch;
 
-// --- Содержимое из Color.glsl ---
 vec3 hsv2rgb(vec3 c)
 {
     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
@@ -19,7 +18,6 @@ vec3 hsv2rgb(vec3 c)
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
-// --- Содержимое из 3DSimplexNoise.glsl ---
 vec4 permute(vec4 x){ return mod(((x*34.0)+1.0)*x, 289.0); }
 vec4 taylorInvSqrt(vec4 r){ return 1.79284291400159 - 0.85373472095314 * r; }
 float snoise(vec3 v){
@@ -69,13 +67,11 @@ float snoise(vec3 v){
     dot(p2, x2), dot(p3, x3)));
 }
 
-// --- Содержимое из RGBPukeNoise.glsl ---
 float rgbPuke(vec2 uv, float yaw, float pitch, float time) {
     vec2 pos = vec2(uv.x + yaw / 180.0, uv.y - pitch / 90.0);
     return snoise(vec3(pos, time));
 }
 
-// --- Основная логика ---
 void main() {
     color = texture(Tex0, uv);
     if (RGBPuke) {

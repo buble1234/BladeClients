@@ -47,25 +47,18 @@ public class ColorWindow extends AbstractWindow {
     public void drawWindow(DrawContext context, int mouseX, int mouseY, float delta) {
         Builder.rectangle()
                 .size(new SizeState(width, height))
-                .color(new QuadColorState(new Color(0xDC090B15, true)))
+                .color(new QuadColorState(ColorUtility.fromHex("14121B")))
                 .radius(new QuadRadiusState(4))
                 .build()
                 .render(x, y);
 
-        Builder.rectangle()
-                .size(new SizeState(width, 21))
-                .color(new QuadColorState(new Color(0xFF141524, true)))
-                .radius(new QuadRadiusState(0, 5, 5, 0))
-                .build()
-                .render(x, y + height - 21);
-
         Builder.text()
                 .font(fontRegular)
                 .text("ColorPicker")
-                .size(7)
+                .size(5.5f)
                 .color(Color.WHITE)
                 .build()
-                .render(x + 6, y + 7);
+                .render(x + 9.5f, y + 6f);
 
         alphaComponent.position(x, y);
         hueComponent.position(x, y);
@@ -74,17 +67,18 @@ public class ColorWindow extends AbstractWindow {
 
         saveButtonComponent.setText("Save")
                 .setRunnable(() -> windowManager.delete(this))
-                .position(x + 119, y + height - 17);
+                .position(x + 82f - fontRegular.getWidth("Save", 6), y + height - 17);
 
         ((ButtonComponent) closeButtonComponent.setText("Close")
                 .setRunnable(() -> windowManager.delete(this))
-                .position(x + 90, y + height - 17))
+                .position(x + 58f - fontRegular.getWidth("Close", 6), y + height - 17))
                 .setColor(ColorUtility.pack(0,0,0,0));
 
         height = ((ColorPresetComponent) colorPresetComponent.position(x, y))
                 .getWindowHeight();
 
         components.forEach(component -> component.render(context, mouseX, mouseY, delta));
+
     }
 
     @Override

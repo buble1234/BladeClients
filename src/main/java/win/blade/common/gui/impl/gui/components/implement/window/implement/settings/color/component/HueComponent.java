@@ -28,13 +28,12 @@ public class HueComponent extends AbstractComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        X = x + 6;
-        Y = y + 18.5F;
-        W = 138;
-        H = 50;
+        X = x + 9f;
+        Y = y + 16.5F;
+        W = 88;
+        H = 60;
 
         int hueColor = Color.HSBtoRGB(setting.getHue(), 1, 1);
-
 
         Builder.rectangle()
                 .size(new SizeState(W, H))
@@ -66,17 +65,17 @@ public class HueComponent extends AbstractComponent {
         float clampedY = Y + H * (1 - setting.getBrightness());
 
         Builder.rectangle()
-                .size(new SizeState(5, 5))
+                .size(new SizeState(6, 6))
                 .color(new QuadColorState(Color.WHITE))
-                .radius(new QuadRadiusState(1.5f))
+                .radius(new QuadRadiusState(2))
                 .build()
                 .render(clampedX - 2.5f, clampedY - 2.5f);
         Builder.rectangle()
-                .size(new SizeState(3, 3))
+                .size(new SizeState(5.5f, 5.5f))
                 .color(new QuadColorState(new Color(setting.getColorWithAlpha(), true)))
-                .radius(new QuadRadiusState(0))
+                .radius(new QuadRadiusState(2))
                 .build()
-                .render(clampedX - 1.5f, clampedY - 1.5f);
+                .render(clampedX - 2.25f, clampedY - 2.25f);
 
 
         if (hueDragging) {
