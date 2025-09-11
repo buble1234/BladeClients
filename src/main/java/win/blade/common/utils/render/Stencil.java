@@ -7,8 +7,7 @@ import static org.lwjgl.opengl.EXTPackedDepthStencil.GL_DEPTH_STENCIL_EXT;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
- * Исправленная версия Stencil класса
- * Автор Ieo117 (исправлено)
+ * Автор NoCap (фулл переписал)
  */
 public class Stencil implements MinecraftInstance {
 
