@@ -281,6 +281,7 @@ public class ScaffoldModule extends Module {
         return false;
     }
 
+
     private boolean checkPosition(BlockPos pos) {
         for (Direction face : Direction.values()) {
             BlockPos neighborPos = pos.offset(face);
