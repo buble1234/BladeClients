@@ -6,5 +6,5 @@ public class InformationUtility {
     public static final String VERSION = "1.0";
     public static final String AUTHOR = "NoCap, Melon, Ieo117";
     public static final String DISCORD_INVITE = "https://discord.gg/bladedlc";
-    public static final String TELEGRAM_LINK = "https://t.me/bladerecode";
+    public static final String TELEGRAM_LINK = "https://t.me/bladeclient_tg";
 }

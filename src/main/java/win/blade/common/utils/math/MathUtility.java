@@ -117,4 +117,37 @@ public class MathUtility implements MinecraftInstance {
             lastWorldSpaceMatrix.set(projectionMatrix).mul(matrixStack.peek().getPositionMatrix());
         }
     }
+
+    public static float wrapDegrees(float degrees) {
+        degrees = degrees % 360.0f;
+
+        if (degrees >= 180.0f) {
+            degrees -= 360.0f;
+        } else if (degrees < -180.0f) {
+            degrees += 360.0f;
+        }
+
+        return degrees;
+    }
+
+    public static double wrapDegrees(double degrees) {
+        degrees = degrees % 360.0;
+
+        if (degrees >= 180.0) {
+            degrees -= 360.0;
+        } else if (degrees < -180.0) {
+            degrees += 360.0;
+        }
+
+        return degrees;
+    }
+
+    public static float angleDifference(float angle1, float angle2) {
+        return wrapDegrees(angle2 - angle1);
+    }
+
+    public static float lerpAngle(float from, float to, float factor) {
+        float difference = angleDifference(from, to);
+        return from + difference * factor;
+    }
 }

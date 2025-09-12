@@ -21,6 +21,7 @@ import win.blade.common.utils.aim.manager.TargetTask;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
 import win.blade.core.event.impl.player.MotionEvent;
+import win.blade.core.event.impl.minecraft.MotionEvents;
 import win.blade.core.event.impl.player.PlayerActionEvents;
 import win.blade.core.module.storage.move.NoPushModule;
 import win.blade.core.module.storage.player.FreeCam;
@@ -167,6 +168,20 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         if (event.isSprinting() != sprinting) self.setSprinting(event.isSprinting());
 //        if (event.isSneaking()  != sneaking  && this.input != null)
 //            this.input.sneaking = event.isSneaking();
+    @Inject(method = "sendMovementPackets", at = @At("HEAD"))
+    private void onMotionPre(CallbackInfo ci) {
+        if (mc.player == null) return;
+
+        MotionEvents.Pre event = EventHolder.getPreMotionEvent(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch(), this.isOnGround());
+        Manager.EVENT_BUS.post(event);
+    }
+
+    @Inject(method = "sendMovementPackets", at = @At("RETURN"))
+    private void onMotionPost(CallbackInfo ci) {
+        if (mc.player == null) return;
+
+        MotionEvents.Post event = EventHolder.getPostMotionEvent(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch(), this.isOnGround());
+        Manager.EVENT_BUS.post(event);
     }
 
 }
