@@ -132,16 +132,16 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
             cancellable = true
     )
     private void blade$preMotion(CallbackInfo ci) {
-        ClientPlayerEntity self = (ClientPlayerEntity)(Object)this;
+        ClientPlayerEntity self = (ClientPlayerEntity) (Object) this;
 
-        double  x   = self.getX();
-        double  y   = self.getY();
-        double  z   = self.getZ();
-        float   yaw = self.getYaw();
-        float   pitch = self.getPitch();
+        double x = self.getX();
+        double y = self.getY();
+        double z = self.getZ();
+        float yaw = self.getYaw();
+        float pitch = self.getPitch();
 
-        boolean onGround  = self.isOnGround();
-        boolean sneaking  = this.input != null && this.input.playerInput.sneak();
+        boolean onGround = self.isOnGround();
+        boolean sneaking = this.input != null && this.input.playerInput.sneak();
         boolean sprinting = self.isSprinting();
 
         MotionEvent event = new MotionEvent(
@@ -162,12 +162,14 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
             self.setPosition(event.getX(), event.getY(), event.getZ());
         }
 
-        if (event.getYaw() != yaw)   event.setYaw(event.getYaw());
+        if (event.getYaw() != yaw) event.setYaw(event.getYaw());
         if (event.getPitch() != pitch) self.setPitch(event.getPitch());
 
         if (event.isSprinting() != sprinting) self.setSprinting(event.isSprinting());
 //        if (event.isSneaking()  != sneaking  && this.input != null)
 //            this.input.sneaking = event.isSneaking();
+
+    }
     @Inject(method = "sendMovementPackets", at = @At("HEAD"))
     private void onMotionPre(CallbackInfo ci) {
         if (mc.player == null) return;

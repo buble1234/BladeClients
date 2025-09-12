@@ -26,10 +26,6 @@ import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
-/**
- * Автор: NoCap
- * Дата создания: 12.09.2025
- */
 @ModuleInfo(name = "Scaffold", category = Category.MOVE, desc = "Автоматически ставит блоки под ногами.")
 public class ScaffoldModule extends Module {
 
@@ -54,6 +50,11 @@ public class ScaffoldModule extends Module {
     private final SelectSetting pointMode = new SelectSetting("Точка прицеливания", "Точка для установки блока.")
             .value("Центр", "Мульти");
 
+    private final BooleanSetting buildBehind = new BooleanSetting("Застройка пути", "Строит стену при движении назад.").setValue(false);
+    private final ValueSetting wallHeight = new ValueSetting("Высота стены", "Высота стены, строящейся сзади.").setValue(3).range(2, 5);
+    private final ValueSetting wallInterval = new ValueSetting("Интервал стены", "Расстояние в блоках между стенами.").setValue(10).range(3, 20);
+    private final ValueSetting wallOffset = new ValueSetting("Отступ стены", "На каком расстоянии за спиной ставить стену.").setValue(2).range(1, 4);
+
     private BlockPos targetPosition;
     private Direction targetFace;
     private Vec3d targetHitVec;
@@ -62,26 +63,39 @@ public class ScaffoldModule extends Module {
     private boolean shouldRotateForPlace = false;
     private boolean reverseRotation = false;
 
+    private BlockPos lastWallStartPos;
+    private boolean isBuildingWall = false;
+    private BlockPos wallBuildPos;
+    private int currentWallHeight;
+
     public ScaffoldModule() {
-        addSettings(rotationMode, placeRange, tower, autoSwitch, safeWalk, motonCorrect, pointMode);
+        addSettings(rotationMode, placeRange, tower, autoSwitch, safeWalk, motonCorrect, pointMode,
+                buildBehind, wallHeight, wallInterval, wallOffset);
+    }
+
+    private void resetWallState() {
+        isBuildingWall = false;
+        wallBuildPos = null;
+        currentWallHeight = 0;
     }
 
     @Override
     public void onEnable() {
         clearTarget();
         lastSlot = mc.player.getInventory().selectedSlot;
+        lastWallStartPos = null;
+        resetWallState();
         super.onEnable();
     }
 
     @Override
     protected void onDisable() {
         AimManager.INSTANCE.disableWithSmooth(22);
-
         if (autoSwitch.isSelected("Тихое") && lastSlot != -1) {
             mc.player.getInventory().selectedSlot = lastSlot;
         }
-
         clearTarget();
+        resetWallState();
         super.onDisable();
     }
 
@@ -97,53 +111,30 @@ public class ScaffoldModule extends Module {
     @EventHandler
     public void onMove(MotionEvents.Pre event) {
         if (mc.player == null || mc.world == null) return;
-
         if (safeWalk.getValue()) {
             double x = event.getX();
             double z = event.getZ();
-
             if (mc.player.isOnGround() && !mc.player.noClip) {
                 double increment = 0.05;
-
                 while (x != 0.0 && isOffsetBBEmpty(x, 0.0)) {
-                    if (x < increment && x >= -increment) {
-                        x = 0.0;
-                    } else if (x > 0.0) {
-                        x -= increment;
-                    } else {
-                        x += increment;
-                    }
+                    if (x < increment && x >= -increment) x = 0.0;
+                    else if (x > 0.0) x -= increment;
+                    else x += increment;
                 }
-
                 while (z != 0.0 && isOffsetBBEmpty(0.0, z)) {
-                    if (z < increment && z >= -increment) {
-                        z = 0.0;
-                    } else if (z > 0.0) {
-                        z -= increment;
-                    } else {
-                        z += increment;
-                    }
+                    if (z < increment && z >= -increment) z = 0.0;
+                    else if (z > 0.0) z -= increment;
+                    else z += increment;
                 }
-
                 while (x != 0.0 && z != 0.0 && isOffsetBBEmpty(x, z)) {
-                    if (x < increment && x >= -increment) {
-                        x = 0.0;
-                    } else if (x > 0.0) {
-                        x -= increment;
-                    } else {
-                        x += increment;
-                    }
-
-                    if (z < increment && z >= -increment) {
-                        z = 0.0;
-                    } else if (z > 0.0) {
-                        z -= increment;
-                    } else {
-                        z += increment;
-                    }
+                    if (x < increment && x >= -increment) x = 0.0;
+                    else if (x > 0.0) x -= increment;
+                    else x += increment;
+                    if (z < increment && z >= -increment) z = 0.0;
+                    else if (z > 0.0) z -= increment;
+                    else z += increment;
                 }
             }
-
             event.setX(x);
             event.setZ(z);
         }
@@ -159,8 +150,12 @@ public class ScaffoldModule extends Module {
             return;
         }
 
-        handleTowerLogic();
+        if (isBuildingWall) {
+            continueBuildingWall();
+            return;
+        }
 
+        handleTowerLogic();
         boolean foundTarget = findBlockPosition();
 
         if (!foundTarget) {
@@ -168,31 +163,94 @@ public class ScaffoldModule extends Module {
                 AimManager.INSTANCE.disableWithSmooth(22);
                 clearTarget();
             }
-            return;
-        }
-
-        if (!handleAutoSwitch()) {
-            if (hasValidTarget) {
-                AimManager.INSTANCE.disableWithSmooth(22);
-                clearTarget();
+        } else {
+            if (!handleAutoSwitch()) {
+                if (hasValidTarget) {
+                    AimManager.INSTANCE.disableWithSmooth(22);
+                    clearTarget();
+                }
+            } else {
+                hasValidTarget = true;
+                if (rotationMode.isSelected("Во время установки блока")) {
+                    shouldRotateForPlace = true;
+                }
+                handleRotationLogic();
+                placeBlockImmediate();
             }
+        }
+
+        if (buildBehind.getValue() && mc.player.input.movementForward < 0 && mc.player.isOnGround()) {
+            initiateWallBuilding();
+        }
+    }
+
+    private void initiateWallBuilding() {
+        BlockPos playerPos = mc.player.getBlockPos();
+        if (lastWallStartPos == null || playerPos.getSquaredDistance(lastWallStartPos) >= wallInterval.getValue() * wallInterval.getValue()) {
+            Direction travelDirection = mc.player.getHorizontalFacing();
+            BlockPos wallColumnBase = mc.player.getBlockPos().offset(travelDirection, (int) wallOffset.getValue()).down();
+
+            if (!mc.world.getBlockState(wallColumnBase).isReplaceable()) {
+                isBuildingWall = true;
+                wallBuildPos = wallColumnBase.up();
+                currentWallHeight = 1;
+                lastWallStartPos = playerPos;
+            }
+        }
+    }
+
+    private void continueBuildingWall() {
+        if (currentWallHeight > wallHeight.getValue()) {
+            resetWallState();
             return;
         }
 
-        hasValidTarget = true;
-
-        if (rotationMode.isSelected("Во время установки блока")) {
-            shouldRotateForPlace = true;
+        Hand hand = Hand.MAIN_HAND;
+        ItemStack offhand = mc.player.getOffHandStack();
+        if (offhand.getItem() instanceof BlockItem blockItem && !blockItem.getBlock().getDefaultState().isReplaceable()) {
+            hand = Hand.OFF_HAND;
+        }
+        if (!(mc.player.getStackInHand(hand).getItem() instanceof BlockItem)) {
+            resetWallState();
+            return;
         }
 
-        handleRotationLogic();
+        BlockPos targetAirPos = wallBuildPos.up(currentWallHeight - 1);
+        BlockPos placeOnPos = targetAirPos.down();
 
-        placeBlockImmediate();
+        if (!mc.world.getBlockState(targetAirPos).isReplaceable() || mc.world.getBlockState(placeOnPos).isReplaceable()) {
+            currentWallHeight++;
+            return;
+        }
+
+        Vec3d hitVec = Vec3d.ofCenter(placeOnPos).add(0.5, 0.5, 0.5);
+        if (mc.player.getEyePos().distanceTo(hitVec) > placeRange.getValue()) {
+            resetWallState();
+            return;
+        }
+
+        ViewDirection targetRotation = AimCalculator.calculateToPosition(mc.player.getEyePos(), hitVec);
+        AimSettings aimSettings = new AimSettings(new AdaptiveSmooth(150), false, motonCorrect.getValue(), true);
+        TargetTask rotationTask = aimSettings.buildTask(targetRotation, hitVec, null);
+        AimManager.INSTANCE.execute(rotationTask);
+
+        BlockHitResult hitResult = new BlockHitResult(hitVec, Direction.UP, placeOnPos, false);
+        Block blockToPlaceOn = mc.world.getBlockState(placeOnPos).getBlock();
+        boolean needsToSneak = needSneak(blockToPlaceOn) && !mc.player.isSneaking();
+
+        if (needsToSneak) mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
+        ActionResult result = mc.interactionManager.interactBlock(mc.player, hand, hitResult);
+        if (result.isAccepted()) {
+            mc.player.swingHand(hand);
+            currentWallHeight++;
+        } else {
+            resetWallState();
+        }
+        if (needsToSneak) mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
     }
 
     private void handleTowerLogic() {
         if (tower.isSelected("Нету") || !mc.options.jumpKey.isPressed()) return;
-
         if (!MovementUtility.isMoving() && mc.player.isOnGround()) {
             switch (tower.getSelected()) {
                 case "Обычная" -> mc.player.jump();
@@ -208,42 +266,27 @@ public class ScaffoldModule extends Module {
     private boolean findBlockPosition() {
         BlockPos playerPos = mc.player.getBlockPos();
         BlockPos targetPos = playerPos.down();
-
-        BlockState state = mc.world.getBlockState(targetPos);
-        if (!state.isReplaceable()) {
+        if (!mc.world.getBlockState(targetPos).isReplaceable()) {
             return false;
         }
-
         return findPlaceablePosition(targetPos);
     }
 
     private boolean findPlaceablePosition(BlockPos pos) {
         if (checkPosition(pos)) return true;
-
-        BlockPos[] positions = {
-                pos.add(-1, 0, 0), pos.add(1, 0, 0),
-                pos.add(0, 0, 1), pos.add(0, 0, -1),
-                pos.add(0, -1, 0)
-        };
-
+        BlockPos[] positions = {pos.add(-1, 0, 0), pos.add(1, 0, 0), pos.add(0, 0, 1), pos.add(0, 0, -1), pos.add(0, -1, 0)};
         for (BlockPos checkPos : positions) {
             if (checkPosition(checkPos)) return true;
         }
-
         return false;
     }
 
     private boolean checkPosition(BlockPos pos) {
-        Direction[] faces = {Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, Direction.UP};
-
-        for (Direction face : faces) {
+        for (Direction face : Direction.values()) {
             BlockPos neighborPos = pos.offset(face);
-            BlockState neighborState = mc.world.getBlockState(neighborPos);
-
-            if (!neighborState.isAir() && neighborState.isFullCube(mc.world, neighborPos)) {
+            if (!mc.world.getBlockState(neighborPos).isAir() && mc.world.getBlockState(neighborPos).isFullCube(mc.world, neighborPos)) {
                 Direction placeFace = face.getOpposite();
                 Vec3d hitVec = Vec3d.ofCenter(neighborPos).add(Vec3d.of(placeFace.getVector()).multiply(0.5));
-
                 if (mc.player.getPos().distanceTo(hitVec) <= placeRange.getValue()) {
                     targetPosition = neighborPos;
                     targetFace = placeFace;
@@ -252,118 +295,56 @@ public class ScaffoldModule extends Module {
                 }
             }
         }
-
         return false;
     }
 
     private boolean handleAutoSwitch() {
-        ItemStack offhand = mc.player.getOffHandStack();
-        if (offhand.getItem() instanceof BlockItem blockItem && !blockItem.getBlock().getDefaultState().isReplaceable()) {
-            return true;
-        }
-
-        ItemStack mainhand = mc.player.getMainHandStack();
-        if (mainhand.getItem() instanceof BlockItem blockItem && !blockItem.getBlock().getDefaultState().isReplaceable()) {
-            return true;
-        }
-
-        if (autoSwitch.isSelected("Нету")) {
-            return false;
-        }
-
+        if (mc.player.getOffHandStack().getItem() instanceof BlockItem) return true;
+        if (mc.player.getMainHandStack().getItem() instanceof BlockItem) return true;
+        if (autoSwitch.isSelected("Нету")) return false;
         for (int i = 0; i < 9; i++) {
-            ItemStack stack = mc.player.getInventory().getStack(i);
-            if (stack.getItem() instanceof BlockItem blockItem && !blockItem.getBlock().getDefaultState().isReplaceable()) {
-                if (autoSwitch.isSelected("Тихое")) {
-                    lastSlot = mc.player.getInventory().selectedSlot;
-                }
+            if (mc.player.getInventory().getStack(i).getItem() instanceof BlockItem) {
+                if (autoSwitch.isSelected("Тихое")) lastSlot = mc.player.getInventory().selectedSlot;
                 mc.player.getInventory().selectedSlot = i;
                 return true;
             }
         }
-
         return false;
     }
 
     private void handleRotationLogic() {
-        if (targetHitVec == null) {
-            return;
-        }
+        if (targetHitVec == null) return;
+        boolean shouldRotate = rotationMode.isSelected("Постоянный") || (rotationMode.isSelected("Во время установки блока") && shouldRotateForPlace) || rotationMode.isSelected("Реверсивный");
+        if (!shouldRotate) return;
 
-        boolean shouldRotate = false;
-
-        switch (rotationMode.getSelected()) {
-            case "Постоянный" -> shouldRotate = true;
-            case "Во время установки блока" -> shouldRotate = shouldRotateForPlace;
-            case "Реверсивный" -> shouldRotate = true;
-        }
-
-        if (!shouldRotate) {
-            return;
-        }
-
-        Vec3d eyePos = mc.player.getEyePos();
-        ViewDirection targetRotation = AimCalculator.calculateToPosition(eyePos, targetHitVec);
-
+        ViewDirection targetRotation = AimCalculator.calculateToPosition(mc.player.getEyePos(), targetHitVec);
         if (rotationMode.isSelected("Реверсивный") && reverseRotation) {
             targetRotation = new ViewDirection(targetRotation.yaw() + 180f, targetRotation.pitch());
         }
 
-        AimSettings aimSettings = new AimSettings(
-                new AdaptiveSmooth(180),
-                false,
-                motonCorrect.getValue(),
-                true
-        );
-
+        AimSettings aimSettings = new AimSettings(new AdaptiveSmooth(180), false, motonCorrect.getValue(), true);
         TargetTask rotationTask = aimSettings.buildTask(targetRotation, targetHitVec, null);
         AimManager.INSTANCE.execute(rotationTask);
     }
 
     private void placeBlockImmediate() {
-        if (targetPosition == null || targetFace == null || targetHitVec == null) {
-            return;
-        }
-
-        Hand hand = Hand.MAIN_HAND;
-        ItemStack offhand = mc.player.getOffHandStack();
-        if (offhand.getItem() instanceof BlockItem blockItem && !blockItem.getBlock().getDefaultState().isReplaceable()) {
-            hand = Hand.OFF_HAND;
-        }
-
-        ItemStack handStack = mc.player.getStackInHand(hand);
-        if (!(handStack.getItem() instanceof BlockItem)) {
-            return;
-        }
+        if (targetPosition == null || targetFace == null || targetHitVec == null) return;
+        Hand hand = (mc.player.getOffHandStack().getItem() instanceof BlockItem) ? Hand.OFF_HAND : Hand.MAIN_HAND;
+        if (!(mc.player.getStackInHand(hand).getItem() instanceof BlockItem)) return;
 
         BlockHitResult hitResult = new BlockHitResult(targetHitVec, targetFace, targetPosition, false);
+        boolean needSneak = needSneak(mc.world.getBlockState(targetPosition).getBlock()) && !mc.player.isSneaking();
 
-        Block targetBlock = mc.world.getBlockState(targetPosition).getBlock();
-        boolean needSneak = needSneak(targetBlock) && !mc.player.isSneaking();
-
-        if (needSneak) {
-            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
-        }
-
+        if (needSneak) mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
         ActionResult result = mc.interactionManager.interactBlock(mc.player, hand, hitResult);
-
         if (result.isAccepted()) {
             mc.player.swingHand(hand);
-
-            if (rotationMode.isSelected("Реверсивный")) {
-                reverseRotation = true;
-            }
+            if (rotationMode.isSelected("Реверсивный")) reverseRotation = true;
         }
-
-        if (needSneak) {
-            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
-        }
+        if (needSneak) mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
 
         shouldRotateForPlace = false;
-
-        if (!rotationMode.isSelected("Реверсивный")) {
-            clearTarget();
-        }
+        if (!rotationMode.isSelected("Реверсивный")) clearTarget();
     }
 
     private boolean needSneak(Block block) {
@@ -372,9 +353,7 @@ public class ScaffoldModule extends Module {
     }
 
     private boolean isOffsetBBEmpty(double x, double z) {
-        return !mc.world.getBlockCollisions(mc.player,
-                mc.player.getBoundingBox().expand(-0.1, 0, -0.1).offset(x, -2, z)
-        ).iterator().hasNext();
+        return !mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.1, 0, -0.1).offset(x, -2, z)).iterator().hasNext();
     }
 
     public BlockPos getTargetPosition() {
