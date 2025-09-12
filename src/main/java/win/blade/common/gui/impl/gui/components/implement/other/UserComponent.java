@@ -8,7 +8,6 @@ import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.MenuScreen;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.components.implement.window.AbstractWindow;
-import win.blade.common.gui.impl.gui.components.implement.window.implement.module.InfoWindow;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
@@ -91,13 +90,6 @@ public class UserComponent extends AbstractComponent {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (MathUtility.isHovered(mouseX, mouseY, x + 71, y - 19, 6F, 6F) && button == 0) {
-            AbstractWindow infoWindow = new InfoWindow()
-                    .position(menuScreen.x - 150, menuScreen.y)
-                    .size(140, 184);
-
-            windowManager.add(infoWindow);
-        }
 
         return super.mouseClicked(mouseX, mouseY, button);
     }

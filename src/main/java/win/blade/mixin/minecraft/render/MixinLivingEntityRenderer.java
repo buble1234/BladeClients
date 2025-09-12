@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import win.blade.common.utils.minecraft.MinecraftInstance;
@@ -24,11 +25,9 @@ import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.core.Manager;
 import win.blade.core.module.storage.misc.SeeInvisiblesModule;
+import win.blade.core.module.storage.player.FreeCam;
 
-import java.util.AbstractMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
+import java.util.*;
 
 @Mixin(LivingEntityRenderer.class)
 public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> implements MinecraftInstance {
@@ -108,6 +107,16 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extend
             livingEntityRenderState.bodyYaw = interpolatedBodyYaw;
             livingEntityRenderState.yawDegrees = MathHelper.wrapDegrees(renderYaw - interpolatedBodyYaw);
             livingEntityRenderState.pitch = renderPitch;
+        }
+    }
+
+    @Inject(method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
+    private void hookFreeCamFreezeYaw(LivingEntity livingEntity, LivingEntityRenderState livingEntityRenderState, float f, CallbackInfo ci) {
+        if (livingEntity == mc.player) {
+            Optional<FreeCam> freeCamOpt = Manager.getModuleManagement().find(FreeCam.class);
+            if (freeCamOpt.isPresent() && freeCamOpt.get().isEnabled()) {
+                livingEntityRenderState.bodyYaw = livingEntity.bodyYaw;
+            }
         }
     }
 

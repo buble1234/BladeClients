@@ -1,6 +1,7 @@
 package win.blade.mixin.minecraft.entity;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ArmorStandEntity;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
@@ -27,6 +29,7 @@ import win.blade.core.Manager;
 import win.blade.core.module.api.ModuleManager;
 import win.blade.core.module.storage.misc.SeeInvisiblesModule;
 import win.blade.core.module.storage.move.NoPushModule;
+import win.blade.core.module.storage.player.FreeCam;
 import win.blade.core.module.storage.render.Particles;
 import win.blade.core.module.storage.render.ShaderESP;
 
@@ -83,7 +86,16 @@ public abstract class MixinEntity implements MinecraftInstance, IEntity {
             }
         }
     }
+    @ModifyReturnValue(method = "getCameraPosVec", at = @At("RETURN"))
+    private Vec3d hookFreeCamModifiedRaycast(Vec3d original) {
+        Optional<FreeCam> freeCamOpt = Manager.getModuleManagement().find(FreeCam.class);
+        Entity self = (Entity) (Object) this;
 
+        if (freeCamOpt.isPresent() && freeCamOpt.get().isEnabled()) {
+            return freeCamOpt.get().modifyRaycast(original, self);
+        }
+        return original;
+    }
     @ModifyArgs(method = "pushAwayFrom", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;addVelocity(DDD)V"))
     public void onPushAwayFrom(Args args) {
         Optional<NoPushModule> noPushOpt = Manager.getModuleManagement().find(NoPushModule.class);

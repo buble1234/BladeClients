@@ -9,7 +9,6 @@ import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.components.implement.category.CategoryComponent;
 import win.blade.common.gui.impl.gui.components.implement.other.*;
-import win.blade.common.gui.impl.gui.components.implement.window.implement.module.InfoWindow;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.settings.PopUpWindow;
 import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.utils.minecraft.MinecraftInstance;
@@ -173,11 +172,6 @@ public class MenuScreen extends Screen implements MinecraftInstance {
     @Override
     public void close() {
         if (closing) {
-            windowManager.getWindows().forEach(abstractWindow -> {
-                if (!(abstractWindow instanceof InfoWindow)) {
-                    windowManager.delete(abstractWindow);
-                }
-            });
 
             List<CategoryComponent> components = categoryContainerComponent.categoryComponents;
 

@@ -6,6 +6,7 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,8 +20,10 @@ import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
+import win.blade.core.event.impl.player.MotionEvent;
 import win.blade.core.event.impl.player.PlayerActionEvents;
 import win.blade.core.module.storage.move.NoPushModule;
+import win.blade.core.module.storage.player.FreeCam;
 
 import java.util.Optional;
 
@@ -110,5 +113,60 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         return original;
     }
 
+    @ModifyExpressionValue(method = "tickMovement", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerAbilities;allowFlying:Z"))
+    private boolean hookFreeCamPreventCreativeFly(boolean original) {
+        Optional<FreeCam> freeCamOpt = Manager.getModuleManagement().find(FreeCam.class);
+        if (freeCamOpt.isPresent() && freeCamOpt.get().isEnabled()) {
+            return true;
+        }
+        return original;
+    }
+
+    @Shadow
+    public net.minecraft.client.input.Input input;
+
+    @Inject(
+            method = "sendMovementPackets",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void blade$preMotion(CallbackInfo ci) {
+        ClientPlayerEntity self = (ClientPlayerEntity)(Object)this;
+
+        double  x   = self.getX();
+        double  y   = self.getY();
+        double  z   = self.getZ();
+        float   yaw = self.getYaw();
+        float   pitch = self.getPitch();
+
+        boolean onGround  = self.isOnGround();
+        boolean sneaking  = this.input != null && this.input.playerInput.sneak();
+        boolean sprinting = self.isSprinting();
+
+        MotionEvent event = new MotionEvent(
+                x, y, z,
+                yaw, pitch,
+                onGround,
+                sneaking,
+                sprinting);
+
+        Manager.EVENT_BUS.post(event);
+
+        if (event.isCancelled()) {
+            ci.cancel();
+            return;
+        }
+
+        if (event.getX() != x || event.getY() != y || event.getZ() != z) {
+            self.setPosition(event.getX(), event.getY(), event.getZ());
+        }
+
+        if (event.getYaw() != yaw)   event.setYaw(event.getYaw());
+        if (event.getPitch() != pitch) self.setPitch(event.getPitch());
+
+        if (event.isSprinting() != sprinting) self.setSprinting(event.isSprinting());
+//        if (event.isSneaking()  != sneaking  && this.input != null)
+//            this.input.sneaking = event.isSneaking();
+    }
 
 }

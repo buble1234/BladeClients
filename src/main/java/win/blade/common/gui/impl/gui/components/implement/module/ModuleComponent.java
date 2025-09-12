@@ -281,7 +281,7 @@ public class ModuleComponent extends AbstractComponent {
                 .size(3.5f)
                 .color(ColorUtility.fromHex(module.keybind() == -1 ? "8C889A" : "663CFF"))
                 .build()
-                .render( x + width - 12f - stringWidth, y + 5.75f);
+                .render( x + width - 12.5f - stringWidth, y + 5.75f);
     }
 
     private void spawnWindow(int mouseX, int mouseY) {

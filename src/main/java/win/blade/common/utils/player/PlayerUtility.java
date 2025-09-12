@@ -2,6 +2,8 @@ package win.blade.common.utils.player;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.client.gui.hud.BossBarHud;
+import net.minecraft.client.gui.hud.ClientBossBar;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.effect.StatusEffects;
@@ -20,9 +22,12 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import win.blade.common.utils.minecraft.MinecraftInstance;
+import win.blade.mixin.accessor.BossBarHudAccessor;
 import win.blade.mixin.accessor.WorldRendererAccessor;
 
 import javax.swing.*;
+import java.util.Map;
+import java.util.UUID;
 
 public class PlayerUtility implements MinecraftInstance {
 
@@ -35,6 +40,21 @@ public class PlayerUtility implements MinecraftInstance {
         return false;
     }
 
+
+    public static boolean isPvp() {
+        if (mc.inGameHud == null) return false;
+
+        BossBarHud bossBarHud = mc.inGameHud.getBossBarHud();
+        Map<UUID, ClientBossBar> bossBars = ((BossBarHudAccessor) bossBarHud).getBossBars();
+
+        for (Map.Entry<UUID, ClientBossBar> bossInfo : bossBars.entrySet()) {
+            String name = bossInfo.getValue().getName().getString().toLowerCase();
+            if (name.contains("pvp") || name.contains("пвп")) {
+                return true;
+            }
+        }
+        return false;
+    }
     public static boolean isTeammate(PlayerEntity player) {
         if (mc.player == null) return false;
         int teamColorValue = mc.player.getTeamColorValue();

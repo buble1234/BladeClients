@@ -12,6 +12,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.manager.AimManager;
+import win.blade.core.Manager;
+import win.blade.core.module.storage.player.FreeCam;
+
+import java.util.Optional;
 
 @Mixin(Camera.class)
 public abstract class MixinCamera implements MinecraftInstance {
@@ -49,6 +53,14 @@ public abstract class MixinCamera implements MinecraftInstance {
                 focusedEntity.prevYaw = yaw;
                 focusedEntity.prevPitch = pitch;
             }
+        }
+    }
+
+    @Inject(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setPos(DDD)V", shift = At.Shift.AFTER))
+    private void hookFreeCamModifiedPosition(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci) {
+        Optional<FreeCam> freeCamOpt = Manager.getModuleManagement().find(FreeCam.class);
+        if (freeCamOpt.isPresent() && freeCamOpt.get().isEnabled()) {
+            freeCamOpt.get().applyCameraPosition((Camera) (Object) this, focusedEntity, tickDelta);
         }
     }
 }
