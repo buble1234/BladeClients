@@ -150,4 +150,149 @@ public class MathUtility implements MinecraftInstance {
         float difference = angleDifference(from, to);
         return from + difference * factor;
     }
+
+    public static double sin(double radians) {
+        return Math.sin(radians);
+    }
+
+    public static float sin(float radians) {
+        return (float) Math.sin(radians);
+    }
+
+    public static double cos(double radians) {
+        return Math.cos(radians);
+    }
+
+    public static float cos(float radians) {
+        return (float) Math.cos(radians);
+    }
+
+    public static double tan(double radians) {
+        return Math.tan(radians);
+    }
+
+    public static float tan(float radians) {
+        return (float) Math.tan(radians);
+    }
+
+    public static double asin(double value) {
+        return Math.asin(value);
+    }
+
+    public static double acos(double value) {
+        return Math.acos(value);
+    }
+
+    public static double atan(double value) {
+        return Math.atan(value);
+    }
+
+    public static double atan2(double y, double x) {
+        return Math.atan2(y, x);
+    }
+
+    public static double toRadians(double degrees) {
+        return Math.toRadians(degrees);
+    }
+
+    public static float toRadians(float degrees) {
+        return (float) Math.toRadians(degrees);
+    }
+
+    public static double toDegrees(double radians) {
+        return Math.toDegrees(radians);
+    }
+
+    public static float toDegrees(float radians) {
+        return (float) Math.toDegrees(radians);
+    }
+
+    public static double sqrt(double value) {
+        return Math.sqrt(value);
+    }
+
+    public static float sqrt(float value) {
+        return (float) Math.sqrt(value);
+    }
+
+    public static double pow(double base, double exponent) {
+        return Math.pow(base, exponent);
+    }
+
+    public static double abs(double value) {
+        return Math.abs(value);
+    }
+
+    public static float abs(float value) {
+        return Math.abs(value);
+    }
+
+    public static int abs(int value) {
+        return Math.abs(value);
+    }
+
+    public static double min(double a, double b) {
+        return Math.min(a, b);
+    }
+
+    public static float min(float a, float b) {
+        return Math.min(a, b);
+    }
+
+    public static int min(int a, int b) {
+        return Math.min(a, b);
+    }
+
+    public static double max(double a, double b) {
+        return Math.max(a, b);
+    }
+
+    public static float max(float a, float b) {
+        return Math.max(a, b);
+    }
+
+    public static int max(int a, int b) {
+        return Math.max(a, b);
+    }
+
+    public static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    public static float clamp(float value, float min, float max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    public static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    public static long round(double value) {
+        return Math.round(value);
+    }
+
+    public static int round(float value) {
+        return Math.round(value);
+    }
+
+    public static double floor(double value) {
+        return Math.floor(value);
+    }
+
+    public static double ceil(double value) {
+        return Math.ceil(value);
+    }
+
+    public static double distance2D(double x1, double y1, double x2, double y2) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        return sqrt(dx * dx + dy * dy);
+    }
+
+    public static double distance3D(double x1, double y1, double z1, double x2, double y2, double z2) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double dz = z2 - z1;
+        return sqrt(dx * dx + dy * dy + dz * dz);
+    }
 }
