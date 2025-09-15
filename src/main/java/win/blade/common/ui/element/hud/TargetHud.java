@@ -270,23 +270,20 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
             }
 
             if (projectOnTarget && target != null && target != mc.player) {
-                Vec3d targetPos = MathUtility.interpolate(target, mc.getRenderTickCounter().getTickDelta(false));
-                double posX = targetPos.x;
-                double posY = targetPos.y + target.getHeight() - 0.5;
-                double posZ = targetPos.z;
+                Vec3d iposition = MathUtility.interpolate(target, mc.getRenderTickCounter().getTickDelta(false));
+                double posX = iposition.x;
+                double posY = iposition.y + target.getHeight() / 2.0;
+                double posZ = iposition.z;
 
                 Vec3d screenPos = MathUtility.worldSpaceToScreenSpace(new Vec3d(posX, posY, posZ));
 
-                if (screenPos != null && screenPos.z > 0 && screenPos.x >= 0 && screenPos.x <= mc.getWindow().getScaledWidth() && screenPos.y >= 0 && screenPos.y <= mc.getWindow().getScaledHeight()) {
-
+                if (screenPos != null && screenPos.z > 0 && screenPos.z < 1) {
                     float newX = (float) (screenPos.x - getWidth() / 2);
-                    float newY = (float) screenPos.y;
-
-                    newX = Math.max(0, Math.min(newX, mc.getWindow().getScaledWidth() - getWidth()));
-                    newY = Math.max(0, Math.min(newY, mc.getWindow().getScaledHeight() - getHeight()));
-
+                    float newY = (float) (screenPos.y - getHeight() - 10);
                     setPositionInstantly(newX, newY);
-                } else {
+                }
+
+                if (!isTargetInWorld(target) || timer.hasReached(1000)) {
                     this.timer.setElapsed(2000);
                 }
             } else {
