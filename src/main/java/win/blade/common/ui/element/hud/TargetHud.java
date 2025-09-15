@@ -272,7 +272,7 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
             if (projectOnTarget && target != null && target != mc.player) {
                 Vec3d targetPos = MathUtility.interpolate(target, mc.getRenderTickCounter().getTickDelta(false));
                 double posX = targetPos.x;
-                double posY = targetPos.y + target.getHeight() + 0.5;
+                double posY = targetPos.y + target.getHeight() - 0.5;
                 double posZ = targetPos.z;
 
                 Vec3d screenPos = MathUtility.worldSpaceToScreenSpace(new Vec3d(posX, posY, posZ));
