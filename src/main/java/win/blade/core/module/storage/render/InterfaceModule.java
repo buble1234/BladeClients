@@ -12,12 +12,6 @@ import win.blade.core.module.api.ModuleInfo;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Автор: NoCap
- * Дата создания: 19.06.2025
- * Рефакторинг под новый API: 14.07.2024
- */
-
 @ModuleInfo(
         name = "Interface",
         category = Category.RENDER,
@@ -27,10 +21,12 @@ public class InterfaceModule extends Module {
 
     private final Map<String, Module> interfaceElements = new HashMap<>();
     private GroupSetting elementsSettings;
+    private BooleanSetting targetHudSettings;
 
     public InterfaceModule() {
         setupElements();
-        addSettings(elementsSettings);
+        setupTargetHudSettings();
+        addSettings(elementsSettings, targetHudSettings);
     }
 
     private void setupElements() {
@@ -49,8 +45,16 @@ public class InterfaceModule extends Module {
         elementsSettings.settings(settings);
     }
 
-    private BooleanSetting getBooleanSetting(GroupSetting group, String name) {
+    private void setupTargetHudSettings() {
+        targetHudSettings = new BooleanSetting("Проектировать на таргете", "").setValue(false);
+    }
+
+    public BooleanSetting getBooleanSetting(GroupSetting group, String name) {
         return (BooleanSetting) group.getSubSetting(name);
+    }
+
+    public BooleanSetting getTargetHudSettings() {
+        return targetHudSettings;
     }
 
     @Override
