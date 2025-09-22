@@ -9,6 +9,7 @@ import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.MenuScreen;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.components.implement.module.ModuleComponent;
+import win.blade.common.gui.impl.gui.components.implement.settings.select.SelectComponent;
 import win.blade.common.utils.color.ColorUtility;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
@@ -36,6 +37,41 @@ public class CategoryComponent extends AbstractComponent {
 
         for (Module module : Manager.getModuleManagement().all()) {
             moduleComponents.add(new ModuleComponent(module));
+        }
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public List<AbstractComponent> getComponents() {
+        List<AbstractComponent> allComponents = new ArrayList<>();
+
+        for (ModuleComponent moduleComponent : moduleComponents) {
+            allComponents.add(moduleComponent);
+            allComponents.addAll(moduleComponent.getSettingComponents());
+        }
+
+        return allComponents;
+    }
+
+    public List<SelectComponent> getAllSelectComponents() {
+        List<SelectComponent> selectComponents = new ArrayList<>();
+
+        for (ModuleComponent moduleComponent : moduleComponents) {
+            if (shouldRenderComponent(moduleComponent)) {
+                collectSelectComponents(moduleComponent.getSettingComponents(), selectComponents);
+            }
+        }
+
+        return selectComponents;
+    }
+
+    private void collectSelectComponents(List<AbstractComponent> components, List<SelectComponent> result) {
+        for (AbstractComponent component : components) {
+            if (component instanceof SelectComponent) {
+                result.add((SelectComponent) component);
+            }
         }
     }
 
@@ -94,20 +130,32 @@ public class CategoryComponent extends AbstractComponent {
         smoothedScroll = MathHelper.lerp(0.1F, smoothedScroll, scroll);
     }
 
-
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (MathUtility.isHovered(mouseX, mouseY, x, y, width, height) && button == 0) {
             menuScreen.category = category;
+            return true;
         }
 
         if (menuScreen.category == this.category || !menuScreen.getSearchComponent().getText().isEmpty()) {
             if (MathUtility.isHovered(mouseX, mouseY, menuScreen.x + 95, menuScreen.y + 29, menuScreen.width - 95, menuScreen.height - 30)) {
+
+                // Сначала проверяем открытые выпадающие списки
+                List<SelectComponent> selectComponents = getAllSelectComponents();
+                for (SelectComponent selectComponent : selectComponents) {
+                    if (selectComponent.isDropdownOpen()) {
+                        // Если есть открытый список, передаем ему клик в приоритетном порядке
+                        return selectComponent.mouseClicked(mouseX, mouseY, button);
+                    }
+                }
+
+                // Если нет открытых списков, обрабатываем обычные клики
                 for (ModuleComponent moduleComponent : moduleComponents) {
                     if (shouldRenderComponent(moduleComponent) && moduleComponent.isHover(mouseX, mouseY)) {
                         if (moduleComponent.mouseClicked(mouseX, mouseY, button)) {
                             return true;
                         }
+                        break; // Прерываем цикл после первого найденного компонента
                     }
                 }
             }
@@ -119,6 +167,16 @@ public class CategoryComponent extends AbstractComponent {
     public boolean isHover(double mouseX, double mouseY) {
         if (menuScreen.category == this.category || !menuScreen.getSearchComponent().getText().isEmpty()) {
             if (MathUtility.isHovered(mouseX, mouseY, menuScreen.x + 95, menuScreen.y + 29, menuScreen.width - 95, menuScreen.height - 30)) {
+
+                // Проверяем открытые выпадающие списки первыми
+                List<SelectComponent> selectComponents = getAllSelectComponents();
+                for (SelectComponent selectComponent : selectComponents) {
+                    if (selectComponent.isDropdownOpen() && selectComponent.isHover(mouseX, mouseY)) {
+                        return true;
+                    }
+                }
+
+                // Затем проверяем обычные компоненты
                 for (ModuleComponent moduleComponent : moduleComponents) {
                     if (shouldRenderComponent(moduleComponent) && moduleComponent.isHover(mouseX, mouseY)) {
                         return true;
@@ -145,6 +203,16 @@ public class CategoryComponent extends AbstractComponent {
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         if (menuScreen.category == this.category || !menuScreen.getSearchComponent().getText().isEmpty()) {
             if (MathUtility.isHovered(mouseX, mouseY, menuScreen.x + 95, menuScreen.y + 29, menuScreen.width - 95, menuScreen.height - 30)) {
+
+                // Проверяем, есть ли открытые выпадающие списки
+                List<SelectComponent> selectComponents = getAllSelectComponents();
+                for (SelectComponent selectComponent : selectComponents) {
+                    if (selectComponent.isDropdownOpen()) {
+                        // Если список открыт, блокируем скролл категории
+                        return true;
+                    }
+                }
+
                 scroll += amount * 20;
             }
 

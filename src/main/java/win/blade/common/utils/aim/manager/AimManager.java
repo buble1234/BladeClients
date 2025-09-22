@@ -124,6 +124,9 @@ public class AimManager {
         return player != null ? new ViewDirection(player.getYaw(), player.getPitch()) : ViewDirection.ORIGIN;
     }
 
+
+
+
     public ViewDirection getCurrentDirection() {
         return isActive ? currentDirection : null;
     }
@@ -151,5 +154,12 @@ public class AimManager {
 
     public boolean shouldInterpolate() {
         return isActive && currentDirection != null && previousDirection != null;
+    }
+
+    public static ViewDirection cameraAngle() {
+        return new ViewDirection(mc.player.getYaw(), mc.player.getPitch());
+    }
+    public static ViewDirection pitch(float pitch) {
+        return new ViewDirection(mc.player.getYaw(), pitch);
     }
 }

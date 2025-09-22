@@ -127,8 +127,9 @@ public class Kagune extends Module {
 
             particle.getAnimation().update();
 
+            // Измененная строка для нового цвета
             int color = ColorUtility.applyAlpha(
-                    Color.HSBtoRGB((System.currentTimeMillis() + particle.getIndex() * 30) % 2000L / 2000.0f, 0.7f, 1.0f),
+                    new Color(102, 60, 255).getRGB(),
                     (float) particle.getAnimation().get() / 128f
             );
 

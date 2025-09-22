@@ -67,9 +67,15 @@ public class GroupComponent extends AbstractSettingComponent {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (setting.isToggleable()) {
-            checkComponent.mouseClicked(mouseX, mouseY, button);
+            if (checkComponent.mouseClicked(mouseX, mouseY, button)) {
+                return true;
+            }
         }
-        settingComponent.mouseClicked(mouseX, mouseY, button);
+        
+        if (settingComponent.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
+        
         return super.mouseClicked(mouseX, mouseY, button);
     }
 

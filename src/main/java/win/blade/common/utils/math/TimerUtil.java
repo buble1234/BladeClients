@@ -43,6 +43,17 @@ public class TimerUtil {
         return System.currentTimeMillis() - last;
     }
 
+    public boolean every(long ms) {
+        if (hasReached(ms)) {
+            reset();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean finished(long ms) {
+        return hasReached(ms);
+    }
 
     public long getLast() {
         return last;

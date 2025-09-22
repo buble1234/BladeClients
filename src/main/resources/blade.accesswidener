@@ -30,4 +30,11 @@ accessible method net/minecraft/client/input/KeyboardInput getMovementMultiplier
 accessible method net/minecraft/client/render/GameRenderer renderHand (Lnet/minecraft/client/render/Camera;FLorg/joml/Matrix4f;)V
 accessible method net/minecraft/client/render/GameRenderer tiltViewWhenHurt (Lnet/minecraft/client/util/math/MatrixStack;F)V
 accessible method net/minecraft/client/render/GameRenderer bobView (Lnet/minecraft/client/util/math/MatrixStack;F)V
-
+accessible field net/minecraft/network/packet/s2c/play/BossBarS2CPacket action Lnet/minecraft/network/packet/s2c/play/BossBarS2CPacket$Action;
+accessible class net/minecraft/network/packet/s2c/play/BossBarS2CPacket$Type
+accessible method net/minecraft/network/packet/s2c/play/BossBarS2CPacket$Action getType ()Lnet/minecraft/network/packet/s2c/play/BossBarS2CPacket$Type;
+accessible field net/minecraft/network/packet/s2c/play/BossBarS2CPacket$AddAction name Lnet/minecraft/text/Text;
+accessible field net/minecraft/network/packet/s2c/play/BossBarS2CPacket uuid Ljava/util/UUID;
+accessible class net/minecraft/network/packet/s2c/play/BossBarS2CPacket$AddAction
+accessible field net/minecraft/client/gui/hud/BossBarHud bossBars Ljava/util/Map;
+accessible method net/minecraft/client/network/ClientPlayerInteractionManager sendSequencedPacket (Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/client/network/SequencedPacketCreator;)V

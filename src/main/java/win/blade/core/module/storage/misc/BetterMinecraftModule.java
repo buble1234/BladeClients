@@ -8,7 +8,7 @@ import win.blade.core.module.api.ModuleInfo;
 
 @ModuleInfo(
         name = "BetterMinecraft",
-        category = Category.RENDER,
+        category = Category.MISC,
         desc = "Позволяет видеть невидимых существ и игроков"
 )
 public class BetterMinecraftModule extends Module {

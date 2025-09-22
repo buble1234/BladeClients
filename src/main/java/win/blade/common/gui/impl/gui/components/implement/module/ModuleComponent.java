@@ -47,6 +47,10 @@ public class ModuleComponent extends AbstractComponent {
         );
     }
 
+    public List<AbstractComponent> getSettingComponents() {
+        return new ArrayList<>(components);
+    }
+
     public List<AbstractSettingComponent> getComponents() {
         return components;
     }
@@ -180,9 +184,13 @@ public class ModuleComponent extends AbstractComponent {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
 
-        checkComponent.mouseClicked(mouseX, mouseY, button);
-        settingComponent.mouseClicked(mouseX, mouseY, button);
-
+        if (checkComponent.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
+        
+        if (settingComponent.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
 
         for (int i = components.size() - 1; i >= 0; i--) {
             AbstractSettingComponent component = components.get(i);
@@ -289,14 +297,14 @@ public class ModuleComponent extends AbstractComponent {
 
         if (existingWindow != null) {
             windowManager.delete(existingWindow);
-        } else {
-            AbstractWindow moduleBindWindow = new BindWindow(module)
-                    .position(mouseX + 5, mouseY + 5)
-                    .size(105, 73)
-                    .draggable(true);
-
-            windowManager.add(moduleBindWindow);
         }
+        
+        AbstractWindow moduleBindWindow = new BindWindow(module)
+                .position(mouseX + 5, mouseY + 5)
+                .size(105, 73)
+                .draggable(true);
+
+        windowManager.add(moduleBindWindow);
     }
 
     @Override

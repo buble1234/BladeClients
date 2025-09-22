@@ -60,8 +60,14 @@ public class BooleanComponent extends AbstractSettingComponent {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        checkComponent.mouseClicked(mouseX, mouseY, button);
-        settingComponent.mouseClicked(mouseX, mouseY, button);
+        if (checkComponent.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
+        
+        if (settingComponent.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
+        
         return super.mouseClicked(mouseX, mouseY, button);
     }
 

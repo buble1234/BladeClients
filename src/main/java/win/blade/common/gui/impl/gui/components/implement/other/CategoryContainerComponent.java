@@ -83,7 +83,11 @@ public class CategoryContainerComponent extends AbstractComponent implements Min
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        categoryComponents.forEach(categoryComponent -> categoryComponent.mouseClicked(mouseX, mouseY, button));
+        for (CategoryComponent categoryComponent : categoryComponents) {
+            if (categoryComponent.mouseClicked(mouseX, mouseY, button)) {
+                return true;
+            }
+        }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 

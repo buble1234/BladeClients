@@ -36,6 +36,7 @@ public class SettingComponent extends AbstractComponent {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (MathUtility.isHovered(mouseX, mouseY, x + 2, y + 0.5f, 6, 6) && button == 0) {
             runnable.run();
+            return true; // Возвращаем true после выполнения действия
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
