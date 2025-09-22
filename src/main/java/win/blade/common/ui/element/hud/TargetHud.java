@@ -4,12 +4,12 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import win.blade.common.ui.element.InteractiveUIElement;
+import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.math.TimerUtil;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
@@ -27,6 +27,7 @@ import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.module.api.*;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.storage.combat.AuraModule;
+import win.blade.core.module.storage.render.InterfaceModule;
 
 import java.awt.*;
 import java.util.stream.StreamSupport;
@@ -85,8 +86,12 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
         private LivingEntity target = null;
         private boolean lastOut = true;
 
+        private float savedX, savedY;
+
         public wUIElement(String id, float x, float y, float width, float height) {
             super(id, x, y, width, height);
+            this.savedX = x;
+            this.savedY = y;
         }
 
         public void setTarget(LivingEntity target) {
@@ -95,6 +100,10 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
 
         public void resetTimer() {
             this.timer.reset();
+        }
+
+        private InterfaceModule getInterfaceModule() {
+            return Manager.getModuleManagement().get(InterfaceModule.class);
         }
 
         @Override
@@ -129,6 +138,8 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
             scaleAnimation.update();
 
             if (scaleAnimation.get() <= 0.01f || target == null) return;
+
+            updatePosition();
 
             Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
 
@@ -247,6 +258,41 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
             context.getMatrices().pop();
         }
 
+        private void updatePosition() {
+            InterfaceModule interfaceModule = getInterfaceModule();
+            if (interfaceModule == null) return;
+
+            boolean projectOnTarget = interfaceModule.getTargetHudSettings().getValue();
+
+            if (isBeingDragged()) {
+                savedX = getX();
+                savedY = getY();
+            }
+
+            if (projectOnTarget && target != null && target != mc.player) {
+                Vec3d iposition = MathUtility.interpolate(target, mc.getRenderTickCounter().getTickDelta(false));
+                double posX = iposition.x;
+                double posY = iposition.y + target.getHeight() / 2.0;
+                double posZ = iposition.z;
+
+                Vec3d screenPos = MathUtility.worldSpaceToScreenSpace(new Vec3d(posX, posY, posZ));
+
+                if (screenPos != null && screenPos.z > 0 && screenPos.z < 1) {
+                    float newX = (float) (screenPos.x - getWidth() / 2);
+                    float newY = (float) (screenPos.y - getHeight() - 10);
+                    setPositionInstantly(newX, newY);
+                }
+
+                if (!isTargetInWorld(target) || timer.hasReached(1000)) {
+                    this.timer.setElapsed(2000);
+                }
+            } else {
+                if (!isBeingDragged()) {
+                    setPositionInstantly(savedX, savedY);
+                }
+            }
+        }
+
         private boolean isTargetInWorld(LivingEntity target) {
             if (mc.world == null || target == null) return false;
 
@@ -259,7 +305,6 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
                 return target.isAlive() && !target.isRemoved();
             }
         }
-
 
         private LivingEntity getKillAuraTarget() {
             try {
@@ -282,7 +327,18 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
 
         @Override
         public void onMouse(InputEvents.Mouse event) {
-            super.onMouse(event);
+            InterfaceModule interfaceModule = getInterfaceModule();
+
+            boolean allowDragging = interfaceModule == null || !interfaceModule.getTargetHudSettings().getValue() || target == null || target == mc.player;
+
+            if (allowDragging) {
+                super.onMouse(event);
+
+                if (event.getButton() == 0 && event.getAction() == 0 && isBeingDragged()) {
+                    savedX = getX();
+                    savedY = getY();
+                }
+            }
         }
     }
 }
