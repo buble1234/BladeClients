@@ -1,10 +1,10 @@
 package win.blade.common.ui.element.hud;
 
 import dev.redstones.mediaplayerinfo.IMediaSession;
+import dev.redstones.mediaplayerinfo.MediaInfo;
 import dev.redstones.mediaplayerinfo.MediaPlayerInfo;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.util.Identifier;
@@ -29,32 +29,34 @@ import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 import win.blade.core.module.api.NonRegistrable;
+
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Comparator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-@ModuleInfo(
-        name = "Music",
-        category = Category.RENDER,
-        desc = "Отображает информацию о проигрываемой музыке"
-)
+@ModuleInfo(name = "Music", category = Category.RENDER, desc = "Отображает информацию о проигрываемой музыке")
 public class MusicHud extends Module implements MinecraftInstance, NonRegistrable {
 
-    private wUIElement wUIElement;
-
-    public MusicHud() {
-        this.wUIElement = new MusicHud.wUIElement("MusicHud", 10, 35, 100, 45);
-        this.wUIElement.setAnimation(0.4, Easing.EASE_OUT_CUBIC);
+    public static MusicHud getInstance() {
+        return new MusicHud();
     }
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final wUIElement wUIElement = new wUIElement("MusicHud", 10, 35, 122, 47);
+    private MediaInfo mediaInfo = new MediaInfo("Example Song", "Example Artist", new byte[0], 45, 180, false);
+    private final TimerUtil lastMedia = new TimerUtil();
+    public IMediaSession session;
+    private Identifier playerIcon = Identifier.of("blade", "textures/svg/music/untitled.svg");
+    private Identifier artworkTexture;
+    private byte[] lastArtworkBytes;
 
     @EventHandler
     public void onRenderScreen(RenderEvents.Screen.POST e) {
-        if (e == null || e.getDrawContext() == null || mc.player == null) {
-            return;
-        }
-
-        wUIElement.update(true);
+        if (e.getDrawContext() == null || mc.player == null) return;
+        wUIElement.update(visible());
         wUIElement.render(e.getDrawContext());
     }
 
@@ -65,67 +67,73 @@ public class MusicHud extends Module implements MinecraftInstance, NonRegistrabl
         }
     }
 
-    private class wUIElement extends InteractiveUIElement {
-        private final MediaPlayerInfo mediaPlayerInfo = MediaPlayerInfo.Instance;
-        private final TimerUtil updateTimer = new TimerUtil();
-        private final Animation scaleAnimation = new Animation();
-        private final Animation widthAnimation = new Animation(100);
+    private boolean visible() {
+        return !lastMedia.hasReached(2000) || mc.currentScreen instanceof ChatScreen;
+    }
 
-        private String trackName = "Ожидаю...";
-        private String artist = "";
-        private long posit = 0;
-        private long durat = 0;
-        private boolean sessionActive = true;
-        private Identifier playerIcon;
-        private byte[] artworkBytes;
-        private byte[] lastArtworkBytes;
-        private Identifier artworkTexture;
-        private IMediaSession session;
+    private void tick() {
+        if (mc.player.age % 20 == 0) executorService.submit(() -> {
+            IMediaSession currentSession = session = MediaPlayerInfo.Instance.getMediaSessions().stream()
+                    .max(Comparator.comparing(s -> s.getMedia().getPlaying())).orElse(null);
+            if (currentSession != null) {
+                MediaInfo info = currentSession.getMedia();
+                if (!info.getTitle().isEmpty() || !info.getArtist().isEmpty()) {
+                    if (mediaInfo.getTitle().equals("Example Song") || !Arrays.equals(mediaInfo.getArtworkPng(), info.getArtworkPng())) {
+                        updateArtwork(info.getArtworkPng());
+                        updatePlayerIcon(currentSession.getOwner().toLowerCase());
+                    }
+                    mediaInfo = info;
+                    lastMedia.reset();
+                }
+            }
+        });
+    }
+
+    private void updateArtwork(byte[] artworkBytes) {
+        if (artworkBytes != null && artworkBytes.length > 0 && !Arrays.equals(artworkBytes, lastArtworkBytes)) {
+            try {
+                if (artworkTexture != null) mc.getTextureManager().destroyTexture(artworkTexture);
+                NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(artworkBytes));
+                artworkTexture = Identifier.of("blade", "music_artwork/" + System.currentTimeMillis());
+                mc.getTextureManager().registerTexture(artworkTexture, new NativeImageBackedTexture(nativeImage));
+                lastArtworkBytes = artworkBytes.clone();
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private void updatePlayerIcon(String owner) {
+        playerIcon = owner.contains("spotify") ? Identifier.of("blade", "textures/svg/music/spotify.svg") :
+                owner.contains("yandex") ? Identifier.of("blade", "textures/svg/music/yandex.svg") :
+                        owner.contains("soundcloud") ? Identifier.of("blade", "textures/svg/music/sc.svg") :
+                                Identifier.of("blade", "textures/svg/music/untitled.svg");
+    }
+
+    private class wUIElement extends InteractiveUIElement {
+        private final Animation scaleAnimation = new Animation();
 
         public wUIElement(String id, float x, float y, float width, float height) {
             super(id, x, y, width, height);
-            this.playerIcon = Identifier.of("blade", "textures/svg/music/untitled.svg");
+            setAnimation(0.4, Easing.EASE_OUT_CUBIC);
+        }
+
+        public void update(boolean shouldShow) {
+            super.update(shouldShow);
+            tick();
+            if (shouldShow && scaleAnimation.getToValue() != 1.0) {
+                scaleAnimation.run(1.0, 0.5, Easing.EASE_OUT_BACK);
+            } else if (!shouldShow && scaleAnimation.getToValue() != 0.0) {
+                scaleAnimation.run(0.0, 0.5, Easing.EASE_IN_BACK);
+            }
+            scaleAnimation.update();
+            setWidth(122);
         }
 
         @Override
         public void renderContent(DrawContext context) {
-            if (updateTimer.hasReached(1000)) {
-                updateTimer.reset();
-                updateTrackTitle();
-            }
-
-            boolean isInChat = mc.currentScreen instanceof ChatScreen;
-            boolean hasMusic = !sessionActive || isInChat;
-            boolean shouldShow = hasMusic || isInChat;
-
-            if (shouldShow && scaleAnimation.getToValue() != 1.0) {
-                scaleAnimation.run(1.0, 0.5, Easing.EASE_OUT_BACK);
-                if (hasMusic) {
-                    widthAnimation.run(122, 0.5, Easing.EASE_OUT_BACK);
-                } else {
-                    widthAnimation.run(100, 0.5, Easing.EASE_OUT_BACK);
-                }
-            } else if (!shouldShow && scaleAnimation.getToValue() != 0.0) {
-                scaleAnimation.run(0.0, 0.5, Easing.EASE_IN_BACK);
-                widthAnimation.run(100, 0.5, Easing.EASE_IN_BACK);
-            }
-
-            if (sessionActive && !hasMusic && widthAnimation.getToValue() != 100) {
-                widthAnimation.run(100, 0.5, Easing.EASE_OUT_BACK);
-            } else if (!sessionActive && widthAnimation.getToValue() != 122) {
-                widthAnimation.run(122, 0.5, Easing.EASE_OUT_BACK);
-            }
-
-            scaleAnimation.update();
-            widthAnimation.update();
-
             if (scaleAnimation.get() <= 0.01f) return;
 
             Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
-
             float scale = scaleAnimation.get();
-            float animatedWidth = widthAnimation.get();
-
             float centerX = getX() + getWidth() / 2f;
             float centerY = getY() + getHeight() / 2f;
 
@@ -133,20 +141,19 @@ public class MusicHud extends Module implements MinecraftInstance, NonRegistrabl
             context.getMatrices().translate(centerX, centerY, 0);
             context.getMatrices().scale(scale, scale, 1f);
             context.getMatrices().translate(-centerX, -centerY, 0);
-
             matrix = context.getMatrices().peek().getPositionMatrix();
 
-            setWidth(animatedWidth);
-            setHeight(47);
+            drawBackground(matrix);
+            drawContent(matrix);
+            drawBorder(matrix);
 
+            context.getMatrices().pop();
+        }
+
+        private void drawBackground(Matrix4f matrix) {
             BuiltRectangle background = Builder.rectangle()
                     .size(new SizeState(getWidth(), getHeight()))
-                    .color(new QuadColorState(
-                            new Color(23, 20, 35),
-                            new Color(20, 18, 27),
-                            new Color(20, 18, 27),
-                            new Color(19, 17, 29)
-                    ))
+                    .color(new QuadColorState(new Color(23, 20, 35), new Color(20, 18, 27), new Color(20, 18, 27), new Color(19, 17, 29)))
                     .radius(new QuadRadiusState(6.5f))
                     .smoothness(1.0f)
                     .build();
@@ -154,300 +161,139 @@ public class MusicHud extends Module implements MinecraftInstance, NonRegistrabl
             background.render(matrix, getX(), getY());
             Stencil.read(1);
             background.render(matrix, getX(), getY());
-
-            String displayText;
-            String artistText;
-            long displayPosition;
-            long displayDuration;
-            boolean showArtwork;
-            boolean showControls;
-
-            if (isInChat && sessionActive) {
-                displayText = "Example Song";
-                artistText = "Example Artist";
-                displayPosition = 45;
-                displayDuration = 180;
-                showArtwork = true;
-                showControls = true;
-            } else if (!sessionActive) {
-                displayText = trackName;
-                artistText = artist;
-                displayPosition = posit;
-                displayDuration = durat;
-                showArtwork = true;
-                showControls = true;
-            } else {
-                displayText = "Ожидаю...";
-                artistText = "";
-                displayPosition = 0;
-                displayDuration = 0;
-                showArtwork = false;
-                showControls = false;
-            }
-
-            if (showArtwork) {
-                renderArtwork(context, getX(), getY(), isInChat && sessionActive);
-            }
-
-            float textStartX = showArtwork ? getX() + 32 : getX() + 8;
-
-            Builder.text().font(FontType.sf_medium.get()).text(displayText).color(-1).size(6).build()
-                    .render(matrix, textStartX, getY() + 8);
-
-            if (artistText != null && !artistText.isEmpty()) {
-                Builder.text().font(FontType.sf_regular.get()).text(artistText).color(ColorUtility.fromHex("EEEEEE")).size(5).build()
-                        .render(matrix, textStartX, getY() + 16);
-            }
-
-            float progressBarY = getY() + 37;
-
-            BuiltRectangle progressBarBg = Builder.rectangle()
-                    .size(new SizeState(getWidth() - 13, 3))
-                    .color(new QuadColorState(ColorUtility.fromHex("1C1A25")))
-                    .radius(new QuadRadiusState(0.5f))
-                    .build();
-            progressBarBg.render(matrix, getX() + 6.5f, progressBarY);
-
-            float progress = getProgressValue(displayPosition, displayDuration);
-            if (progress > 0) {
-                BuiltRectangle progressBar = Builder.rectangle()
-                        .size(new SizeState((getWidth() - 13) * progress, 3))
-                        .color(new QuadColorState(ColorUtility.fromHex("663CFF")))
-                        .radius(new QuadRadiusState(0.5f))
-                        .build();
-                progressBar.render(matrix, getX() + 6.5f, progressBarY);
-            }
-
-            Builder.text().font(FontType.sf_regular.get()).text(formatDuration(displayPosition)).color(ColorUtility.fromHex("EEEEEE")).size(5).build()
-                    .render(matrix, getX() + 7, progressBarY - 8);
-
-            float allTimeWidth = FontType.sf_regular.get().getWidth(formatDuration(displayDuration), 5);
-            Builder.text().font(FontType.sf_regular.get()).text(formatDuration(displayDuration)).color(ColorUtility.fromHex("EEEEEE")).size(5).build()
-                    .render(matrix, getX() + getWidth() - allTimeWidth - 7.5f, progressBarY - 8);
-
-            Identifier currentPlayerIcon = (isInChat && sessionActive) ?
-                    Identifier.of("blade", "textures/svg/music/spotify.svg") : playerIcon;
-
-            if (showArtwork && currentPlayerIcon != null) {
-                Builder.texture()
-                        .size(new SizeState(10, 10))
-                        .color(new QuadColorState(Color.WHITE))
-                        .svgTexture(0f, 0f, 1f, 1f, currentPlayerIcon)
-                        .radius(new QuadRadiusState(0f))
-                        .build()
-                        .render(matrix, getX() + getWidth() - 18, getY() + 6);
-            }
-
-            if (showControls) {
-                float buttonSize = 6;
-                float buttonGap = 5.5f;
-                float totalControlsWidth = buttonSize * 3 + buttonGap * 2;
-                float controlsStartX = getX() + (getWidth() - totalControlsWidth) / 2f;
-                float controlsY = getY() + getHeight() - buttonSize - 13.5f;
-
-                Builder.texture()
-                        .size(new SizeState(buttonSize, buttonSize))
-                        .svgTexture(0,0,1,1, Identifier.of("blade", "textures/svg/music/back.svg"))
-                        .color(new QuadColorState(Color.WHITE))
-                        .build().render(matrix, controlsStartX, controlsY);
-
-                Identifier playPauseIcon = (session != null && session.getMedia().getPlaying()) || (isInChat && sessionActive) ?
-                        Identifier.of("blade", "textures/svg/music/pause.svg") :
-                        Identifier.of("blade", "textures/svg/music/play.svg");
-                Builder.texture()
-                        .size(new SizeState(buttonSize, buttonSize))
-                        .svgTexture(0,0,1,1, playPauseIcon)
-                        .color(new QuadColorState(Color.WHITE))
-                        .build().render(matrix, controlsStartX + buttonSize + buttonGap, controlsY);
-
-                Builder.texture()
-                        .size(new SizeState(buttonSize, buttonSize))
-                        .svgTexture(0,0,1,1, Identifier.of("blade", "textures/svg/music/next.svg"))
-                        .color(new QuadColorState(Color.WHITE))
-                        .build().render(matrix, controlsStartX + buttonSize * 2 + buttonGap * 2, controlsY);
-            }
-
-            Stencil.pop();
-            Builder.border()
-                    .size(new SizeState(getWidth(), getHeight()))
-                    .color(new QuadColorState(new Color(170, 160, 200, 25)))
-                    .radius(new QuadRadiusState(6.5f))
-                    .thickness(1)
-                    .build()
-                    .render(matrix, getX(), getY());
-
-            context.getMatrices().pop();
         }
 
-        private void renderArtwork(DrawContext context, float x, float y, boolean isExample) {
-            float artworkSize = 20.5f;
-            float artworkX = x + 6.5f;
-            float artworkY = y + 5.5f;
+        private void drawContent(Matrix4f matrix) {
+            boolean hasSession = session != null;
+            int sizeArtwork = 21;
+            int sizeButton = 6;
+
+            String title = hasSession ? mediaInfo.getTitle() : "Example Song";
+            String artist = hasSession ? mediaInfo.getArtist() : "Example Artist";
+            long position = hasSession ? mediaInfo.getPosition() : 45;
+            long duration = hasSession ? mediaInfo.getDuration() : 180;
+
+            drawArtwork(matrix, !hasSession, sizeArtwork);
+
+            float textX = getX() + 32;
+            Builder.text().font(FontType.sf_medium.get()).text(title).color(-1).size(6).build().render(matrix, textX, getY() + 8);
+            if (!artist.isEmpty()) {
+                Builder.text().font(FontType.sf_regular.get()).text(artist).color(ColorUtility.fromHex("EEEEEE")).size(5).build().render(matrix, textX, getY() + 16);
+            }
+
+            drawProgressBar(matrix, position, duration);
+            drawTimeLabels(matrix, position, duration);
+            drawPlayerIcon(matrix);
+            drawControls(matrix, sizeButton);
+        }
+
+        private void drawArtwork(Matrix4f matrix, boolean isExample, int sizeArtwork) {
+            float artworkX = getX() + 6.5f;
+            float artworkY = getY() + 5.5f;
 
             if (isExample) {
-                BuiltRectangle exampleArtwork = Builder.rectangle()
-                        .size(new SizeState(artworkSize, artworkSize))
-                        .color(new QuadColorState(ColorUtility.fromHex("663CFF")))
-                        .radius(new QuadRadiusState(3f))
-                        .build();
-                exampleArtwork.render(context.getMatrices().peek().getPositionMatrix(), artworkX, artworkY);
-
-                Builder.text().font(FontType.sf_medium.get()).text("♪").color(-1).size(8).build()
-                        .render(context.getMatrices().peek().getPositionMatrix(), artworkX + 7.5f, artworkY + 6);
-                return;
-            }
-
-            if (artworkBytes != null && artworkBytes.length > 0) {
-                if (lastArtworkBytes == null || !Arrays.equals(artworkBytes, lastArtworkBytes)) {
-                    try {
-                        if (artworkTexture != null) {
-                            mc.getTextureManager().destroyTexture(artworkTexture);
-                        }
-
-                        NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(artworkBytes));
-                        NativeImageBackedTexture dynamicTexture = new NativeImageBackedTexture(nativeImage);
-
-                        artworkTexture = Identifier.of("blade", "music_artwork/" + System.currentTimeMillis());
-                        mc.getTextureManager().registerTexture(artworkTexture, dynamicTexture);
-
-                        lastArtworkBytes = artworkBytes.clone();
-                    } catch (Exception e) {
-                        artworkTexture = null;
-                        e.printStackTrace();
-                    }
-                }
-
-                if (artworkTexture != null) {
-                    AbstractTexture texture = mc.getTextureManager().getTexture(artworkTexture);
-                    if (texture != null) {
-                        Builder.texture()
-                                .size(new SizeState(artworkSize, artworkSize))
-                                .texture(0.0f, 0.0f, 1.0f, 1.0f, texture)
-                                .radius(new QuadRadiusState(3f))
-                                .build()
-                                .render(context.getMatrices().peek().getPositionMatrix(), artworkX, artworkY);
-                    }
-                }
+                Builder.rectangle().size(new SizeState(sizeArtwork, sizeArtwork)).color(new QuadColorState(ColorUtility.fromHex("663CFF")))
+                        .radius(new QuadRadiusState(3f)).build().render(matrix, artworkX, artworkY);
+            } else if (artworkTexture != null && mc.getTextureManager().getTexture(artworkTexture) != null) {
+                Builder.texture().size(new SizeState(sizeArtwork, sizeArtwork))
+                        .texture(0.0f, 0.0f, 1.0f, 1.0f, mc.getTextureManager().getTexture(artworkTexture))
+                        .radius(new QuadRadiusState(3f)).build().render(matrix, artworkX, artworkY);
             } else {
-                if (artworkTexture != null) {
-                    mc.getTextureManager().destroyTexture(artworkTexture);
-                    artworkTexture = null;
-                    lastArtworkBytes = null;
-                }
+                Builder.rectangle().size(new SizeState(sizeArtwork, sizeArtwork)).color(new QuadColorState(ColorUtility.fromHex("2A2A2A")))
+                        .radius(new QuadRadiusState(3f)).build().render(matrix, artworkX, artworkY);
             }
         }
 
-        private float getProgressValue(long position, long duration) {
+        private void drawProgressBar(Matrix4f matrix, long position, long duration) {
+            float progressY = getY() + 37;
+            float progressWidth = getWidth() - 13;
+
+            Builder.rectangle().size(new SizeState(progressWidth, 3)).color(new QuadColorState(ColorUtility.fromHex("1C1A25")))
+                    .radius(new QuadRadiusState(0.5f)).build().render(matrix, getX() + 6.5f, progressY);
+
             if (duration > 0) {
-                float progress = (float) position / (float) duration;
-                return Math.max(0.0f, Math.min(1.0f, progress));
+                float progress = Math.max(0.0f, Math.min(1.0f, (float) position / duration));
+                Builder.rectangle().size(new SizeState(progressWidth * progress, 3)).color(new QuadColorState(ColorUtility.fromHex("663CFF")))
+                        .radius(new QuadRadiusState(0.5f)).build().render(matrix, getX() + 6.5f, progressY);
             }
-            return 0.0F;
         }
 
-        private void updateTrackTitle() {
-            new Thread(() -> {
-                try {
-                    List<IMediaSession> sessions = mediaPlayerInfo.getMediaSessions();
-                    sessionActive = sessions == null || sessions.isEmpty();
+        private void drawTimeLabels(Matrix4f matrix, long position, long duration) {
+            String positionText = formatTime(position);
+            String durationText = formatTime(duration);
+            float timeY = getY() + 29;
 
-                    if (!sessionActive) {
-                        session = sessions.get(0);
+            Builder.text().font(FontType.sf_regular.get()).text(positionText).color(ColorUtility.fromHex("EEEEEE")).size(5).build()
+                    .render(matrix, getX() + 7, timeY);
 
-                        trackName = session.getMedia() == null || session.getMedia().getTitle() == null ? "Нет данных" : session.getMedia().getTitle();
-                        artist = session.getMedia() == null || session.getMedia().getArtist() == null ? "" : session.getMedia().getArtist();
-                        posit = session.getMedia() == null ? 0 : session.getMedia().getPosition();
-                        durat = session.getMedia() == null ? 0 : session.getMedia().getDuration();
-
-                        if (session.getMedia() != null && session.getMedia().getArtwork() != null) {
-                            artworkBytes = session.getMedia().getArtworkPng();
-                        } else {
-                            artworkBytes = null;
-                        }
-
-                        String owner = session.getOwner().toLowerCase();
-                        if (owner.contains("spotify")) {
-                            playerIcon = Identifier.of("blade", "textures/svg/music/spotify.svg");
-                        } else if (owner.contains("yandex")) {
-                            playerIcon = Identifier.of("blade", "textures/svg/music/yandex.svg");
-                        } else if (owner.contains("soundcloud")) {
-                            playerIcon = Identifier.of("blade", "textures/svg/music/sc.svg");
-                        } else {
-                            playerIcon = Identifier.of("blade", "textures/svg/music/untitled.svg");
-                        }
-
-                    } else {
-                        trackName = "Ожидаю...";
-                        artist = "";
-                        posit = 0;
-                        durat = 0;
-                        artworkBytes = null;
-                        playerIcon = null;
-                        session = null;
-                    }
-                } catch (Exception e) {
-                    trackName = "Ошибка";
-                    artist = "";
-                    artworkBytes = null;
-                    playerIcon = Identifier.of("blade", "textures/svg/music/untitled.svg");
-                    session = null;
-                }
-            }).start();
+            float durationWidth = FontType.sf_regular.get().getWidth(durationText, 5);
+            Builder.text().font(FontType.sf_regular.get()).text(durationText).color(ColorUtility.fromHex("EEEEEE")).size(5).build()
+                    .render(matrix, getX() + getWidth() - durationWidth - 7.5f, timeY);
         }
 
-        private String formatDuration(long duration) {
-            if (duration < 0) return "00:00";
-            long seconds = duration % 60;
-            long minutes = (duration / 60) % 60;
-            return String.format("%02d:%02d", minutes, seconds);
+        private void drawPlayerIcon(Matrix4f matrix) {
+            Builder.texture().size(new SizeState(10, 10)).color(new QuadColorState(Color.WHITE))
+                    .svgTexture(0f, 0f, 1f, 1f, playerIcon).radius(new QuadRadiusState(0f)).build()
+                    .render(matrix, getX() + getWidth() - 18, getY() + 6);
         }
 
-        private float getProgress() {
-            if (!sessionActive && durat > 0) {
-                float progress = (float) posit / (float) durat;
-                return Math.max(0.0f, Math.min(1.0f, progress));
-            }
-            return 0.0F;
+        private void drawControls(Matrix4f matrix, int sizeButton) {
+            float buttonGap = 5.5f;
+            float controlsX = getX() + (getWidth() - (sizeButton * 3 + buttonGap * 2)) / 2f;
+            float controlsY = getY() + getHeight() - sizeButton - 13.5f;
+
+            Builder.texture().size(new SizeState(sizeButton, sizeButton))
+                    .svgTexture(0, 0, 1, 1, Identifier.of("blade", "textures/svg/music/back.svg"))
+                    .color(new QuadColorState(Color.WHITE)).build().render(matrix, controlsX, controlsY);
+
+            Identifier playIcon = (session != null && session.getMedia().getPlaying()) ?
+                    Identifier.of("blade", "textures/svg/music/pause.svg") :
+                    Identifier.of("blade", "textures/svg/music/play.svg");
+            Builder.texture().size(new SizeState(sizeButton, sizeButton))
+                    .svgTexture(0, 0, 1, 1, playIcon).color(new QuadColorState(Color.WHITE)).build()
+                    .render(matrix, controlsX + sizeButton + buttonGap, controlsY);
+
+            Builder.texture().size(new SizeState(sizeButton, sizeButton))
+                    .svgTexture(0, 0, 1, 1, Identifier.of("blade", "textures/svg/music/next.svg"))
+                    .color(new QuadColorState(Color.WHITE)).build()
+                    .render(matrix, controlsX + sizeButton * 2 + buttonGap * 2, controlsY);
         }
 
-        @Override
-        public void update() {
-            super.update();
+        private void drawBorder(Matrix4f matrix) {
+            Builder.border().size(new SizeState(getWidth(), getHeight()))
+                    .color(new QuadColorState(new Color(170, 160, 200, 25)))
+                    .radius(new QuadRadiusState(6.5f)).thickness(1).build().render(matrix, getX(), getY());
+            Stencil.pop();
+        }
+
+        private String formatTime(long seconds) {
+            if (seconds < 0) return "00:00";
+            return String.format("%02d:%02d", (seconds / 60) % 60, seconds % 60);
         }
 
         @Override
         public void onMouse(InputEvents.Mouse event) {
             super.onMouse(event);
 
-            if (mc.currentScreen == null) {
-                return;
-            }
+            if (event.getAction() != 1 || event.getButton() != 0 || session == null) return;
 
-            if (event.getAction() == 1 && event.getButton() == 0 && session != null) {
-                double mouseX = event.getX();
-                double mouseY = event.getY();
+            double mouseX = event.getX();
+            double mouseY = event.getY();
 
-                boolean isHoveringWidget = mouseX >= getX() && mouseX <= getX() + getWidth() &&
-                        mouseY >= getY() && mouseY <= getY() + getHeight();
+            if (mouseX < getX() || mouseX > getX() + getWidth() || mouseY < getY() || mouseY > getY() + getHeight()) return;
 
-                if (isHoveringWidget) {
-                    float buttonSize = 6;
-                    float buttonGap = 5.5f;
-                    float totalControlsWidth = buttonSize * 3 + buttonGap * 2;
-                    float controlsStartX = getX() + (getWidth() - totalControlsWidth) / 2f;
-                    float controlsY = getY() + getHeight() - buttonSize - 13.5f;
+            int sizeButton = 6;
+            float buttonGap = 5.5f;
+            float controlsX = getX() + (getWidth() - (sizeButton * 3 + buttonGap * 2)) / 2f;
+            float controlsY = getY() + getHeight() - sizeButton - 13.5f;
 
-                    float backX = controlsStartX;
-                    float playPauseX = controlsStartX + buttonSize + buttonGap;
-                    float nextX = controlsStartX + buttonSize * 2 + buttonGap * 2;
-
-                    if (mouseX >= backX && mouseX <= backX + buttonSize && mouseY >= controlsY && mouseY <= controlsY + buttonSize) {
-                        new Thread(session::previous).start();
-                    } else if (mouseX >= playPauseX && mouseX <= playPauseX + buttonSize && mouseY >= controlsY && mouseY <= controlsY + buttonSize) {
-                        new Thread(session::playPause).start();
-                    } else if (mouseX >= nextX && mouseX <= nextX + buttonSize && mouseY >= controlsY && mouseY <= controlsY + buttonSize) {
-                        new Thread(session::next).start();
-                    }
+            if (mouseY >= controlsY && mouseY <= controlsY + sizeButton) {
+                if (mouseX >= controlsX && mouseX <= controlsX + sizeButton) {
+                    session.previous();
+                } else if (mouseX >= controlsX + sizeButton + buttonGap && mouseX <= controlsX + sizeButton * 2 + buttonGap) {
+                    session.playPause();
+                } else if (mouseX >= controlsX + sizeButton * 2 + buttonGap * 2 && mouseX <= controlsX + sizeButton * 3 + buttonGap * 2) {
+                    session.next();
                 }
             }
         }

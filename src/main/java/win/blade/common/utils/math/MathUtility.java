@@ -1,9 +1,11 @@
 package win.blade.common.utils.math;
 
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -39,6 +41,8 @@ public class MathUtility implements MinecraftInstance {
         return input + step * (target - input);
     }
 
+
+
     public float lerp(float input, float target, double step) {
         return (float) (input + step * (target - input));
     }
@@ -47,6 +51,17 @@ public class MathUtility implements MinecraftInstance {
         return (int) (input + step * (target - input));
     }
 
+
+
+    public static void defaultDrawStack(DrawContext context, ItemStack stack, float x, float y, boolean rect, boolean drawItemInSlot, float scale) {
+        MatrixStack matrix = context.getMatrices();
+        matrix.push();
+        matrix.translate(x + 1, y + 1, 0);
+        matrix.scale(scale, scale, 1);
+        context.drawItem(stack, 0, 0);
+        if (drawItemInSlot) context.drawStackOverlay(mc.textRenderer, stack, 0, 0);
+        matrix.pop();
+    }
 
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();

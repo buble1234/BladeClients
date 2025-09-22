@@ -61,16 +61,16 @@ public class InvWalkModule extends Module {
             };
         }
 
-        if (ServerUtility.isOnFuntime() && !packets.isEmpty() && !wait.hasReached(PacketUtility.getPing())) {
-            PacketUtility.sendSneaking(true);
-            PacketUtility.sendSprinting(false);
-            if (keys != null) {
-                for (KeyBinding key : keys) {
-                    key.setPressed(false);
-                }
-            }
-            return;
-        }
+//        if (ServerUtility.isOnFuntime() && !packets.isEmpty() && !wait.hasReached(PacketUtility.getPing())) {
+//            PacketUtility.sendSneaking(true);
+//            PacketUtility.sendSprinting(false);
+//            if (keys != null) {
+//                for (KeyBinding key : keys) {
+//                    key.setPressed(false);
+//                }
+//            }
+//            return;
+//        }
 
         if (mc.currentScreen != null && !(mc.currentScreen instanceof ChatScreen) && keys != null) {
             long window = mc.getWindow().getHandle();
@@ -85,21 +85,21 @@ public class InvWalkModule extends Module {
 
     @EventHandler
     public void onPacket(PacketEvent.Send event) {
-        if (ServerUtility.isOnFuntime() && mc.currentScreen instanceof InventoryScreen && MovementUtility.isMoving() && event.getPacket() instanceof ClickSlotC2SPacket) {
-            packets.add(event.getPacket());
-            event.cancel();
-        }
+//        if (ServerUtility.isOnFuntime() && mc.currentScreen instanceof InventoryScreen && MovementUtility.isMoving() && event.getPacket() instanceof ClickSlotC2SPacket) {
+//            packets.add(event.getPacket());
+//            event.cancel();
+//        }
     }
 
     @EventHandler
     public void onClose(PlayerActionEvents.CloseInventory event) {
-        if (ServerUtility.isOnFuntime() && !packets.isEmpty()) {
-            wait.reset();
-            if (scheduler != null && !scheduler.isShutdown()) {
-                scheduler.schedule(this::sendPackets, 100, TimeUnit.MILLISECONDS);
-            }
-            event.cancel();
-        }
+//        if (ServerUtility.isOnFuntime() && !packets.isEmpty()) {
+//            wait.reset();
+//            if (scheduler != null && !scheduler.isShutdown()) {
+//                scheduler.schedule(this::sendPackets, 100, TimeUnit.MILLISECONDS);
+//            }
+//            event.cancel();
+//        }
     }
 
     private void sendPackets() {

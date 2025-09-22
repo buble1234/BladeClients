@@ -22,7 +22,7 @@ public abstract class Module implements MinecraftInstance {
     public record ModuleData(String name, Category category, String description, String descKey, int defaultKeybind) {}
 
     private final ModuleData data;
-    private boolean enabled = false;
+    public boolean enabled = false;
     private int keybind;
     private BindMode bindMode;
     public long holdDuration = 50;

@@ -42,9 +42,7 @@ public class SelectSetting extends Setting {
 
     public void setSelected(String selected) {
         this.selected = selected;
-        // Костыль ебаный фикси
         if (getName().equalsIgnoreCase("AntiCheat")) {
-//            EventManager.callEvent(new SettingsUpdateEvent());
         }
     }
 }

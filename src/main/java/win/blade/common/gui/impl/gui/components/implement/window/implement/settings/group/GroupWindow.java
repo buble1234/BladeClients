@@ -25,7 +25,7 @@ import java.util.List;
 public class GroupWindow extends AbstractWindow {
     private final List<AbstractSettingComponent> components = new ArrayList<>();
     private final GroupSetting setting;
-    
+
     private final MsdfFont fontRegular = FontType.sf_regular.get();
 
     public GroupWindow(GroupSetting setting) {
@@ -47,32 +47,26 @@ public class GroupWindow extends AbstractWindow {
 
     @Override
     public void drawWindow(DrawContext context, int mouseX, int mouseY, float delta) {
-        height = MathHelper.clamp(getComponentHeight() +5, 0, 200);
+        height = MathHelper.clamp(getComponentHeight() + 5, 0, 200);
         width = 120;
-//
-//        Builder.rectangle()
-//                .size(new SizeState(width, height))
-//                .color(new QuadColorState(new Color(0x32000000)))
-//                .radius(new QuadRadiusState(12))
-//                .build()
-//                .render(x, y);
-
-//        Builder.rectangle()
-//                .size(new SizeState(width, height))
-//                .color(new QuadColorState(new Color(0xFF191A28)))
-//                .radius(new QuadRadiusState(12))
-//                .build()
-//                .render(x, y);
 
         WindowManager._renderBackground(x, y, width, height, 8, true, null);
 
         Builder.text()
                 .font(fontRegular)
-                .text("Настройка " + setting.getName())
+                .text("Настройка")
                 .size(7)
                 .color(Color.WHITE)
                 .build()
-                .render( x + 9, y + 10);
+                .render(x + 9, y + 8);
+
+        Builder.text()
+                .font(fontRegular)
+                .text(setting.getName())
+                .size(7)
+                .color(new Color(0xFFD4D6E1))
+                .build()
+                .render(x + 9, y + 18);
 
         boolean isLimitedHeight = MathHelper.clamp(height, 0, 200) == 200;
 
@@ -88,9 +82,9 @@ public class GroupWindow extends AbstractWindow {
                 continue;
             }
 
-            float componentY = (float) (y + 19 + offset + (getComponentHeight() - 25 - component.height) + smoothedScroll);
-            
-            if (!isLimitedHeight || (componentY >= y + 23 && componentY <= y + height - 5)) {
+            float componentY = (float) (y + 29 + offset + (getComponentHeight() - 35 - component.height) + smoothedScroll);
+
+            if (!isLimitedHeight || (componentY >= y + 33 && componentY <= y + height - 5)) {
                 component.x = x;
                 component.y = componentY;
                 component.width = width;
@@ -101,7 +95,7 @@ public class GroupWindow extends AbstractWindow {
             totalHeight += (int) component.height;
         }
 
-        int maxScroll = (int) Math.max(0, totalHeight - (height - 23));
+        int maxScroll = (int) Math.max(0, totalHeight - (height - 33));
         int clamped = MathHelper.clamp(maxScroll, 0, maxScroll);
         scroll = MathHelper.clamp(scroll, -clamped, 0);
         smoothedScroll = MathHelper.lerp(0.1F, smoothedScroll, scroll);
@@ -109,7 +103,7 @@ public class GroupWindow extends AbstractWindow {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        draggable(MathUtility.isHovered(mouseX, mouseY, x, y, width, 19) && button == 0);
+        draggable(MathUtility.isHovered(mouseX, mouseY, x, y, width, 29) && button == 0);
 
         boolean isAnyComponentHovered = components
                 .stream()
@@ -180,6 +174,6 @@ public class GroupWindow extends AbstractWindow {
 
             offsetY += component.height;
         }
-        return (int) (offsetY + 25);
+        return (int) (offsetY + 35);
     }
 }

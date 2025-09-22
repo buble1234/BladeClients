@@ -7,7 +7,7 @@ import win.blade.core.module.api.ModuleInfo;
 
 @ModuleInfo(
         name = "SeeInvisibles",
-        category = Category.RENDER,
+        category = Category.MISC,
         desc = "Раскрывает невидимых существ."
 )
 public class SeeInvisiblesModule extends Module {

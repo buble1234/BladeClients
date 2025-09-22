@@ -2,10 +2,12 @@ package win.blade.core.event.impl.input;
 
 
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.PlayerInput;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.Event;
 
 public abstract class InputEvents extends Event {
+    PlayerInput input;
 
     public static class Keyboard extends InputEvents {
         private final int key;
@@ -118,5 +120,9 @@ public abstract class InputEvents extends Event {
         public int getId() {
             return id;
         }
+    }
+
+    public void inputNone() {
+        input = new PlayerInput(false, false, false, false, false, false, false);
     }
 }

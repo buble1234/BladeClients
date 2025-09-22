@@ -9,6 +9,7 @@ import org.joml.Matrix4f;
 import win.blade.common.gui.impl.gui.components.AbstractComponent;
 import win.blade.common.gui.impl.gui.components.implement.category.CategoryComponent;
 import win.blade.common.gui.impl.gui.components.implement.other.*;
+import win.blade.common.gui.impl.gui.components.implement.settings.select.SelectComponent;
 import win.blade.common.gui.impl.gui.components.implement.window.implement.settings.PopUpWindow;
 import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.utils.minecraft.MinecraftInstance;
@@ -33,6 +34,7 @@ public class MenuScreen extends Screen implements MinecraftInstance {
     public static Category category = Category.COMBAT;
     private static List<Double> scroll = new ArrayList<>(6);
     private static List<Double> smoothedScroll = new ArrayList<>(6);
+    private static String savedSearchText = "";
 
     private boolean closing = false;
 
@@ -51,6 +53,10 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                 .initializeCategoryComponents()
                 .loadScrollValues(scroll, smoothedScroll)
         ;
+
+        if (!savedSearchText.isEmpty()) {
+            searchComponent.setText(savedSearchText);
+        }
 
         components.addAll(
                 Arrays.asList(
@@ -114,11 +120,64 @@ public class MenuScreen extends Screen implements MinecraftInstance {
         postRenderTasks.forEach(Runnable::run);
     }
 
+    private List<SelectComponent> getAllSelectComponents() {
+        List<SelectComponent> selectComponents = new ArrayList<>();
+        collectSelectComponents(components, selectComponents);
+        return selectComponents;
+    }
+
+    private void collectSelectComponents(List<AbstractComponent> components, List<SelectComponent> result) {
+        for (AbstractComponent component : components) {
+            if (component instanceof SelectComponent) {
+                result.add((SelectComponent) component);
+            }
+            if (component instanceof CategoryContainerComponent) {
+                CategoryContainerComponent container = (CategoryContainerComponent) component;
+                for (CategoryComponent categoryComp : container.categoryComponents) {
+                    collectSelectComponents(categoryComp.getComponents(), result);
+                }
+            }
+        }
+    }
+
+    private void closeAllDropdowns() {
+        List<SelectComponent> selectComponents = getAllSelectComponents();
+        for (SelectComponent selectComponent : selectComponents) {
+            selectComponent.closeDropdown();
+        }
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!windowManager.mouseClicked(mouseX, mouseY, button)) {
-            components.forEach(component -> component.mouseClicked(mouseX, mouseY, button));
+        if (windowManager.mouseClicked(mouseX, mouseY, button)) {
+            return true;
         }
+
+        List<SelectComponent> selectComponents = getAllSelectComponents();
+
+        SelectComponent openDropdown = null;
+        for (SelectComponent selectComponent : selectComponents) {
+            if (selectComponent.isDropdownOpen()) {
+                openDropdown = selectComponent;
+                break;
+            }
+        }
+
+        if (openDropdown != null) {
+            if (openDropdown.mouseClicked(mouseX, mouseY, button)) {
+                return true; 
+            }
+
+            closeAllDropdowns();
+            return true;
+        }
+
+        for (AbstractComponent component : components) {
+            if (component.mouseClicked(mouseX, mouseY, button)) {
+                return true;
+            }
+        }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -139,6 +198,15 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        // Проверяем, есть ли открытые выпадающие списки
+        List<SelectComponent> selectComponents = getAllSelectComponents();
+        for (SelectComponent selectComponent : selectComponents) {
+            if (selectComponent.isDropdownOpen()) {
+                // Если список открыт, блокируем скролл для остальных компонентов
+                return true;
+            }
+        }
+
         components.forEach(component -> component.mouseScrolled(mouseX, mouseY, verticalAmount));
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
@@ -181,6 +249,7 @@ public class MenuScreen extends Screen implements MinecraftInstance {
                 smoothedScroll.set(i, component.smoothedScroll);
             }
 
+            savedSearchText = searchComponent.getText();
             super.close();
         }
     }

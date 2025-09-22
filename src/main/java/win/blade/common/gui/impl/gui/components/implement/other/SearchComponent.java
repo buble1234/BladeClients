@@ -39,6 +39,10 @@ public class SearchComponent extends AbstractComponent {
         return textBox.getText();
     }
 
+    public void setText(String text) {
+        textBox.setText(text);
+    }
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         Matrix4f positionMatrix = context

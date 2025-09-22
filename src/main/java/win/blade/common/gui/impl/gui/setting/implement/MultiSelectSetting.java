@@ -8,30 +8,23 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class MultiSelectSetting extends Setting {
-    private List<String> list, selected = new ArrayList<>();
+    private List<String> selected = new ArrayList<>();
+    private List<String> list;
 
     public MultiSelectSetting(String name, String description) {
         super(name, description);
-    }
-
-    public List<String> getList() {
-        return list;
-    }
-
-    public void setList(List<String> list) {
-        this.list = list;
     }
 
     public List<String> getSelected() {
         return selected;
     }
 
-    public void setSelected(List<String> selected) {
-        this.selected = selected;
+    public List<String> getList() {
+        return list;
     }
 
-    public MultiSelectSetting value(String... settings) {
-        list = Arrays.asList(settings);
+    public MultiSelectSetting value(String... values) {
+        this.list = Arrays.asList(values);
         return this;
     }
 
@@ -41,6 +34,19 @@ public class MultiSelectSetting extends Setting {
     }
 
     public boolean isSelected(String name) {
-        return selected.contains(name);
+        return selected.stream().anyMatch(s -> s.equalsIgnoreCase(name));
+    }
+
+    public void toggle(String name) {
+        String actualName = this.list.stream()
+                .filter(s -> s.equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(name);
+
+        if (isSelected(actualName)) {
+            selected.removeIf(s -> s.equalsIgnoreCase(actualName));
+        } else {
+            selected.add(actualName);
+        }
     }
 }

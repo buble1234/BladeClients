@@ -12,7 +12,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import win.blade.common.utils.color.ColorUtility;
-import win.blade.common.utils.friends.FriendManager;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
 import win.blade.common.utils.render.builders.Builder;
@@ -38,8 +37,8 @@ public class Arrows extends Module {
     private final Animation moveAnimation = new Animation();
     private final Animation yawAnimation = new Animation();
 
-    private final Color friendColor = new Color(25, 227, 142);
-    private final Color enemyColor = Color.WHITE;
+    private final Identifier arrowTextureId = Identifier.of("blade", "textures/arrow.png");
+    private final Identifier bloomTextureId = Identifier.of("blade", "textures/particle/bloom.png");
 
     @Override
     public void onEnable() {
@@ -81,8 +80,12 @@ public class Arrows extends Module {
         Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
         DrawContext context = e.getDrawContext();
 
+        // Настройка рендера для эффекта свечения (аддитивное смешивание)
         RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
+        RenderSystem.blendFuncSeparate(
+                GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE,
+                GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO
+        );
         RenderSystem.depthMask(false);
 
         for (PlayerEntity player : mc.world.getPlayers()) {
@@ -104,10 +107,7 @@ public class Arrows extends Module {
             double drawX = (radius * Math.cos(angle)) + xOffset + radius;
             double drawY = (radius * Math.sin(angle)) + yOffset + radius;
 
-            boolean isFriend = FriendManager.instance.hasFriend(player.getNameForScoreboard());
-            int color = isFriend ? friendColor.getRGB() : enemyColor.getRGB();
-
-            drawArrow(context, drawX, drawY, angle, color);
+            drawArrow(context, drawX, drawY, angle);
         }
 
         RenderSystem.depthMask(true);
@@ -115,18 +115,32 @@ public class Arrows extends Module {
         RenderSystem.disableBlend();
     }
 
-    private void drawArrow(DrawContext context, double x, double y, double angle, int color) {
+    private void drawArrow(DrawContext context, double x, double y, double angle) {
         float alpha = (float) openAnimation.get();
+
+        // Ваш код для цвета
         int top = ColorUtility.applyAlpha(new Color(102, 60, 255).getRGB(), (ColorUtility.getAlpha(new Color(196, 24, 24).getRGB()) / 255.0f) * alpha);
         int back = ColorUtility.applyAlpha(top, 0);
+        // Цвет для свечения, основанный на том же фиолетовом цвете
+        int glowColor = ColorUtility.applyAlpha(new Color(102, 60, 255).getRGB(), alpha * 0.3f);
 
         context.getMatrices().push();
         context.getMatrices().translate(x, y, 0);
         context.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float) Math.toDegrees(angle) + 90));
 
-        Identifier textureIdentifier = Identifier.of("blade", "textures/arrow.png");
-        AbstractTexture arrowTexture = MinecraftClient.getInstance().getTextureManager().getTexture(textureIdentifier);
+        AbstractTexture bloomTexture = MinecraftClient.getInstance().getTextureManager().getTexture(bloomTextureId);
+        AbstractTexture arrowTexture = MinecraftClient.getInstance().getTextureManager().getTexture(arrowTextureId);
 
+        // Рендер свечения (размер больше, чем у стрелки)
+        Builder.texture()
+                .size(new SizeState(32, 32))
+                .color(new QuadColorState(glowColor))
+                .texture(0f, 0f, 1f, 1f, bloomTexture)
+                .radius(new QuadRadiusState(0f))
+                .build()
+                .render(context.getMatrices().peek().getPositionMatrix(), -16, -16);
+
+        // Рендер самой стрелки
         Builder.texture()
                 .size(new SizeState(16, 16))
                 .color(new QuadColorState(top, back, back, top))

@@ -233,19 +233,19 @@ public class ConfigManager implements MinecraftInstance {
                             int argb = (alpha & 0xFF) << 24 | (red & 0xFF) << 16 | (green & 0xFF) << 8 | (blue & 0xFF);
                             colorValue.setColor(argb);
                         } else if (value instanceof MultiSelectSetting multi) {
-                            List<String> selectedList = new ArrayList<>();
-                            List<String> list = multi.getList();
-                            if (list != null) {
-                                int i = 0;
-                                for (String item : list) {
-                                    String vk = "value-" + i;
-                                    if (valueJsonObject.has(vk) && valueJsonObject.get(vk).getAsBoolean()) {
-                                        selectedList.add(item);
-                                    }
-                                    i++;
-                                }
-                                multi.setSelected(selectedList);
-                            }
+//                            List<String> selectedList = new ArrayList<>();
+//                            List<String> list = multi.getList();
+//                            if (list != null) {
+//                                int i = 0;
+//                                for (String item : list) {
+//                                    String vk = "value-" + i;
+//                                    if (valueJsonObject.has(vk) && valueJsonObject.get(vk).getAsBoolean()) {
+//                                        selectedList.add(item);
+//                                    }
+//                                    i++;
+//                                }
+//                                multi.setSelected(selectedList);
+//                            }
                         }
                     } catch (Exception ignored) {
                     }
@@ -370,7 +370,7 @@ public class ConfigManager implements MinecraftInstance {
         } else if (setting instanceof MultiSelectSetting s) {
             List<String> selectedList = new ArrayList<>();
             settingElement.getAsJsonArray().forEach(selected -> selectedList.add(selected.getAsString()));
-            s.setSelected(selectedList);
+//            s.setSelected(selectedList);
         } else if (setting instanceof GroupSetting groupSetting) {
             JsonObject groupObject = settingElement.getAsJsonObject();
             if (groupObject.has("value")) {

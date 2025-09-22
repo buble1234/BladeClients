@@ -34,6 +34,7 @@ public class BindWindow extends AbstractWindow {
 
     public BindWindow(Module module){
         this.module = module;
+        this.windowName = "bindWindow";
 
         createButton = new ButtonComponent().setRunnable(this::openCreationWindow).setText("Create");
         deleteButton = new ButtonComponent().setRunnable(this::delBind).setText("Delete");

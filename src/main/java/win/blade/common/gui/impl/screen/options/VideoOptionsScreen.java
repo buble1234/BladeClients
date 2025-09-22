@@ -1,8 +1,10 @@
 package win.blade.common.gui.impl.screen.options;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.option.*;
 import net.minecraft.client.render.ChunkBuilderMode;
 import net.minecraft.client.texture.AbstractTexture;
@@ -12,10 +14,13 @@ import net.minecraft.particle.ParticlesMode;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import org.joml.Matrix4f;
 import win.blade.common.gui.button.Button;
 import win.blade.common.gui.button.Slider;
 import win.blade.common.gui.impl.screen.BaseScreen;
+import win.blade.common.utils.math.animation.Animation;
+import win.blade.common.utils.math.animation.Easing;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.msdf.FontType;
@@ -23,19 +28,16 @@ import win.blade.common.utils.render.msdf.MsdfFont;
 import win.blade.common.utils.render.renderers.impl.BuiltTexture;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-/**
- * Автор: NoCap
- * Дата создания: 02.08.2025
- */
 public class VideoOptionsScreen extends Screen {
 
     private final Screen parent;
     private final GameOptions options;
     private final int mipmapLevels;
 
-    // Widgets
     private Button graphicsButton, cloudsButton, vsyncButton, fullscreenButton, entityShadowsButton, aoButton,
             bobViewButton, showAutosaveIndicatorButton, particlesButton, attackIndicatorButton,
             chunkBuilderModeButton, guiScaleButton, fullscreenResolutionButton, inactivityFpsLimitButton;
@@ -46,6 +48,14 @@ public class VideoOptionsScreen extends Screen {
 
     private int currentResolutionIndex;
     private boolean renderBackground = false;
+
+    private final List<ClickableWidget> scrollableWidgets = new ArrayList<>();
+    private final List<Integer> originalYPositions = new ArrayList<>();
+    private Animation scrollAnimation = new Animation();
+    private float targetScroll = 0.0f;
+    private float maxScroll = 0.0f;
+    private int scrollAreaY;
+    private int scrollAreaHeight;
 
     public VideoOptionsScreen(Screen parent, GameOptions options, boolean shouldRenderBackground) {
         super(Text.translatable("options.videoTitle"));
@@ -58,9 +68,11 @@ public class VideoOptionsScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        scrollableWidgets.clear();
+        originalYPositions.clear();
 
         int topY = 60;
-        int buttonsTopY = topY + 30;
+        scrollAreaY = topY + 30;
         int buttonWidth = 150;
         int buttonHeight = 32;
         int rowGap = 4;
@@ -69,117 +81,100 @@ public class VideoOptionsScreen extends Screen {
         int col1X = centerX - buttonWidth - 5 / 2;
         int col2X = centerX + 5 / 2;
 
-        int currentY = buttonsTopY;
+        int currentY = scrollAreaY;
 
-        // Row 1: Graphics, Clouds
         graphicsButton = new Button(col1X, currentY, buttonWidth, buttonHeight, getGraphicsText(), this::cycleGraphics);
-        addDrawableChild(graphicsButton);
         cloudsButton = new Button(col2X, currentY, buttonWidth, buttonHeight, getCloudsText(), this::cycleClouds);
-        addDrawableChild(cloudsButton);
         currentY += buttonHeight + rowGap;
 
-        // Row 2: View Distance, Simulation Distance
         boolean highMemory = Runtime.getRuntime().maxMemory() >= 1000000000L;
         int maxViewDist = highMemory ? 32 : 16;
         int maxSimDist = highMemory ? 32 : 16;
         viewDistanceSlider = new Slider(col1X, currentY, buttonWidth, buttonHeight, getViewDistanceText(), (options.getViewDistance().getValue() - 2.0) / (maxViewDist - 2.0), v -> onViewDistanceChange(v, maxViewDist));
-        addDrawableChild(viewDistanceSlider);
         simulationDistanceSlider = new Slider(col2X, currentY, buttonWidth, buttonHeight, getSimulationDistanceText(), (options.getSimulationDistance().getValue() - 5.0) / (maxSimDist - 5.0), v -> onSimDistanceChange(v, maxSimDist));
-        addDrawableChild(simulationDistanceSlider);
         currentY += buttonHeight + rowGap;
 
-        // Row 3: Max FPS, Gamma
         maxFpsSlider = new Slider(col1X, currentY, buttonWidth, buttonHeight, getMaxFpsText(), options.getMaxFps().getValue() >= 260 ? 1.0 : (options.getMaxFps().getValue() / 10.0 - 1.0) / 25.0, this::onMaxFpsChange);
-        addDrawableChild(maxFpsSlider);
         gammaSlider = new Slider(col2X, currentY, buttonWidth, buttonHeight, getGammaText(), options.getGamma().getValue(), this::onGammaChange);
-        addDrawableChild(gammaSlider);
         currentY += buttonHeight + rowGap;
 
-        // Row 4: VSync, Fullscreen
         vsyncButton = new Button(col1X, currentY, buttonWidth, buttonHeight, getVsyncText(), this::toggleVsync);
-        addDrawableChild(vsyncButton);
         fullscreenButton = new Button(col2X, currentY, buttonWidth, buttonHeight, getFullscreenText(), this::toggleFullscreen);
-        addDrawableChild(fullscreenButton);
         currentY += buttonHeight + rowGap;
 
-        // Row 5: Fullscreen Resolution, GUI Scale
         Monitor monitor = this.client.getWindow().getMonitor();
         currentResolutionIndex = monitor == null ? -1 : this.client.getWindow().getFullscreenVideoMode().map(monitor::findClosestVideoModeIndex).orElse(-1);
         fullscreenResolutionButton = new Button(col1X, currentY, buttonWidth, buttonHeight, getFullscreenResolutionText(), this::cycleFullscreenResolution);
         fullscreenResolutionButton.active = monitor != null;
-        addDrawableChild(fullscreenResolutionButton);
         guiScaleButton = new Button(col2X, currentY, buttonWidth, buttonHeight, getGuiScaleText(), this::cycleGuiScale);
-        addDrawableChild(guiScaleButton);
         currentY += buttonHeight + rowGap;
 
-        // Row 6: Mipmap Levels, Biome Blend
         mipmapLevelsSlider = new Slider(col1X, currentY, buttonWidth, buttonHeight, getMipmapLevelsText(), options.getMipmapLevels().getValue() / 4.0, this::onMipmapLevelsChange);
-        addDrawableChild(mipmapLevelsSlider);
         biomeBlendRadiusSlider = new Slider(col2X, currentY, buttonWidth, buttonHeight, getBiomeBlendText(), options.getBiomeBlendRadius().getValue() / 7.0, this::onBiomeBlendChange);
-        addDrawableChild(biomeBlendRadiusSlider);
         currentY += buttonHeight + rowGap;
 
-        // Row 7: Entity Shadows, AO
         entityShadowsButton = new Button(col1X, currentY, buttonWidth, buttonHeight, getEntityShadowsText(), this::toggleEntityShadows);
-        addDrawableChild(entityShadowsButton);
         aoButton = new Button(col2X, currentY, buttonWidth, buttonHeight, getAoText(), this::toggleAo);
-        addDrawableChild(aoButton);
         currentY += buttonHeight + rowGap;
 
-        // Row 8: Particles, Attack Indicator
         particlesButton = new Button(col1X, currentY, buttonWidth, buttonHeight, getParticlesText(), this::cycleParticles);
-        addDrawableChild(particlesButton);
         attackIndicatorButton = new Button(col2X, currentY, buttonWidth, buttonHeight, getAttackIndicatorText(), this::cycleAttackIndicator);
-        addDrawableChild(attackIndicatorButton);
         currentY += buttonHeight + rowGap;
 
-        // Row 9: Chunk Builder, Bobbing
         chunkBuilderModeButton = new Button(col1X, currentY, buttonWidth, buttonHeight, getChunkBuilderModeText(), this::cycleChunkBuilderMode);
-        addDrawableChild(chunkBuilderModeButton);
         bobViewButton = new Button(col2X, currentY, buttonWidth, buttonHeight, getBobViewText(), this::toggleBobView);
-        addDrawableChild(bobViewButton);
         currentY += buttonHeight + rowGap;
 
-        // Row 10: Entity Distance, Distortion Effect
         entityDistanceScalingSlider = new Slider(col1X, currentY, buttonWidth, buttonHeight, getEntityDistanceText(), (options.getEntityDistanceScaling().getValue() - 0.5) / 4.5, this::onEntityDistanceChange);
-        addDrawableChild(entityDistanceScalingSlider);
         distortionEffectSlider = new Slider(col2X, currentY, buttonWidth, buttonHeight, getDistortionEffectText(), options.getDistortionEffectScale().getValue(), this::onDistortionEffectChange);
-        addDrawableChild(distortionEffectSlider);
         currentY += buttonHeight + rowGap;
 
-        // Row 11: FOV Effect, Glint Speed
         fovEffectSlider = new Slider(col1X, currentY, buttonWidth, buttonHeight, getFovEffectText(), options.getFovEffectScale().getValue(), this::onFovEffectChange);
-        addDrawableChild(fovEffectSlider);
         glintSpeedSlider = new Slider(col2X, currentY, buttonWidth, buttonHeight, getGlintSpeedText(), options.getGlintSpeed().getValue(), this::onGlintSpeedChange);
-        addDrawableChild(glintSpeedSlider);
         currentY += buttonHeight + rowGap;
 
-        // Row 12: Glint Strength, Menu Blur
         glintStrengthSlider = new Slider(col1X, currentY, buttonWidth, buttonHeight, getGlintStrengthText(), options.getGlintStrength().getValue(), this::onGlintStrengthChange);
-        addDrawableChild(glintStrengthSlider);
         menuBackgroundBlurrinessSlider = new Slider(col2X, currentY, buttonWidth, buttonHeight, getMenuBlurText(), options.getMenuBackgroundBlurriness().getValue() / 10.0, this::onMenuBlurChange);
-        addDrawableChild(menuBackgroundBlurrinessSlider);
         currentY += buttonHeight + rowGap;
 
-        // Row 13: Autosave Indicator, Inactivity FPS
         showAutosaveIndicatorButton = new Button(col1X, currentY, buttonWidth, buttonHeight, getShowAutosaveIndicatorText(), this::toggleShowAutosaveIndicator);
-        addDrawableChild(showAutosaveIndicatorButton);
         inactivityFpsLimitButton = new Button(col2X, currentY, buttonWidth, buttonHeight, getInactivityFpsText(), this::cycleInactivityFps);
-        addDrawableChild(inactivityFpsLimitButton);
         currentY += buttonHeight;
 
-        // Done button
-        this.addDrawableChild(new Button(
+        Button doneButton = new Button(
                 centerX - buttonWidth / 2,
                 currentY + 15,
                 buttonWidth,
                 buttonHeight,
                 ScreenTexts.DONE,
-                this::close)
+                this::close
         );
-    }
+        int finalContentY = doneButton.getY() + doneButton.getHeight();
 
-    // --- Handlers & Text Getters ---
+        ClickableWidget[] widgets = {
+                graphicsButton, cloudsButton, viewDistanceSlider, simulationDistanceSlider,
+                maxFpsSlider, gammaSlider, vsyncButton, fullscreenButton, fullscreenResolutionButton,
+                guiScaleButton, mipmapLevelsSlider, biomeBlendRadiusSlider, entityShadowsButton,
+                aoButton, particlesButton, attackIndicatorButton, chunkBuilderModeButton,
+                bobViewButton, entityDistanceScalingSlider, distortionEffectSlider, fovEffectSlider,
+                glintSpeedSlider, glintStrengthSlider, menuBackgroundBlurrinessSlider,
+                showAutosaveIndicatorButton, inactivityFpsLimitButton, doneButton
+        };
+
+        for (ClickableWidget widget : widgets) {
+            scrollableWidgets.add(widget);
+            originalYPositions.add(widget.getY());
+            addDrawableChild(widget);
+        }
+
+        scrollAreaHeight = this.height - scrollAreaY - 50;
+        int contentHeight = finalContentY - scrollAreaY;
+
+        maxScroll = 0.0f;
+        if (contentHeight > scrollAreaHeight) {
+            maxScroll = -(contentHeight - scrollAreaHeight);
+        }
+    }
 
     private void cycleGraphics() {
         GraphicsMode[] modes = GraphicsMode.values();
@@ -293,6 +288,16 @@ public class VideoOptionsScreen extends Screen {
     private Text getPercentText(Text prefix, double value) { return value == 0.0 ? prefix.copy().append(": ").append(ScreenTexts.OFF) : prefix.copy().append(": " + (int)(value * 100.0) + "%"); }
 
 
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (maxScroll < 0) {
+            this.targetScroll += (float) (verticalAmount * 15.0);
+            this.targetScroll = MathHelper.clamp(this.targetScroll, this.maxScroll, 0.0f);
+            this.scrollAnimation.run(this.targetScroll, 0.2, Easing.EASE_OUT_CUBIC);
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
@@ -315,10 +320,27 @@ public class VideoOptionsScreen extends Screen {
         float textWidth = font.getWidth(titleText, fontSize);
         float textX = (this.width - textWidth) / 2.0f;
 
-
         Builder.text().font(font).text(titleText).color(Color.WHITE).size(fontSize).thickness(0.05f).build().render(matrix, textX, 40);
 
+        scrollAnimation.update();
+        float scroll = (float) scrollAnimation.get();
+
+        double scale = this.client.getWindow().getScaleFactor();
+        int windowHeight = this.client.getWindow().getScaledHeight();
+        RenderSystem.enableScissor(
+                (int) (0 * scale),
+                (int) ((windowHeight - (scrollAreaY + scrollAreaHeight)) * scale),
+                (int) (this.width * scale),
+                (int) (scrollAreaHeight * scale)
+        );
+
+        for (int i = 0; i < scrollableWidgets.size(); i++) {
+            scrollableWidgets.get(i).setY(originalYPositions.get(i) + (int) scroll);
+        }
+
         super.render(context, mouseX, mouseY, delta);
+
+        RenderSystem.disableScissor();
     }
 
     @Override
