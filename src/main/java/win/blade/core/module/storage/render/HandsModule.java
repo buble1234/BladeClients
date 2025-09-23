@@ -7,6 +7,7 @@ import net.minecraft.client.gl.SimpleFramebuffer;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ColorSetting;
 import win.blade.common.gui.impl.gui.setting.implement.SelectSetting;
 import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.common.utils.render.shader.Shader;
@@ -15,6 +16,8 @@ import win.blade.common.utils.render.shader.storage.*;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
+
+import java.awt.*;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL13C.*;
@@ -32,15 +35,18 @@ import static org.lwjgl.opengl.GL13C.*;
 public class HandsModule extends Module {
 
     public static final SelectSetting shaderType = new SelectSetting("Шейдер", "Тип шейдера для рук.").value("Сплошной", "Размытый");
+    public static final ColorSetting solidColor = new ColorSetting("Цвет шейдера", "Первый цвет для градиента.").value(new Color(0, 255, 0).getRGB()).visible(() -> shaderType.isSelected("Сплошной"));
+    public static final ColorSetting solidColor2 = new ColorSetting("Второй цвет", "Второй цвет для градиента.").value(new Color(255, 0, 0).getRGB()).visible(() -> shaderType.isSelected("Сплошной"));
+    public static final ValueSetting gradientSpeed = new ValueSetting("Скорость", "Скорость анимации градиента.").setValue(0.5f).range(0.1f, 1.0f).visible(() -> shaderType.isSelected("Сплошной"));
     public static final ValueSetting blurStrength = new ValueSetting("Сила размытия", "Сила размытия для шейдера.").range(2, 20).visible(() -> shaderType.isSelected("Размытый"));
-    public static final BooleanSetting fogRGBPuke = new BooleanSetting("Fog RGB Puke", "Добавляет радужный эффект.").setValue(false).visible(() -> shaderType.isSelected("Размытый"));
+    public static final BooleanSetting fogRGBPuke = new BooleanSetting("RGB Puke", "Добавляет радужный эффект.").setValue(false).visible(() -> shaderType.isSelected("Размытый"));
     public static final ValueSetting fogRGBPukeOpacity = new ValueSetting("RGB прозр.", "Прозрачность радужного эффекта.").setValue(30f).range(1f, 100f).visible(() -> fogRGBPuke.getValue());
     public static final ValueSetting fogRGBPukeSaturation = new ValueSetting("RGB насыщенность", "Насыщенность радужного эффекта.").setValue(70f).range(0f, 100f).visible(() -> fogRGBPuke.getValue());
     public static final ValueSetting fogRGBPukeBrightness = new ValueSetting("RGB яркость", "Яркость радужного эффекта.").setValue(100f).range(0f, 100f).visible(() -> fogRGBPuke.getValue());
 
 
     public HandsModule() {
-        addSettings(shaderType, blurStrength, fogRGBPuke, fogRGBPukeOpacity, fogRGBPukeSaturation, fogRGBPukeBrightness);
+        addSettings(shaderType, solidColor, solidColor2, gradientSpeed, blurStrength, fogRGBPuke, fogRGBPukeOpacity, fogRGBPukeSaturation, fogRGBPukeBrightness);
     }
 
     public static void render(float FarPlaneDistance) {
@@ -76,9 +82,26 @@ public class HandsModule extends Module {
         handShader.bind();
         handShader.setUniform1i("ColorTexture", 0);
         handShader.setUniform1i("DepthTexture", 1);
-        handShader.setUniform1f("time", (float) (System.currentTimeMillis() % 2000L) / 2000.0f);
-        handShader.setUniform3f("customColor", new Vector3f(0.0f, 1.0f, 0.0f));
-        handShader.setUniform1f("effectAlpha", 1f);
+        float gameTime = (System.nanoTime() / 1_000_000_000.0f) * gradientSpeed.getValue();
+        handShader.setUniform1f("time", gameTime);
+
+        Color color1 = new Color(solidColor.getColor());
+        Vector3f customColor1 = new Vector3f(
+                color1.getRed() / 255.0f,
+                color1.getGreen() / 255.0f,
+                color1.getBlue() / 255.0f
+        );
+        handShader.setUniform3f("customColor1", customColor1);
+
+        Color color2 = new Color(solidColor2.getColor());
+        Vector3f customColor2 = new Vector3f(
+                color2.getRed() / 255.0f,
+                color2.getGreen() / 255.0f,
+                color2.getBlue() / 255.0f
+        );
+        handShader.setUniform3f("customColor2", customColor2);
+
+        handShader.setUniform1f("effectAlpha", Math.max(solidColor.getAlpha(), solidColor2.getAlpha()));
         handShader.setUniform1f("nearPlane", 0.05f);
         handShader.setUniform1f("farPlane", FarPlaneDistance);
 
