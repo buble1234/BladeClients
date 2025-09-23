@@ -19,4 +19,19 @@ public record QuadColorState(int color1, int color2, int color3, int color4) {
 		this(color, color, color, color);
 	}
 
+//    public QuadColorState(Color topColor, Color bottomColor) {
+//        this(topColor.getRGB(), topColor.getRGB(), bottomColor.getRGB(), bottomColor.getRGB());
+//    }
+//
+//    public QuadColorState(int topColor, int bottomColor) {
+//        this(topColor, topColor, bottomColor, bottomColor);
+//    }
+
+    public QuadColorState(Color topColor, Color bottomColor) {
+        this(topColor.getRGB(), bottomColor.getRGB(), bottomColor.getRGB(), topColor.getRGB());
+    }
+
+    public QuadColorState(int topColor, int bottomColor) {
+        this(topColor, bottomColor, bottomColor, topColor);
+    }
 }

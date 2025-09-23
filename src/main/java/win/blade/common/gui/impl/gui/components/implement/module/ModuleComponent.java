@@ -31,9 +31,6 @@ import java.util.Objects;
 public class ModuleComponent extends AbstractComponent {
     private final List<AbstractSettingComponent> components = new ArrayList<>();
 
-    private final CheckComponent checkComponent = new CheckComponent();
-    private final SettingComponent settingComponent = new SettingComponent();
-
     private final Module module;
 
     private final MsdfFont fontRegular = FontType.popins_regular.get();
@@ -53,14 +50,6 @@ public class ModuleComponent extends AbstractComponent {
 
     public List<AbstractSettingComponent> getComponents() {
         return components;
-    }
-
-    public CheckComponent getCheckComponent() {
-        return checkComponent;
-    }
-
-    public SettingComponent getSettingComponent() {
-        return settingComponent;
     }
 
     public Module getModule() {
@@ -86,12 +75,10 @@ public class ModuleComponent extends AbstractComponent {
 
         Builder.rectangle()
                 .size(new SizeState(width, 18.5f))
-                .color(new QuadColorState(new Color(23,19,39)))
+                .color(module.isEnabled() ? new QuadColorState(new Color(23,19,39), ColorUtility.fromHex("291B58")) : new QuadColorState(new Color(23,19,39)))
                 .radius(new QuadRadiusState(6, 0, 0, 6))
                 .build()
                 .render(x, y);
-
-
 
         Builder.border()
                 .size(new SizeState(width - 0.5f, height - 0.5f))
@@ -137,35 +124,9 @@ public class ModuleComponent extends AbstractComponent {
                 .build()
                 .render( x + 9, y + 5);
 
-        Builder.text()
-                .font(fontRegular)
-                .text("Enable")
-                .size(5.5f)
-                .color(new Color(0xFFD4D6E1))
-                .build()
-                .render( x + 9, y + 25);
-
-        Builder.text()
-                .font(fontRegular)
-                .text("Enable the feature")
-                .size(4)
-                .color(new Color(0xFF878894))
-                .build()
-                .render( x + 9, y + 33);
-
-        ((CheckComponent) checkComponent.position(x + width - 16, y + 28))
-                .setRunnable(() -> module.toggleWithoutNotification(!module.isEnabled()))
-                .setState(module.isEnabled())
-                .render(context, mouseX, mouseY, delta);
-
-
-        ((SettingComponent) settingComponent.position(x + width - 26f, y + 28.25F))
-                .setRunnable(() -> spawnWindow(mouseX, mouseY))
-                .render(context, mouseX, mouseY, delta);
-
         drawBind(context, positionMatrix);
 
-        float offset = y + 38f;
+        float offset = y + 20f;
         for (AbstractSettingComponent component : components) {
             var visible = component.getSetting().getVisible();
             if (visible != null && !visible.get()) {
@@ -183,13 +144,26 @@ public class ModuleComponent extends AbstractComponent {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        String bindName = Keyboard.getKeyName(module.keybind());
+        float stringWidth = fontRegular.getWidth(bindName, 4);
+        float bindX = x + width - stringWidth - 15;
+        float bindY = y + 4f;
+        float bindWidth = stringWidth + 4.8f;
+        float bindHeight = 8.5f;
 
-        if (checkComponent.mouseClicked(mouseX, mouseY, button)) {
+        if (MathUtility.isHovered(mouseX, mouseY, bindX, bindY, bindWidth, bindHeight) && button == 0) {
+            spawnWindow((int)mouseX, (int)mouseY);
             return true;
         }
-        
-        if (settingComponent.mouseClicked(mouseX, mouseY, button)) {
-            return true;
+
+        if (MathUtility.isHovered(mouseX, mouseY, x, y, width, 18.5f)) {
+            if (button == 0) {
+                module.toggleWithoutNotification(!module.isEnabled());
+                return true;
+            } else if (button == 2) {
+                spawnWindow((int)mouseX, (int)mouseY);
+                return true;
+            }
         }
 
         for (int i = components.size() - 1; i >= 0; i--) {
@@ -268,7 +242,7 @@ public class ModuleComponent extends AbstractComponent {
 
             offsetY += component.height + 1;
         }
-        return (int) (offsetY + 46);
+        return (int) (offsetY + 28);
     }
 
     private void drawBind(DrawContext context, Matrix4f positionMatrix) {
@@ -298,7 +272,7 @@ public class ModuleComponent extends AbstractComponent {
         if (existingWindow != null) {
             windowManager.delete(existingWindow);
         }
-        
+
         AbstractWindow moduleBindWindow = new BindWindow(module)
                 .position(mouseX + 5, mouseY + 5)
                 .size(105, 73)
