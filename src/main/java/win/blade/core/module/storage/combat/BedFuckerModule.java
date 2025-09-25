@@ -44,13 +44,13 @@ public class BedFuckerModule extends Module {
             .setValue(4.5f).range(2.0f, 6.0f);
     private final BooleanSetting throughWalls = new BooleanSetting("Сквозь блоки", "Ломать кровати сквозь стены.")
             .setValue(false);
-    private final BooleanSetting breakObstacles = new BooleanSetting("Ломать преграды", "Ломать блоки, преграждающие путь к кровати (только когда 'Сквозь блоки' выключено).")
+    private final BooleanSetting breakObstacles = new BooleanSetting("Ломать преграды", "Ломать блоки, преграждающие путь к кровати.")
             .setValue(true);
     private final ValueSetting obstacleRange = new ValueSetting("Дистанция преград", "Максимальное расстояние для ломания преград.")
             .setValue(5.0f).range(3.0f, 8.0f);
     private final BooleanSetting motionCorrect = new BooleanSetting("Коррекция движений", "Корректирует движения для ротации.")
             .setValue(true);
-    private final ValueSetting delay = new ValueSetting("Задержка", "Задержка между действиями в тиках.")
+    private final ValueSetting delay = new ValueSetting("Задержка", "Задержка между действиями.")
             .setValue(1).range(0, 10);
 
     private final List<BedTarget> bedTargets = new ArrayList<>();
