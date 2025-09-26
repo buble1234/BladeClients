@@ -35,15 +35,15 @@ public class AutoTpacceptModule extends Module {
             String message = packet.content().getString();
 
             if (message.contains("телепортироваться") || message.contains("телепортацию") || message.contains("tpaccept") || message.contains("tpyes")) {
-//                String playerName = ServerUtility.isName(message);
+                String playerName = ServerUtility.isName(message);
 
-//                if (onlyFriends.getValue()) {
-//                    if (FriendManager.instance.hasFriend(playerName)) {
-//                        mc.getNetworkHandler().sendChatCommand("tpaccept " + playerName);
-//                    }
-//                } else {
-//                    mc.getNetworkHandler().sendChatCommand("tpaccept " + playerName);
-//                }
+                if (onlyFriends.getValue()) {
+                    if (FriendManager.instance.hasFriend(playerName)) {
+                        mc.getNetworkHandler().sendChatCommand("tpaccept " + playerName);
+                    }
+                } else {
+                    mc.getNetworkHandler().sendChatCommand("tpaccept " + playerName);
+                }
             }
         }
     }

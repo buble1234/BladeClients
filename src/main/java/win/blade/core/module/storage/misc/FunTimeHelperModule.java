@@ -9,12 +9,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
 import win.blade.common.utils.color.ColorUtility;
@@ -24,7 +21,7 @@ import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
-import java.awt.*;
+import java.awt.Color;
 
 @ModuleInfo(name = "FunTimeHelper", category = Category.MISC, desc = "Помощник для сервера FunTime")
 public class FunTimeHelperModule extends Module {
@@ -49,9 +46,6 @@ public class FunTimeHelperModule extends Module {
         try {
             ItemStack mainHandItem = mc.player.getMainHandStack();
             ItemStack offHandItem = mc.player.getOffHandStack();
-
-            Vec3d playerPos = mc.player.getPos();
-            Vec3d centerPos = playerPos.add(0, -1.4, 0);
 
             if (isHolding(mainHandItem, Items.ENDER_EYE) || isHolding(offHandItem, Items.ENDER_EYE)) {
                 renderRadius(event, 10.0f, color);
@@ -80,7 +74,6 @@ public class FunTimeHelperModule extends Module {
 
             if (isHolding(mainHandItem, Items.DRIED_KELP) || isHolding(offHandItem, Items.DRIED_KELP)) {
                 renderPlane(event, color);
-                return;
             }
 
         } catch (Exception e) {
@@ -202,140 +195,124 @@ public class FunTimeHelperModule extends Module {
     }
 
     private void renderPlane(RenderEvents.World event, int color) {
-        if (mc.player == null || mc.world == null) return;
+        if (mc.player == null || mc.world == null || mc.cameraEntity == null) return;
 
         MatrixStack matrixStack = event.getMatrixStack();
         Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
 
         matrixStack.push();
         matrixStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-
-        Vec3d playerPos = mc.player.getPos();
-        Vec3d start = playerPos.add(0.0, mc.player.getStandingEyeHeight(), 0.0);
-        Vec3d lookVec = mc.player.getRotationVector();
-        Vec3d end = start.add(lookVec.x * 4.0, lookVec.y * 4.0, lookVec.z * 4.0);
-
-        RaycastContext context = new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player);
-        BlockHitResult rayResult = mc.world.raycast(context);
-
-        float pitch = mc.player.getPitch();
-        boolean isLookingDown = pitch > 45.0f;
-        boolean isLookingUp = pitch < -45.0f;
-        boolean isLookingHorizontal = !isLookingDown && !isLookingUp;
-
-        Vec3d planePos;
-        if (rayResult.getType() == HitResult.Type.BLOCK) {
-            BlockPos hitBlock = rayResult.getBlockPos();
-            Vec3d hitPos = rayResult.getPos();
-
-            if (isLookingDown) {
-                planePos = new Vec3d(
-                        Math.floor(hitPos.x) + 0.5,
-                        Math.floor(hitPos.y + 1.0) - 1.8 + 0.75,
-                        Math.floor(hitPos.z) + 0.5
-                );
-            } else if (isLookingUp) {
-                planePos = new Vec3d(
-                        Math.floor(hitPos.x) + 0.5,
-                        Math.floor(hitPos.y) - 0.75 + 1.6,
-                        Math.floor(hitPos.z) + 0.5
-                );
-            } else {
-                double offsetX = rayResult.getSide().getOffsetX() != 0 ? rayResult.getSide().getOffsetX() * 0.75 : 0;
-                double offsetZ = rayResult.getSide().getOffsetZ() != 0 ? rayResult.getSide().getOffsetZ() * 0.75 : 0;
-                planePos = new Vec3d(
-                        Math.floor(hitPos.x) + 0.5 + offsetX,
-                        Math.floor(hitPos.y) + 0.5 + 1.6,
-                        Math.floor(hitPos.z) + 0.5 + offsetZ
-                );
-            }
-        } else {
-            double distance = 4.0;
-            double dx = lookVec.x * distance;
-            double dy = lookVec.y * distance;
-            double dz = lookVec.z * distance;
-            planePos = start.add(dx, dy, dz);
-            double adjustedY = Math.floor(planePos.y) + (isLookingDown ? -1.8 + 0.75 : isLookingUp ? -0.75 + 1.6 : 0.5 + 1.6);
-            planePos = new Vec3d(Math.floor(planePos.x) + 0.5, adjustedY, Math.floor(planePos.z) + 0.5);
-        }
-
         setupRenderState();
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
 
-        matrixStack.push();
-        matrixStack.translate(planePos.x, planePos.y, planePos.z);
+        float pitch = mc.player.getPitch();
+        float yaw = MathHelper.wrapDegrees(mc.player.getYaw());
 
-        if (isLookingHorizontal) {
-            matrixStack.multiply(new Quaternionf().fromAxisAngleDeg(0, 1, 0, -mc.player.getYaw()));
-        }
+        if (Math.abs(pitch) > 60.0f) {
+            Vec3d start = mc.player.getEyePos();
+            Vec3d end = start.add(mc.player.getRotationVector().multiply(5.0));
+            RaycastContext context = new RaycastContext(start, end, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, mc.player);
+            Vec3d targetPos = mc.world.raycast(context).getPos();
 
-        float width = 4.0f;
-        float height = 4.0f;
-        float thickness = 1.5f;
-        float halfWidth = width / 2.0f;
-        float halfHeight = height / 2.0f;
-        float halfThickness = thickness / 2.0f;
+            matrixStack.push();
+            matrixStack.translate(targetPos.x, targetPos.y, targetPos.z);
+            matrixStack.multiply(mc.gameRenderer.getCamera().getRotation());
+            matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
 
-        float[][] vertices;
-        if (isLookingHorizontal) {
-            vertices = new float[][] {
-                    {-halfWidth, -halfHeight, -halfThickness},
-                    { halfWidth, -halfHeight, -halfThickness},
-                    { halfWidth,  halfHeight, -halfThickness},
-                    {-halfWidth,  halfHeight, -halfThickness},
-                    {-halfWidth, -halfHeight,  halfThickness},
-                    { halfWidth, -halfHeight,  halfThickness},
-                    { halfWidth,  halfHeight,  halfThickness},
-                    {-halfWidth,  halfHeight,  halfThickness}
-            };
+            float width = 5.0f;
+            float height = 4.0f;
+            float halfWidth = width / 2.0f;
+            float halfHeight = height / 2.0f;
+
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
+            Matrix4f matrix = matrixStack.peek().getPositionMatrix();
+            float[] colorArray = ColorUtility.normalize(color);
+            float r = colorArray[0], g = colorArray[1], b = colorArray[2], a = 1.0f;
+
+            bufferBuilder.vertex(matrix, -halfWidth, -halfHeight, 0).color(r, g, b, a);
+            bufferBuilder.vertex(matrix,  halfWidth, -halfHeight, 0).color(r, g, b, a);
+            bufferBuilder.vertex(matrix,  halfWidth,  halfHeight, 0).color(r, g, b, a);
+            bufferBuilder.vertex(matrix, -halfWidth,  halfHeight, 0).color(r, g, b, a);
+            bufferBuilder.vertex(matrix, -halfWidth, -halfHeight, 0).color(r, g, b, a);
+            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+
+            matrixStack.pop();
         } else {
-            vertices = new float[][] {
-                    {-halfWidth, -halfThickness, -halfHeight},
-                    { halfWidth, -halfThickness, -halfHeight},
-                    { halfWidth,  halfThickness, -halfHeight},
-                    {-halfWidth,  halfThickness, -halfHeight},
-                    {-halfWidth, -halfThickness,  halfHeight},
-                    { halfWidth, -halfThickness,  halfHeight},
-                    { halfWidth,  halfThickness,  halfHeight},
-                    {-halfWidth,  halfThickness,  halfHeight}
-            };
+            HitResult raycast = mc.cameraEntity.raycast(6.0, event.getPartialTicks(), false);
+            BlockPos centerPos;
+            if (raycast.getType() == HitResult.Type.BLOCK) {
+                centerPos = ((BlockHitResult) raycast).getBlockPos().offset(((BlockHitResult) raycast).getSide());
+            } else {
+                Vec3d posInFront = mc.player.getCameraPosVec(event.getPartialTicks()).add(mc.player.getRotationVector().multiply(4));
+                centerPos = BlockPos.ofFloored(posInFront);
+            }
+
+            float[] colorArray = ColorUtility.normalize(color);
+            float r = colorArray[0], g = colorArray[1], b = colorArray[2], a = 1.0f;
+
+            if (yaw >= -22.5f && yaw <= 22.5f) { // North
+                renderStraightWall(matrixStack, centerPos, Direction.Axis.X, r, g, b, a);
+            } else if (yaw > 22.5f && yaw <= 67.5f) { // North-East
+                renderZigzagWall(matrixStack, centerPos, new Vec3i(-1, 0, -1), r, g, b, a);
+            } else if (yaw > 67.5f && yaw <= 112.5f) { // East
+                renderStraightWall(matrixStack, centerPos, Direction.Axis.Z, r, g, b, a);
+            } else if (yaw > 112.5f && yaw <= 157.5f) { // South-East
+                renderZigzagWall(matrixStack, centerPos, new Vec3i(1, 0, -1), r, g, b, a);
+            } else if (yaw > 157.5f || yaw <= -157.5f) { // South
+                renderStraightWall(matrixStack, centerPos, Direction.Axis.X, r, g, b, a);
+            } else if (yaw > -157.5f && yaw <= -112.5f) { // South-West
+                renderZigzagWall(matrixStack, centerPos, new Vec3i(1, 0, 1), r, g, b, a);
+            } else if (yaw > -112.5f && yaw <= -67.5f) { // West
+                renderStraightWall(matrixStack, centerPos, Direction.Axis.Z, r, g, b, a);
+            } else if (yaw > -67.5f && yaw < -22.5f) { // North-West
+                renderZigzagWall(matrixStack, centerPos, new Vec3i(-1, 0, 1), r, g, b, a);
+            }
         }
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        Matrix4f matrix = matrixStack.peek().getPositionMatrix();
-        float[] colorArray = ColorUtility.normalize(color);
-
-        int[] outline = {0, 1, 2, 3, 0, 4, 5, 6, 7, 4};
-        for (int i : outline) {
-            bufferBuilder.vertex(matrix, vertices[i][0], vertices[i][1], vertices[i][2]).color(colorArray[0], colorArray[1], colorArray[2], 1.0f);
-        }
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-
-        bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        int[] verticalLines1 = {1, 5};
-        for (int i : verticalLines1) {
-            bufferBuilder.vertex(matrix, vertices[i][0], vertices[i][1], vertices[i][2]).color(colorArray[0], colorArray[1], colorArray[2], 1.0f);
-        }
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-
-        bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        int[] verticalLines2 = {2, 6};
-        for (int i : verticalLines2) {
-            bufferBuilder.vertex(matrix, vertices[i][0], vertices[i][1], vertices[i][2]).color(colorArray[0], colorArray[1], colorArray[2], 1.0f);
-        }
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-
-        bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        int[] verticalLines3 = {3, 7};
-        for (int i : verticalLines3) {
-            bufferBuilder.vertex(matrix, vertices[i][0], vertices[i][1], vertices[i][2]).color(colorArray[0], colorArray[1], colorArray[2], 1.0f);
-        }
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-
-        matrixStack.pop();
         cleanupRenderState();
         matrixStack.pop();
+    }
+
+    private void renderStraightWall(MatrixStack matrixStack, BlockPos centerPos, Direction.Axis axis, float r, float g, float b, float a) {
+        for (int i = -2; i <= 2; i++) {
+            BlockPos currentPos = (axis == Direction.Axis.X) ? centerPos.add(i, 0, 0) : centerPos.add(0, 0, i);
+            drawBoxOutline(matrixStack, currentPos.getX(), currentPos.getY(), currentPos.getZ(),
+                    currentPos.getX() + 1.0f, currentPos.getY() + 4.0f, currentPos.getZ() + 1.0f,
+                    r, g, b, a);
+        }
+    }
+
+    private void renderZigzagWall(MatrixStack matrixStack, BlockPos centerPos, Vec3i step, float r, float g, float b, float a) {
+        for (int i = -2; i <= 2; i++) {
+            BlockPos currentPos = centerPos.add(step.multiply(i));
+            drawBoxOutline(matrixStack, currentPos.getX(), currentPos.getY(), currentPos.getZ(),
+                    currentPos.getX() + 1.0f, currentPos.getY() + 4.0f, currentPos.getZ() + 1.0f,
+                    r, g, b, a);
+        }
+    }
+
+    private void drawBoxOutline(MatrixStack matrices, float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b, float a) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+
+        buffer.vertex(matrix, x1, y1, z1).color(r, g, b, a); buffer.vertex(matrix, x2, y1, z1).color(r, g, b, a);
+        buffer.vertex(matrix, x2, y1, z1).color(r, g, b, a); buffer.vertex(matrix, x2, y1, z2).color(r, g, b, a);
+        buffer.vertex(matrix, x2, y1, z2).color(r, g, b, a); buffer.vertex(matrix, x1, y1, z2).color(r, g, b, a);
+        buffer.vertex(matrix, x1, y1, z2).color(r, g, b, a); buffer.vertex(matrix, x1, y1, z1).color(r, g, b, a);
+
+        buffer.vertex(matrix, x1, y2, z1).color(r, g, b, a); buffer.vertex(matrix, x2, y2, z1).color(r, g, b, a);
+        buffer.vertex(matrix, x2, y2, z1).color(r, g, b, a); buffer.vertex(matrix, x2, y2, z2).color(r, g, b, a);
+        buffer.vertex(matrix, x2, y2, z2).color(r, g, b, a); buffer.vertex(matrix, x1, y2, z2).color(r, g, b, a);
+        buffer.vertex(matrix, x1, y2, z2).color(r, g, b, a); buffer.vertex(matrix, x1, y2, z1).color(r, g, b, a);
+
+        buffer.vertex(matrix, x1, y1, z1).color(r, g, b, a); buffer.vertex(matrix, x1, y2, z1).color(r, g, b, a);
+        buffer.vertex(matrix, x2, y1, z1).color(r, g, b, a); buffer.vertex(matrix, x2, y2, z1).color(r, g, b, a);
+        buffer.vertex(matrix, x2, y1, z2).color(r, g, b, a); buffer.vertex(matrix, x2, y2, z2).color(r, g, b, a);
+        buffer.vertex(matrix, x1, y1, z2).color(r, g, b, a); buffer.vertex(matrix, x1, y2, z2).color(r, g, b, a);
+
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
     }
 
     private void setupRenderState() {

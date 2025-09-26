@@ -2,433 +2,220 @@ package win.blade.core.module.storage.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
+import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import win.blade.common.gui.impl.gui.setting.implement.ColorSetting;
+import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.common.utils.color.ColorUtility;
-import win.blade.common.utils.math.MathUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @ModuleInfo(name = "ProjectileHelper", category = Category.RENDER, desc = "Предсказывает траекторию всех типов снарядов.")
 public class ProjectileHelper extends Module {
 
-    private static final Identifier CROSS_TEXTURE = Identifier.of("blade", "textures/cross.png");
+    private final ValueSetting thickness = new ValueSetting("Толщина", "Толщина линии цели.").setValue(1.0f).range(0.5f, 5.0f);
+    private final ColorSetting color = new ColorSetting("Цвет", "Цвет цели.").value(new Color(100, 150, 255, 255).getRGB());
+    private final ValueSetting circleWidth = new ValueSetting("Радиус круга", "Радиус круга в точке попадания.").setValue(0.3f).range(0.1f, 1.0f);
 
-    private final List<ProjectileTrajectory> trajectories = new ArrayList<>();
+    private static final Identifier BLOOM_TEXTURE = Identifier.of("blade", "textures/particle/bloom.png");
+
+    public ProjectileHelper() {
+        addSettings(thickness, color, circleWidth);
+    }
 
     @EventHandler
     public void onRender3D(RenderEvents.World event) {
-        if (mc.world == null || mc.player == null) return;
+        if (mc.world == null || mc.player == null || mc.gameRenderer == null) return;
 
-        trajectories.clear();
-        calculateAllTrajectories();
-
-        if (trajectories.isEmpty()) return;
-
-        MathUtility.lastMatrices(event.getMatrixStack(), RenderSystem.getProjectionMatrix());
-
-        renderAllImpactPoints(event.getMatrixStack());
+        setupRenderState();
+        drawPredictionInHand(event.getMatrixStack(), event.getPartialTicks());
+        cleanupRenderState();
     }
 
-    private void calculateAllTrajectories() {
-        ItemStack mainHand = mc.player.getMainHandStack();
-        ItemStack offHand = mc.player.getOffHandStack();
+    private void drawPredictionInHand(MatrixStack matrices, float tickDelta) {
+        Item activeItem = mc.player.getActiveItem().getItem();
+        Vec3d playerLookVec = mc.player.getRotationVec(tickDelta);
 
-        if (isProjectileWeapon(mainHand)) {
-            calculateTrajectoryForWeapon(mainHand);
-        }
-
-        if (isProjectileWeapon(offHand)) {
-            calculateTrajectoryForWeapon(offHand);
-        }
-
-        if (isThrowableItem(mainHand)) {
-            calculateThrowableTrajectory(mainHand);
-        } else if (isThrowableItem(offHand)) {
-            calculateThrowableTrajectory(offHand);
-        }
-    }
-
-    private void calculateTrajectoryForWeapon(ItemStack weapon) {
-        Item item = weapon.getItem();
-
-        if (item instanceof BowItem) {
-            calculateBowTrajectory(weapon);
-        } else if (item instanceof CrossbowItem) {
-            calculateCrossbowTrajectory(weapon);
-        } else if (item instanceof TridentItem && mc.player.isUsingItem()) {
-            calculateTridentTrajectory(weapon);
-        }
-    }
-
-    private void calculateBowTrajectory(ItemStack bow) {
-        if (!mc.player.isUsingItem() || mc.player.getActiveItem() != bow) return;
-
-        int useTicks = mc.player.getItemUseTime();
-        float pullProgress = BowItem.getPullProgress(useTicks);
-
-        if (pullProgress < 0.1f) return;
-
-        ItemStack arrow = findArrowInInventory();
-        if (arrow.isEmpty()) arrow = new ItemStack(Items.ARROW);
-
-        float velocity = pullProgress * 3.0f;
-        ProjectileTrajectory trajectory = calculateProjectileTrajectory(arrow, velocity, 0.05f, 0.99f, false);
-        if (trajectory != null) {
-            trajectories.add(trajectory);
-        }
-    }
-
-    private void calculateCrossbowTrajectory(ItemStack crossbow) {
-        ChargedProjectilesComponent chargedProjectiles = crossbow.get(DataComponentTypes.CHARGED_PROJECTILES);
-        if (chargedProjectiles == null || chargedProjectiles.isEmpty()) return;
-
-        List<ItemStack> projectiles = chargedProjectiles.getProjectiles();
-        boolean hasMultishot = hasMultishotEnchantment(crossbow);
-
-        if (hasMultishot) {
-            ItemStack mainProjectile = projectiles.get(0);
-            ProjectileTrajectory mainTrajectory = calculateProjectileTrajectory(mainProjectile, 3.15f, 0.05f, 0.99f, false);
-            if (mainTrajectory != null) {
-                trajectories.add(mainTrajectory);
-            }
-
-            for (int i = 0; i < 2; i++) {
-                float yawOffset = (i == 0) ? -10f : 10f;
-                ProjectileTrajectory sideTrajectory = calculateProjectileTrajectory(mainProjectile, 3.15f, 0.05f, 0.99f, false, yawOffset, 0f);
-                if (sideTrajectory != null) {
-                    sideTrajectory.isMultishot = true;
-                    trajectories.add(sideTrajectory);
+        for (ItemStack stack : mc.player.getHandItems()) {
+            List<HitResult> results = switch (stack.getItem()) {
+                case ExperienceBottleItem item -> List.of(calculateHitResult(playerLookVec, 0.7, 0.07f));
+                case SplashPotionItem item -> List.of(calculateHitResult(playerLookVec, 0.5, 0.05f));
+                case LingeringPotionItem item -> List.of(calculateHitResult(playerLookVec, 0.5, 0.05f));
+                case TridentItem item when item.equals(activeItem) && mc.player.getItemUseTime() >= 10 -> List.of(calculateHitResult(playerLookVec, 2.5, 0.05f));
+                case SnowballItem item -> List.of(calculateHitResult(playerLookVec, 1.5, 0.03f));
+                case EggItem item -> List.of(calculateHitResult(playerLookVec, 1.5, 0.03f));
+                case EnderPearlItem item -> List.of(calculateHitResult(playerLookVec, 1.5, 0.03f));
+                case BowItem item when item.equals(activeItem) && mc.player.isUsingItem() -> {
+                    float power = BowItem.getPullProgress(mc.player.getItemUseTime());
+                    yield List.of(calculateHitResult(playerLookVec, power * 3.0, 0.05f));
                 }
+                case CrossbowItem item when CrossbowItem.isCharged(stack) -> {
+                    ChargedProjectilesComponent component = stack.get(DataComponentTypes.CHARGED_PROJECTILES);
+                    List<HitResult> list = new ArrayList<>();
+                    if (component != null) {
+                        float velocity = component.getProjectiles().getFirst().isOf(Items.FIREWORK_ROCKET) ? 1.6f : 3.15f;
+                        list.add(calculateHitResult(playerLookVec, velocity, 0.05f));
+                    }
+                    yield list;
+                }
+                default -> null;
+            };
+
+            if (results != null) {
+                results = results.stream().filter(r -> r != null && r.getType() != HitResult.Type.MISS).toList();
+                if (!results.isEmpty()) {
+                    renderImpacts(matrices, mc.gameRenderer.getCamera(), results);
+                }
+                return;
             }
-        } else {
-            ItemStack projectile = projectiles.get(0);
-            ProjectileTrajectory trajectory = calculateProjectileTrajectory(projectile, 3.15f, 0.05f, 0.99f, false);
-            if (trajectory != null) {
-                trajectories.add(trajectory);
-            }
         }
     }
 
-    private void calculateTridentTrajectory(ItemStack trident) {
-        int useTicks = mc.player.getItemUseTime();
-        float chargeProgress = Math.min(useTicks / 10.0f, 1.0f);
+    private HitResult calculateHitResult(Vec3d lookVec, double velocity, double gravity) {
+        Vec3d pos = mc.player.getEyePos();
+        Vec3d motion = lookVec.multiply(velocity);
 
-        if (chargeProgress < 0.1f) return;
-
-        float velocity = chargeProgress * 2.5f + 0.5f;
-        ProjectileTrajectory trajectory = calculateProjectileTrajectory(trident, velocity, 0.05f, 0.99f, false);
-        if (trajectory != null) {
-            trajectories.add(trajectory);
-        }
-    }
-
-    private void calculateThrowableTrajectory(ItemStack stack) {
-        ProjectileTrajectory trajectory = calculateProjectileTrajectory(stack, getThrowableVelocity(stack.getItem()), getThrowableGravity(stack.getItem()), 0.99f, true);
-        if (trajectory != null) {
-            trajectories.add(trajectory);
-        }
-    }
-
-    private ProjectileTrajectory calculateProjectileTrajectory(ItemStack projectile, float velocity, double gravity, double airResistance, boolean isThrowable) {
-        return calculateProjectileTrajectory(projectile, velocity, gravity, airResistance, isThrowable, 0f, 0f);
-    }
-
-    private ProjectileTrajectory calculateProjectileTrajectory(ItemStack projectile, float velocity, double gravity, double airResistance, boolean isThrowable, float yawOffset, float pitchOffset) {
-        Vec3d startPos = mc.player.getEyePos();
-
-        if (isThrowable) {
-            startPos = startPos.subtract(0, 0.1, 0);
-        }
-
-        Vec3d direction = getShootingDirection(yawOffset, pitchOffset);
-
-        Vec3d motion = direction.multiply(velocity);
-
-        Vec3d playerVelocity = mc.player.getVelocity();
-        motion = motion.add(playerVelocity.x, playerVelocity.y, playerVelocity.z);
-
-        List<TrajectoryPoint> points = new ArrayList<>();
-        Vec3d pos = startPos;
-        points.add(new TrajectoryPoint(pos, 0));
-
-        for (int tick = 1; tick < 300; tick++) {
+        for (int i = 0; i < 300; i++) {
             Vec3d lastPos = pos;
-
             pos = pos.add(motion);
+            motion = getUpdatedMotion(motion, pos, gravity);
 
-            motion = updateProjectileMotionAccurate(motion, pos, gravity, airResistance, isThrowable, projectile.getItem());
-
-            points.add(new TrajectoryPoint(pos, tick));
-
-            HitResult hitResult = checkCollisionAccurate(lastPos, pos);
-            if (hitResult != null) {
-                ProjectileTrajectory trajectory = new ProjectileTrajectory();
-                trajectory.points = points;
-                trajectory.impactPoint = hitResult.getPos();
-                trajectory.flightTime = tick;
-                trajectory.projectileItem = projectile.copy();
-                trajectory.isMultishot = false;
-                trajectory.hitEntity = hitResult instanceof EntityHitResult;
-                return trajectory;
+            HitResult collisionResult = mc.world.raycast(new RaycastContext(lastPos, pos, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player));
+            if (collisionResult.getType() != HitResult.Type.MISS) {
+                return collisionResult;
             }
 
-            if (pos.y <= mc.world.getBottomY() || pos.y > 320) {
-                ProjectileTrajectory trajectory = new ProjectileTrajectory();
-                trajectory.points = points;
-                trajectory.impactPoint = pos;
-                trajectory.flightTime = tick;
-                trajectory.projectileItem = projectile.copy();
-                trajectory.isMultishot = false;
-                return trajectory;
+            if (pos.y < mc.world.getBottomY()) {
+                return new BlockHitResult(pos, Direction.DOWN, BlockPos.ofFloored(pos), false);
             }
         }
-
-        return null;
+        return new BlockHitResult(pos, Direction.DOWN, BlockPos.ofFloored(pos), false);
     }
 
-    private Vec3d updateProjectileMotionAccurate(Vec3d motion, Vec3d pos, double gravity, double airResistance, boolean isThrowable, Item item) {
-        BlockPos blockPos = BlockPos.ofFloored(pos);
-        boolean inWater = mc.world.getBlockState(blockPos).isOf(Blocks.WATER);
-        boolean inLava = mc.world.getBlockState(blockPos).isOf(Blocks.LAVA);
-
-        if (inWater) {
-            if (isThrowable) {
-                if (item == Items.EXPERIENCE_BOTTLE) {
-                    motion = motion.multiply(0.75);
-                } else {
-                    motion = motion.multiply(0.8);
-                }
-            } else {
-                motion = motion.multiply(0.6);
-            }
-        } else if (inLava) {
-            motion = motion.multiply(0.5);
-        } else {
-            if (isThrowable) {
-                motion = motion.multiply(0.99);
-            } else {
-                motion = motion.multiply(airResistance);
-            }
-        }
-
-        double actualGravity = gravity;
-        if (isThrowable) {
-            actualGravity = getAccurateGravity(item);
-        }
-
-        motion = motion.subtract(0, actualGravity, 0);
-
-        return motion;
+    private Vec3d getUpdatedMotion(Vec3d motion, Vec3d pos, double gravity) {
+        boolean inWater = mc.world.getFluidState(BlockPos.ofFloored(pos)).isIn(FluidTags.WATER);
+        double drag = inWater ? 0.8 : 0.99;
+        return motion.multiply(drag).subtract(0, gravity, 0);
     }
 
-    private double getAccurateGravity(Item item) {
-        if (item == Items.ENDER_PEARL) return 0.03;
-        if (item == Items.SNOWBALL) return 0.03;
-        if (item == Items.EGG) return 0.03;
-        if (item == Items.SPLASH_POTION) return 0.05;
-        if (item == Items.LINGERING_POTION) return 0.05;
-        if (item == Items.EXPERIENCE_BOTTLE) return 0.07;
-        return 0.03;
-    }
-
-    private HitResult checkCollisionAccurate(Vec3d start, Vec3d end) {
-        BlockHitResult blockHit = mc.world.raycast(new RaycastContext(
-                start, end,
-                RaycastContext.ShapeType.COLLIDER,
-                RaycastContext.FluidHandling.NONE,
-                mc.player
-        ));
-
-        if (blockHit.getType() == HitResult.Type.BLOCK) {
-            return blockHit;
-        }
-
-        double projectileRadius = 0.25;
-
-        for (Entity entity : mc.world.getEntities()) {
-            if (entity == mc.player) continue;
-            if (entity instanceof PlayerEntity && !shouldHitPlayer((PlayerEntity) entity)) continue;
-
-            var expandedBox = entity.getBoundingBox().expand(projectileRadius);
-            var raycastResult = expandedBox.raycast(start, end);
-
-            if (raycastResult.isPresent()) {
-                EntityHitResult entityHit = new EntityHitResult(entity, raycastResult.get());
-                return entityHit;
-            }
-        }
-
-        return null;
-    }
-
-    private Vec3d getShootingDirection(float yawOffset, float pitchOffset) {
-        float pitch = (float) Math.toRadians(mc.player.getPitch() + pitchOffset);
-        float yaw = (float) Math.toRadians(mc.player.getYaw() + yawOffset);
-
-        float x = -MathHelper.sin(yaw) * MathHelper.cos(pitch);
-        float y = -MathHelper.sin(pitch);
-        float z = MathHelper.cos(yaw) * MathHelper.cos(pitch);
-
-        return new Vec3d(x, y, z);
-    }
-
-    private float getThrowableVelocity(Item item) {
-        if (item == Items.ENDER_PEARL) return 1.5f;
-        if (item == Items.SNOWBALL) return 1.5f;
-        if (item == Items.EGG) return 1.5f;
-        if (item == Items.SPLASH_POTION) return 0.8f;
-        if (item == Items.LINGERING_POTION) return 0.8f;
-        if (item == Items.EXPERIENCE_BOTTLE) return 0.7f;
-        return 1.5f;
-    }
-
-    private double getThrowableGravity(Item item) {
-        if (item == Items.ENDER_PEARL) return 0.03;
-        if (item == Items.SNOWBALL) return 0.03;
-        if (item == Items.EGG) return 0.03;
-        if (item == Items.SPLASH_POTION) return 0.05;
-        if (item == Items.LINGERING_POTION) return 0.05;
-        if (item == Items.EXPERIENCE_BOTTLE) return 0.07;
-        return 0.03;
-    }
-
-    private ItemStack findArrowInInventory() {
-        ItemStack offHand = mc.player.getOffHandStack();
-        if (offHand.getItem() instanceof ArrowItem) {
-            return offHand;
-        }
-
-        for (int i = 0; i < mc.player.getInventory().size(); i++) {
-            ItemStack stack = mc.player.getInventory().getStack(i);
-            if (stack.getItem() instanceof ArrowItem) {
-                return stack;
-            }
-        }
-
-        return ItemStack.EMPTY;
-    }
-
-    private boolean hasMultishotEnchantment(ItemStack crossbow) {
-        if (mc.world == null) return false;
-
-        try {
-            var enchantments = EnchantmentHelper.getEnchantments(crossbow);
-
-            for (var entry : enchantments.getEnchantmentEntries()) {
-                var enchantment = entry.getKey();
-                if (enchantment.getIdAsString().equals("minecraft:multishot")) {
-                    return entry.getIntValue() > 0;
-                }
-            }
-        } catch (Exception e) {
-        }
-
-        return false;
-    }
-
-    private HitResult checkCollision(Vec3d start, Vec3d end) {
-        BlockHitResult blockHit = mc.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player));
-
-        if (blockHit.getType() == HitResult.Type.BLOCK) {
-            return blockHit;
-        }
-
-        for (Entity entity : mc.world.getEntities()) {
-            if (entity == mc.player) continue;
-            if (entity instanceof PlayerEntity && !shouldHitPlayer((PlayerEntity) entity)) continue;
-
-            if (entity.getBoundingBox().raycast(start, end).isPresent()) {
-                return new EntityHitResult(entity);
-            }
-        }
-
-        return null;
-    }
-
-    private boolean shouldHitPlayer(PlayerEntity player) {
-        return true;
-    }
-
-    private void renderAllImpactPoints(MatrixStack matrices) {
-        Camera camera = mc.gameRenderer.getCamera();
+    private void renderImpacts(MatrixStack matrices, Camera camera, List<HitResult> results) {
         Vec3d cameraPos = camera.getPos();
+        matrices.push();
+        matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        for (ProjectileTrajectory trajectory : trajectories) {
-            if (trajectory.impactPoint == null) continue;
+        float quadRadius = thickness.getValue() * 0.02f;
+        float[] c = ColorUtility.normalize(color.getColor());
+
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+        RenderSystem.setShaderTexture(0, BLOOM_TEXTURE);
+        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+
+        for (HitResult result : results) {
+            drawGlowingCircle(matrices, camera.getRotation(), bufferBuilder, result, quadRadius, c);
+        }
+
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+        matrices.pop();
+    }
+
+    private void drawGlowingCircle(MatrixStack matrices, Quaternionf cameraRotation, BufferBuilder bufferBuilder, HitResult result, float quadRadius, float[] color) {
+        Vec3d center = result.getPos();
+        float width = circleWidth.getValue();
+        Direction direction = getDirection(result);
+
+        Quaternionf surfaceRotation = switch (direction) {
+            case WEST, EAST -> RotationAxis.POSITIVE_Z.rotationDegrees(90);
+            case NORTH, SOUTH -> RotationAxis.POSITIVE_X.rotationDegrees(90);
+            default -> new Quaternionf();
+        };
+
+        // Рендер круга
+        int segments = 90;
+        for (int i = 0; i < segments; i++) {
+            double angle1 = i * (Math.PI * 2) / segments;
+            double angle2 = (i + 1) * (Math.PI * 2) / segments;
+
+            Vec3d p1_local = new Vec3d(Math.cos(angle1) * width, 0, Math.sin(angle1) * width);
+            Vec3d p2_local = new Vec3d(Math.cos(angle2) * width, 0, Math.sin(angle2) * width);
+
+            addGlowingLineToBuffer(matrices, cameraRotation, bufferBuilder,
+                    transformLocalToWorld(p1_local, surfaceRotation, center),
+                    transformLocalToWorld(p2_local, surfaceRotation, center),
+                    quadRadius, color);
+        }
+
+        // Рендер перекрестия
+        Vec3d cross1_start_local = new Vec3d(-width, 0, 0);
+        Vec3d cross1_end_local = new Vec3d(width, 0, 0);
+        Vec3d cross2_start_local = new Vec3d(0, 0, -width);
+        Vec3d cross2_end_local = new Vec3d(0, 0, width);
+
+        addGlowingLineToBuffer(matrices, cameraRotation, bufferBuilder,
+                transformLocalToWorld(cross1_start_local, surfaceRotation, center),
+                transformLocalToWorld(cross1_end_local, surfaceRotation, center),
+                quadRadius, color);
+        addGlowingLineToBuffer(matrices, cameraRotation, bufferBuilder,
+                transformLocalToWorld(cross2_start_local, surfaceRotation, center),
+                transformLocalToWorld(cross2_end_local, surfaceRotation, center),
+                quadRadius, color);
+    }
+
+    private Vec3d transformLocalToWorld(Vec3d local, Quaternionf rotation, Vec3d origin) {
+        Vector3f local_f = local.toVector3f();
+        rotation.transform(local_f);
+        return origin.add(new Vec3d(local_f));
+    }
+
+    private void addGlowingLineToBuffer(MatrixStack matrices, Quaternionf cameraRotation, BufferBuilder bufferBuilder, Vec3d start, Vec3d end, float quadRadius, float[] color) {
+        int segments = (int) Math.max(1, start.distanceTo(end) * 20);
+        for (int j = 0; j <= segments; j++) {
+            Vec3d interpPos = start.lerp(end, (double) j / segments);
 
             matrices.push();
-            matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-            matrices.translate(trajectory.impactPoint.x, trajectory.impactPoint.y, trajectory.impactPoint.z);
+            matrices.translate(interpPos.x, interpPos.y, interpPos.z);
+            matrices.multiply(cameraRotation);
 
-            setupRenderState();
-
-            int color = trajectory.hitEntity ? new Color(0, 255, 0).getRGB() : new Color(255, 0, 0).getRGB();
-            float[] c = ColorUtility.normalize(color);
-            float size = 0.3f;
-
-            RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
-            RenderSystem.setShaderTexture(0, CROSS_TEXTURE);
-
-            BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             Matrix4f matrix = matrices.peek().getPositionMatrix();
+            bufferBuilder.vertex(matrix, -quadRadius, -quadRadius, 0).texture(0, 0).color(color[0], color[1], color[2], color[3]);
+            bufferBuilder.vertex(matrix, -quadRadius, quadRadius, 0).texture(0, 1).color(color[0], color[1], color[2], color[3]);
+            bufferBuilder.vertex(matrix, quadRadius, quadRadius, 0).texture(1, 1).color(color[0], color[1], color[2], color[3]);
+            bufferBuilder.vertex(matrix, quadRadius, -quadRadius, 0).texture(1, 0).color(color[0], color[1], color[2], color[3]);
 
-            bufferBuilder.vertex(matrix, -size, -size, 0).texture(0, 0).color(c[0], c[1], c[2], c[3]);
-            bufferBuilder.vertex(matrix, -size, size, 0).texture(0, 1).color(c[0], c[1], c[2], c[3]);
-            bufferBuilder.vertex(matrix, size, size, 0).texture(1, 1).color(c[0], c[1], c[2], c[3]);
-            bufferBuilder.vertex(matrix, size, -size, 0).texture(1, 0).color(c[0], c[1], c[2], c[3]);
-
-            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-            cleanupRenderState();
             matrices.pop();
         }
     }
 
-    private boolean isProjectileWeapon(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        Item item = stack.getItem();
-        return item instanceof BowItem || item instanceof CrossbowItem || item instanceof TridentItem;
-    }
-
-    private boolean isThrowableItem(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-
-        Item item = stack.getItem();
-        return item == Items.ENDER_PEARL ||
-                item == Items.SNOWBALL ||
-                item == Items.EGG ||
-                item == Items.SPLASH_POTION ||
-                item == Items.LINGERING_POTION ||
-                item == Items.EXPERIENCE_BOTTLE;
+    private Direction getDirection(HitResult result) {
+        if (result instanceof BlockHitResult blockHitResult) {
+            return blockHitResult.getSide();
+        }
+        return Direction.getFacing(result.getPos().subtract(mc.player.getEyePos()).normalize());
     }
 
     private void setupRenderState() {
         RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
         RenderSystem.disableCull();
         RenderSystem.depthMask(false);
     }
@@ -437,24 +224,5 @@ public class ProjectileHelper extends Module {
         RenderSystem.depthMask(true);
         RenderSystem.enableCull();
         RenderSystem.defaultBlendFunc();
-    }
-
-    private static class ProjectileTrajectory {
-        public List<TrajectoryPoint> points = new ArrayList<>();
-        public Vec3d impactPoint;
-        public float flightTime;
-        public ItemStack projectileItem = ItemStack.EMPTY;
-        public boolean isMultishot = false;
-        public boolean hitEntity = false;
-    }
-
-    private static class TrajectoryPoint {
-        public final Vec3d position;
-        public final int tick;
-
-        public TrajectoryPoint(Vec3d position, int tick) {
-            this.position = position;
-            this.tick = tick;
-        }
     }
 }

@@ -1,43 +1,42 @@
 package win.blade.common.gui.impl.gui.components.implement.window.implement.other;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.util.Identifier;
-import win.blade.common.gui.button.Button;
 import win.blade.common.gui.impl.gui.components.implement.other.ButtonComponent;
-import win.blade.common.gui.impl.gui.components.implement.settings.TextComponent;
 import win.blade.common.gui.impl.gui.components.implement.window.AbstractWindow;
 import win.blade.common.gui.impl.gui.components.implement.window.WindowManager;
-import win.blade.common.gui.impl.gui.setting.implement.TextSetting;
 import win.blade.common.gui.impl.screen.account.Account;
-import win.blade.common.gui.impl.screen.account.AccountSaver;
 import win.blade.common.gui.impl.screen.account.AccountScreen;
+import win.blade.common.gui.impl.screen.example.TextBox;
 import win.blade.common.utils.color.ColorUtility;
+import win.blade.common.utils.other.TextAlign;
 import win.blade.common.utils.render.builders.Builder;
-import win.blade.common.utils.render.builders.states.QuadColorState;
-import win.blade.common.utils.render.builders.states.QuadRadiusState;
-import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.msdf.FontType;
 
-import java.awt.*;
+import java.awt.Color;
 
-/**
- * Автор Ieo117
- * Дата создания: 25.07.2025, в 16:27:34
- */
 public class AccountEditWindow extends AbstractWindow {
 
-    public TextSetting textSetting;
-    public TextComponent textComponent;
+    public TextBox usernameBox;
     public ButtonComponent saveComponent;
     public ButtonComponent deleteComponent;
     public Account account;
 
-    public AccountEditWindow(Account account){
+    public AccountEditWindow(Account account) {
         this.account = account;
-        textSetting = new TextSetting("Username", "").setMax(16).setMin(3).setText(account.getUsername());
-        textComponent = (TextComponent) new TextComponent(textSetting).withoutRenderingDescription();
+
+        this.usernameBox = new TextBox(
+                0, 0,
+                55,
+                FontType.sf_regular.get(),
+                4.5f,
+                Color.WHITE.getRGB(),
+                TextAlign.LEFT,
+                "Username",
+                false,
+                false
+        );
+        this.usernameBox.setText(account.getUsername());
+
         saveComponent = new ButtonComponent();
         deleteComponent = new ButtonComponent();
 
@@ -51,7 +50,7 @@ public class AccountEditWindow extends AbstractWindow {
 
         Builder.rectangle()
                 .size(width - 16.5f, 1f)
-                .color(ColorUtility.pack(255, 255, 255, (int) (100)))
+                .color(ColorUtility.pack(255, 255, 255, 100))
                 .radius(2)
                 .build()
                 .render(x + 9, y + 23);
@@ -68,7 +67,7 @@ public class AccountEditWindow extends AbstractWindow {
                 .render(x + 12, y + 8);
 
 
-        ((ButtonComponent) deleteComponent.position(buttonX - 4, y + 29.5f).size(25, 0))
+        ((ButtonComponent) deleteComponent.position(buttonX, y + 30).size(25, 0))
                 .setText("Delete")
                 .setColor(ColorUtility.fromHex("1C1A25").getRGB())
                 .setRunnable(this::delete)
@@ -82,17 +81,31 @@ public class AccountEditWindow extends AbstractWindow {
                 .build()
                 .render(x + 12, y + 30.25f);
 
-        ((TextComponent) textComponent.position(x + 3.25f, y + 39).size(width, 0)).render(context, mouseX, mouseY, delta);
-//
-//        AbstractTexture checkTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/check.png"));
-//
-//        Builder.texture()
-//                .size(new SizeState(18/2, 18/2))
-//                .color(new QuadColorState(Color.WHITE))
-//                .texture(0f, 0f, 1f, 1f, checkTexture)
-//                .radius(new QuadRadiusState(0f))
-//                .build()
-//                .render(x + width - 15f, y + 47.5f);
+        float inputRowY = y + 42;
+        float boxHeight = 10;
+        float boxWidth = 50;
+        float boxX = x + width - boxWidth - 12;
+        float labelFontSize = 6.5f;
+
+        Builder.text()
+                .text("Username")
+                .font(FontType.popins_regular.get())
+                .size(labelFontSize)
+                .color(-1)
+                .build()
+                .render(x + 12, inputRowY + (boxHeight - labelFontSize) / 2f + 3.5f);
+
+        Builder.rectangle()
+                .size(boxWidth, boxHeight)
+                .color(ColorUtility.fromHex("1C1A25").getRGB())
+                .radius(3)
+                .build()
+                .render(boxX, inputRowY +5.5f);
+
+        usernameBox.y = inputRowY + (boxHeight - usernameBox.fontSize) / 2f +5.5f;
+        usernameBox.x = boxX + 4;
+        usernameBox.setWidth(boxWidth - 8);
+        usernameBox.draw(context, 1.0f);
 
 
         float saveYGap = 65;
@@ -114,52 +127,56 @@ public class AccountEditWindow extends AbstractWindow {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if(textComponent.keyPressed(keyCode, scanCode, modifiers)) return true;
+        if (usernameBox.selected) {
+            usernameBox.keyPressed(keyCode, scanCode, modifiers);
+            return true;
+        }
 
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        if(textComponent.charTyped(chr, modifiers)) return true;
+        if (usernameBox.selected) {
+            usernameBox.charTyped(chr, modifiers);
+            return true;
+        }
 
         return super.charTyped(chr, modifiers);
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if(textComponent.mouseReleased(mouseX, mouseY, button)) return true;
-
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if(textComponent.mouseClicked(mouseX, mouseY, button)) return true;
+        usernameBox.mouseClicked(mouseX, mouseY, button);
+        if (usernameBox.selected) return true;
 
         boolean clicked = saveComponent.mouseClicked(mouseX, mouseY, button);
 
-        if(!clicked){
+        if (!clicked) {
             clicked = deleteComponent.mouseClicked(mouseX, mouseY, button);
         }
 
-        if(clicked) return true;
+        if (clicked) return true;
 
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    public void save(){
+    public void save() {
         var existingWindow = windowManager.findWindow("accountEditor");
 
-        if(existingWindow != null){
+        if (existingWindow != null) {
             windowManager.delete(existingWindow);
         }
 
-//        AccountScreen.instance.selected = account;
-        AccountScreen.instance.replace(account, textSetting.getText());
+        AccountScreen.instance.replace(account, usernameBox.getText());
     }
 
-    public void delete(){
+    public void delete() {
         AccountScreen.instance.delete(account);
     }
 }
