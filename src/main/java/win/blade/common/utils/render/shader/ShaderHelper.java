@@ -23,10 +23,9 @@ public class ShaderHelper implements MinecraftInstance {
     private static SimpleFramebuffer reflectionFbo;
     private static SimpleFramebuffer colorGradingFbo;
     private static SolidShader solidShader;
+    private static LiquidGlassShader liquidGlassShader;
 
     private static GhostShader ghostShader;
-
-
 
     private static boolean initialized = false;
 
@@ -42,6 +41,7 @@ public class ShaderHelper implements MinecraftInstance {
             blurredShader = new BlurredShader();
             jumpCircleShader = new JumpCircleShader();
             solidShader = new SolidShader();
+            liquidGlassShader = new LiquidGlassShader();
             ghostShader = new GhostShader();
             initialized = true;
         } catch (Exception e) {
@@ -149,6 +149,10 @@ public class ShaderHelper implements MinecraftInstance {
 
     public static SolidShader getSolidShader() {
         return solidShader;
+    }
+
+    public static LiquidGlassShader getLiquidGlassShader() {
+        return liquidGlassShader;
     }
 
     public static GhostShader getGhostShader() {
