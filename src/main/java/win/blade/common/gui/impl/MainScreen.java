@@ -75,22 +75,24 @@ public class MainScreen extends BaseScreen {
 
         Color color = new Color(200, 200, 200);
 
+
+
         Builder.texture()
                 .size(new SizeState(iconSize, iconSize))
                 .svgTexture(Identifier.of("blade", "textures/svg/icons/discord.svg"))
-                .color(new QuadColorState(color))
+                .color(new QuadColorState(MathUtility.isHovered(mouseX, mouseY, discordX, iconsY, iconSize, iconSize) ? new Color(64, 64, 255) : color))
                 .build().render(matrix, discordX, iconsY);
 
         Builder.texture()
                 .size(new SizeState(iconSize, iconSize))
                 .svgTexture(Identifier.of("blade", "textures/svg/icons/telegram.svg"))
-                .color(new QuadColorState(color))
+                .color(new QuadColorState(MathUtility.isHovered(mouseX, mouseY, telegramX, iconsY, iconSize, iconSize) ? new Color(30, 117, 214) : color))
                 .build().render(matrix, telegramX, iconsY);
 
         Builder.texture()
                 .size(new SizeState(iconSize, iconSize))
                 .svgTexture(Identifier.of("blade", "textures/svg/icons/website.svg"))
-                .color(new QuadColorState(color))
+                .color(new QuadColorState(MathUtility.isHovered(mouseX, mouseY, websiteX, iconsY, iconSize, iconSize) ? new Color(102, 60, 255) : color))
                 .build().render(matrix, websiteX, iconsY);
     }
 
