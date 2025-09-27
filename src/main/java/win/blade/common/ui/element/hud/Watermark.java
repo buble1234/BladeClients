@@ -48,7 +48,7 @@ public class Watermark extends Module implements MinecraftInstance, NonRegistrab
             return;
         }
 
-        wUIElement.update(true);
+        wUIElement.update();
         wUIElement.render(e.getDrawContext());
     }
 

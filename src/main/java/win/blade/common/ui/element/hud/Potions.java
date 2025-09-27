@@ -59,7 +59,7 @@ public class Potions extends Module implements MinecraftInstance, NonRegistrable
             return;
         }
 
-        wUIElement.update(true);
+        wUIElement.update();
         wUIElement.render(e.getDrawContext());
     }
 
