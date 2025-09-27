@@ -145,7 +145,7 @@ public class Esp extends Module {
                 .size(new SizeState(nameWidth + 2, fontHeight + 1))
                 .color(new QuadColorState(back))
                 .build()
-                .render(centerX - (nameWidth / 2F) - 1, y + 1);
+                .render(centerX - (nameWidth / 2F) - 1, y);
 
         Builder.text()
                 .font(FontType.sf_regular.get())

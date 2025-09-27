@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
@@ -63,6 +62,7 @@ public class TargetESP extends Module {
     public void onEnable() {
         startTime = System.currentTimeMillis();
         alphaAnimation.set(0);
+        lastTarget = null;
     }
 
     @EventHandler
@@ -70,39 +70,44 @@ public class TargetESP extends Module {
         if (mc.player == null || mc.world == null || mc.gameRenderer == null) return;
 
         AuraModule aura = Manager.getModuleManagement().get(AuraModule.class);
-        if (aura == null || !aura.isEnabled()) return;
-
-        Entity target = aura.getCurrentTarget();
+        Entity target = (aura != null && aura.isEnabled()) ? aura.getCurrentTarget() : null;
 
         if (target != lastTarget) {
-            if (target instanceof PlayerEntity) {
+            if (target != null) {
                 alphaAnimation.run(1.0, 5, Easing.EASE_OUT_CUBIC);
             } else {
                 alphaAnimation.run(0.0, 5, Easing.EASE_IN_CUBIC);
             }
-            lastTarget = target;
         }
 
         alphaAnimation.update();
 
-        if (!(target instanceof PlayerEntity) || alphaAnimation.get() <= 0.01f) return;
+        Entity entityToRender = target != null ? target : lastTarget;
+
+        if (alphaAnimation.get() <= 0.01f || entityToRender == null) {
+            lastTarget = target;
+            return;
+        }
 
         ShaderHelper.initShadersIfNeeded();
-        if (!ShaderHelper.isInitialized()) return;
+        if (!ShaderHelper.isInitialized()) {
+            lastTarget = target;
+            return;
+        }
 
         MatrixStack matrices = event.getMatrixStack();
         Vec3d camPos = mc.gameRenderer.getCamera().getPos();
 
-        double targetX = MathHelper.lerp(event.getPartialTicks(), target.prevX, target.getX());
-        double targetY = MathHelper.lerp(event.getPartialTicks(), target.prevY, target.getY());
-        double targetZ = MathHelper.lerp(event.getPartialTicks(), target.prevZ, target.getZ());
+        double targetX = MathHelper.lerp(event.getPartialTicks(), entityToRender.prevX, entityToRender.getX());
+        double targetY = MathHelper.lerp(event.getPartialTicks(), entityToRender.prevY, entityToRender.getY());
+        double targetZ = MathHelper.lerp(event.getPartialTicks(), entityToRender.prevZ, entityToRender.getZ());
 
         float alpha = alphaAnimation.get();
 
         if (Objects.equals(mode.getSelected(), "Призраки")) {
             setupRender();
             Matrix4f projectionMatrix = RenderSystem.getProjectionMatrix();
-            renderGhosts(matrices, projectionMatrix, camPos, targetX, targetY, targetZ, target, alpha);
+            renderGhosts(matrices, projectionMatrix, camPos, targetX, targetY, targetZ, entityToRender, alpha);
             cleanupRender();
         } else if (Objects.equals(mode.getSelected(), "Тор")) {
             animation.update();
@@ -112,8 +117,10 @@ public class TargetESP extends Module {
 
             float fov = (float) mc.gameRenderer.getFov(event.getCamera(), event.getPartialTicks(), true);
             Matrix4f projectionMatrix = mc.gameRenderer.getBasicProjectionMatrix(fov);
-            renderTorus(matrices, projectionMatrix, camPos, targetX, targetY, targetZ, target, event.getPartialTicks(), alpha);
+            renderTorus(matrices, projectionMatrix, camPos, targetX, targetY, targetZ, entityToRender, event.getPartialTicks(), alpha);
         }
+
+        lastTarget = target;
     }
 
     private void renderGhosts(MatrixStack matrices, Matrix4f projectionMatrix, Vec3d camPos, double tx, double ty, double tz, Entity target, float alpha) {
