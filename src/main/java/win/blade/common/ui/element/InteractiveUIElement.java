@@ -2,6 +2,7 @@ package win.blade.common.ui.element;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
+import win.blade.common.gui.impl.gui.MenuScreen;
 import win.blade.common.utils.config.ConfigManager;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
@@ -54,7 +55,17 @@ public abstract class InteractiveUIElement extends UIElement {
 
     @Override
     public void update() {
-        update(mc.currentScreen instanceof ChatScreen);
+        boolean canDrag = mc.currentScreen instanceof ChatScreen || mc.currentScreen instanceof MenuScreen;
+
+        if (!canDrag && (mouseState || mouseButton)) {
+            mouseState = false;
+            mouseButton = false;
+            if (currentDragging == this) {
+                currentDragging = null;
+            }
+        }
+
+        update(canDrag);
     }
 
     private void updateDragging(boolean shouldUpdate) {
@@ -63,6 +74,7 @@ public abstract class InteractiveUIElement extends UIElement {
                 currentDragging = null;
             }
             mouseState = false;
+            mouseButton = false;
             return;
         }
 
@@ -96,7 +108,7 @@ public abstract class InteractiveUIElement extends UIElement {
 
     @Override
     public void onMouse(InputEvents.Mouse event) {
-        if (!(mc.currentScreen instanceof ChatScreen)) return;
+        if (!(mc.currentScreen instanceof ChatScreen || mc.currentScreen instanceof MenuScreen)) return;
 
         if (event.getButton() == 0) {
             if (event.getAction() == 0) {
