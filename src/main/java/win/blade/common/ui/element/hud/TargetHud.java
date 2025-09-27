@@ -28,6 +28,7 @@ import win.blade.core.module.api.*;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.storage.combat.AuraModule;
 import win.blade.core.module.storage.render.InterfaceModule;
+import win.blade.core.module.storage.player.NameProtectModule;
 
 import java.awt.*;
 import java.util.stream.StreamSupport;
@@ -106,6 +107,20 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
             return Manager.getModuleManagement().get(InterfaceModule.class);
         }
 
+        private NameProtectModule getNameProtectModule() {
+            return Manager.getModuleManagement().get(NameProtectModule.class);
+        }
+
+        private String getDisplayName(LivingEntity entity) {
+            if (entity == mc.player) {
+                NameProtectModule nameProtect = getNameProtectModule();
+                if (nameProtect != null && nameProtect.isEnabled()) {
+                    return NameProtectModule.getName();
+                }
+            }
+            return entity.getName().getString();
+        }
+
         @Override
         public void renderContent(DrawContext context) {
             LivingEntity killAuraTarget = getKillAuraTarget();
@@ -171,7 +186,7 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
             }
 
             AbstractTexture texture = mc.getTextureManager().getTexture(textureId);
-            String name = target.getName().getString();
+            String name = getDisplayName(target);
             float healthPercent = target.getHealth() / target.getMaxHealth();
 
             Builder.rectangle()

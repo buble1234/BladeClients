@@ -22,6 +22,7 @@
     "minecraft.gui.MixinGameMenuScreen",
     "minecraft.gui.MixinMultiplayerServerListPinger",
     "minecraft.gui.MixinScreen",
+    "minecraft.gui.MixinTextVisitFactory",
     "minecraft.item.MixinItem",
     "minecraft.network.MixinClientConnection",
     "minecraft.network.MixinClientPlayNetworkHandler",
