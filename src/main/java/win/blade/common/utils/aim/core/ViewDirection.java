@@ -36,6 +36,16 @@ public record ViewDirection(float yaw, float pitch) {
         return new ViewDirection(yaw - other.yaw, pitch - other.pitch).clamp();
     }
 
+
+    public ViewDirection addYaw(float yaw) {
+        return new ViewDirection(this.yaw + yaw, this.pitch);
+    }
+
+
+    public ViewDirection addPitch(float pitch) {
+        return new ViewDirection(this.yaw, MathHelper.clamp(this.pitch + pitch, -90, 90));
+    }
+
     public ViewDirection scale(float multiplier) {
         return new ViewDirection(yaw * multiplier, pitch * multiplier);
     }

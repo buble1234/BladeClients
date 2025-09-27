@@ -1,25 +1,28 @@
 package win.blade.core.module.storage.render;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.ShaderProgramKeys;
-import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.ArrowEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.TridentEntity;
+import net.minecraft.entity.projectile.thrown.*;
 import net.minecraft.item.*;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import win.blade.common.gui.impl.gui.setting.implement.ColorSetting;
 import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
-import win.blade.common.utils.color.ColorUtility;
+import win.blade.common.utils.math.RenderUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.render.RenderEvents;
 import win.blade.core.module.api.Category;
@@ -28,8 +31,10 @@ import win.blade.core.module.api.ModuleInfo;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 @ModuleInfo(name = "ProjectileHelper", category = Category.RENDER, desc = "Предсказывает траекторию всех типов снарядов.")
 public class ProjectileHelper extends Module {
@@ -38,191 +43,136 @@ public class ProjectileHelper extends Module {
     private final ColorSetting color = new ColorSetting("Цвет", "Цвет цели.").value(new Color(100, 150, 255, 255).getRGB());
     private final ValueSetting circleWidth = new ValueSetting("Радиус круга", "Радиус круга в точке попадания.").setValue(0.3f).range(0.1f, 1.0f);
 
-    private static final Identifier BLOOM_TEXTURE = Identifier.of("blade", "textures/particle/bloom.png");
-
     public ProjectileHelper() {
         addSettings(thickness, color, circleWidth);
     }
 
     @EventHandler
     public void onRender3D(RenderEvents.World event) {
-        if (mc.world == null || mc.player == null || mc.gameRenderer == null) return;
-
-        setupRenderState();
-        drawPredictionInHand(event.getMatrixStack(), event.getPartialTicks());
-        cleanupRenderState();
+        if (mc.world == null || mc.player == null) return;
+        drawPredictionInHand(event.getMatrixStack(), mc.player.getMainHandStack());
     }
 
-    private void drawPredictionInHand(MatrixStack matrices, float tickDelta) {
-        Item activeItem = mc.player.getActiveItem().getItem();
-        Vec3d playerLookVec = mc.player.getRotationVec(tickDelta);
-
-        for (ItemStack stack : mc.player.getHandItems()) {
-            List<HitResult> results = switch (stack.getItem()) {
-                case ExperienceBottleItem item -> List.of(calculateHitResult(playerLookVec, 0.7, 0.07f));
-                case SplashPotionItem item -> List.of(calculateHitResult(playerLookVec, 0.5, 0.05f));
-                case LingeringPotionItem item -> List.of(calculateHitResult(playerLookVec, 0.5, 0.05f));
-                case TridentItem item when item.equals(activeItem) && mc.player.getItemUseTime() >= 10 -> List.of(calculateHitResult(playerLookVec, 2.5, 0.05f));
-                case SnowballItem item -> List.of(calculateHitResult(playerLookVec, 1.5, 0.03f));
-                case EggItem item -> List.of(calculateHitResult(playerLookVec, 1.5, 0.03f));
-                case EnderPearlItem item -> List.of(calculateHitResult(playerLookVec, 1.5, 0.03f));
-                case BowItem item when item.equals(activeItem) && mc.player.isUsingItem() -> {
-                    float power = BowItem.getPullProgress(mc.player.getItemUseTime());
-                    yield List.of(calculateHitResult(playerLookVec, power * 3.0, 0.05f));
-                }
-                case CrossbowItem item when CrossbowItem.isCharged(stack) -> {
-                    ChargedProjectilesComponent component = stack.get(DataComponentTypes.CHARGED_PROJECTILES);
-                    List<HitResult> list = new ArrayList<>();
-                    if (component != null) {
-                        float velocity = component.getProjectiles().getFirst().isOf(Items.FIREWORK_ROCKET) ? 1.6f : 3.15f;
-                        list.add(calculateHitResult(playerLookVec, velocity, 0.05f));
-                    }
-                    yield list;
-                }
-                default -> null;
-            };
-
-            if (results != null) {
-                results = results.stream().filter(r -> r != null && r.getType() != HitResult.Type.MISS).toList();
-                if (!results.isEmpty()) {
-                    renderImpacts(matrices, mc.gameRenderer.getCamera(), results);
-                }
-                return;
+    public void drawPredictionInHand(MatrixStack matrix, ItemStack stack) {
+        List<HitResult> results = getHitResults(stack);
+        if (results != null) {
+            results = results.stream().filter(Objects::nonNull).toList();
+            if (!results.isEmpty()) {
+                renderProjectileResults(matrix, results);
             }
         }
     }
 
-    private HitResult calculateHitResult(Vec3d lookVec, double velocity, double gravity) {
-        Vec3d pos = mc.player.getEyePos();
-        Vec3d motion = lookVec.multiply(velocity);
+    private List<HitResult> getHitResults(ItemStack stack) {
+        Item item = stack.getItem();
+        float yaw = mc.player.getYaw();
+        float pitch = mc.player.getPitch();
+
+        if (item instanceof BowItem && mc.player.isUsingItem()) {
+            float power = (72000 - mc.player.getItemUseTime()) / 20.0f;
+            power = (power * power + power * 2.0f) / 3.0f;
+            if (power > 1.0f) power = 1.0f;
+            return Collections.singletonList(traceTrajectory(new ArrowEntity(mc.world, mc.player, stack, stack), yaw, pitch, power * 3.0f));
+        }
+        if (item instanceof CrossbowItem && CrossbowItem.isCharged(stack)) {
+            ChargedProjectilesComponent component = stack.get(DataComponentTypes.CHARGED_PROJECTILES);
+            if (component == null) return null;
+            float velocity = component.getProjectiles().getFirst().isOf(Items.FIREWORK_ROCKET) ? 1.6f : 3.15f;
+            return Collections.singletonList(traceTrajectory(new ArrowEntity(mc.world, mc.player, stack, stack), yaw, pitch, velocity));
+        }
+        if (item instanceof EnderPearlItem) return Collections.singletonList(traceTrajectory(new EnderPearlEntity(mc.world, mc.player, stack), yaw, pitch, 1.5f));
+        if (item instanceof ExperienceBottleItem) return Collections.singletonList(traceTrajectory(new ExperienceBottleEntity(mc.world, mc.player, stack), yaw, pitch, 0.7f));
+        if (item instanceof SnowballItem) return Collections.singletonList(traceTrajectory(new SnowballEntity(mc.world, mc.player, stack), yaw, pitch, 1.5f));
+        if (item instanceof EggItem) return Collections.singletonList(traceTrajectory(new EggEntity(mc.world, mc.player, stack), yaw, pitch, 1.5f));
+        if (item instanceof SplashPotionItem || item instanceof LingeringPotionItem) return Collections.singletonList(traceTrajectory(new PotionEntity(mc.world, mc.player, stack), yaw, pitch, 0.5f));
+        if (item instanceof TridentItem && mc.player.isUsingItem()) return Collections.singletonList(traceTrajectory(new TridentEntity(mc.world, mc.player, stack), yaw, pitch, 2.5f));
+
+        return null;
+    }
+
+    public HitResult traceTrajectory(ProjectileEntity entity, float yaw, float pitch, float velocity) {
+        Vec3d pos = new Vec3d(mc.player.getX(), mc.player.getEyeY() - 0.1, mc.player.getZ());
+
+        Vec3d motion = new Vec3d(
+                -MathHelper.sin(yaw * 0.017453292F) * MathHelper.cos(pitch * 0.017453292F),
+                -MathHelper.sin(pitch * 0.017453292F),
+                MathHelper.cos(yaw * 0.017453292F) * MathHelper.cos(pitch * 0.017453292F)
+        );
+
+        motion = motion.normalize().multiply(velocity);
+
+        float gravity = getGravity(entity);
 
         for (int i = 0; i < 300; i++) {
-            Vec3d lastPos = pos;
+            Vec3d prevPos = pos;
             pos = pos.add(motion);
-            motion = getUpdatedMotion(motion, pos, gravity);
 
-            HitResult collisionResult = mc.world.raycast(new RaycastContext(lastPos, pos, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player));
-            if (collisionResult.getType() != HitResult.Type.MISS) {
-                return collisionResult;
-            }
+            HitResult blockHit = mc.world.raycast(new RaycastContext(prevPos, pos, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player));
+            if (blockHit.getType() != HitResult.Type.MISS) return blockHit;
 
-            if (pos.y < mc.world.getBottomY()) {
-                return new BlockHitResult(pos, Direction.DOWN, BlockPos.ofFloored(pos), false);
+            HitResult entityHit = getEntityHit(prevPos, pos, entity);
+            if (entityHit != null) return entityHit;
+
+            motion = motion.multiply(0.99f);
+            motion = motion.subtract(0, gravity, 0);
+        }
+        return null;
+    }
+
+    private HitResult getEntityHit(Vec3d start, Vec3d end, ProjectileEntity projectile) {
+        Entity hitEntity = null;
+        double minDistanceSq = Double.MAX_VALUE;
+
+        Predicate<Entity> predicate = e -> !e.isSpectator() && e.isAlive() && e.canHit() && e != mc.player && e != projectile.getOwner();
+        Box box = new Box(start, end).expand(1.0);
+
+        for (Entity entity : mc.world.getOtherEntities(mc.player, box, predicate)) {
+            Box entityBox = entity.getBoundingBox().expand(0.3);
+            if (entityBox.raycast(start, end).isPresent()) {
+                double distSq = start.squaredDistanceTo(entity.getPos());
+                if (distSq < minDistanceSq) {
+                    minDistanceSq = distSq;
+                    hitEntity = entity;
+                }
             }
         }
-        return new BlockHitResult(pos, Direction.DOWN, BlockPos.ofFloored(pos), false);
+        return hitEntity != null ? new EntityHitResult(hitEntity) : null;
     }
 
-    private Vec3d getUpdatedMotion(Vec3d motion, Vec3d pos, double gravity) {
-        boolean inWater = mc.world.getFluidState(BlockPos.ofFloored(pos)).isIn(FluidTags.WATER);
-        double drag = inWater ? 0.8 : 0.99;
-        return motion.multiply(drag).subtract(0, gravity, 0);
+    private float getGravity(ProjectileEntity entity) {
+        if (entity instanceof PotionEntity) return 0.05F;
+        if (entity instanceof TridentEntity) return 0.05F;
+        return 0.03F;
     }
 
-    private void renderImpacts(MatrixStack matrices, Camera camera, List<HitResult> results) {
-        Vec3d cameraPos = camera.getPos();
-        matrices.push();
-        matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-
-        float quadRadius = thickness.getValue() * 0.02f;
-        float[] c = ColorUtility.normalize(color.getColor());
-
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
-        RenderSystem.setShaderTexture(0, BLOOM_TEXTURE);
-        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-
+    public void renderProjectileResults(MatrixStack matrix, List<HitResult> results) {
         for (HitResult result : results) {
-            drawGlowingCircle(matrices, camera.getRotation(), bufferBuilder, result, quadRadius, c);
+            int resultColor = result.getType() == HitResult.Type.ENTITY ? Color.RED.getRGB() : color.getColor();
+            float width = circleWidth.getValue();
+            float thick = thickness.getValue();
+
+            matrix.push();
+            matrix.translate(result.getPos().x, result.getPos().y, result.getPos().z);
+
+            if (result instanceof BlockHitResult blockHitResult) {
+                Direction side = blockHitResult.getSide();
+                matrix.multiply(side.getRotationQuaternion());
+            }
+
+            MatrixStack.Entry entry = matrix.peek();
+
+            for (int i = 0, size = 90; i <= size; i++) {
+                RenderUtility.drawLine(entry, cosSin(i, size, width), cosSin(i + 1, size, width), resultColor, thick, false);
+            }
+            RenderUtility.drawLine(entry, new Vec3d(0, -width, 0), new Vec3d(0, width, 0), resultColor, thick, false);
+            RenderUtility.drawLine(entry, new Vec3d(-width, 0, 0), new Vec3d(width, 0, 0), resultColor, thick, false);
+            matrix.pop();
         }
-
-        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        matrices.pop();
+        RenderUtility.renderQueues();
     }
 
-    private void drawGlowingCircle(MatrixStack matrices, Quaternionf cameraRotation, BufferBuilder bufferBuilder, HitResult result, float quadRadius, float[] color) {
-        Vec3d center = result.getPos();
-        float width = circleWidth.getValue();
-        Direction direction = getDirection(result);
-
-        Quaternionf surfaceRotation = switch (direction) {
-            case WEST, EAST -> RotationAxis.POSITIVE_Z.rotationDegrees(90);
-            case NORTH, SOUTH -> RotationAxis.POSITIVE_X.rotationDegrees(90);
-            default -> new Quaternionf();
-        };
-
-        // Рендер круга
-        int segments = 90;
-        for (int i = 0; i < segments; i++) {
-            double angle1 = i * (Math.PI * 2) / segments;
-            double angle2 = (i + 1) * (Math.PI * 2) / segments;
-
-            Vec3d p1_local = new Vec3d(Math.cos(angle1) * width, 0, Math.sin(angle1) * width);
-            Vec3d p2_local = new Vec3d(Math.cos(angle2) * width, 0, Math.sin(angle2) * width);
-
-            addGlowingLineToBuffer(matrices, cameraRotation, bufferBuilder,
-                    transformLocalToWorld(p1_local, surfaceRotation, center),
-                    transformLocalToWorld(p2_local, surfaceRotation, center),
-                    quadRadius, color);
-        }
-
-        // Рендер перекрестия
-        Vec3d cross1_start_local = new Vec3d(-width, 0, 0);
-        Vec3d cross1_end_local = new Vec3d(width, 0, 0);
-        Vec3d cross2_start_local = new Vec3d(0, 0, -width);
-        Vec3d cross2_end_local = new Vec3d(0, 0, width);
-
-        addGlowingLineToBuffer(matrices, cameraRotation, bufferBuilder,
-                transformLocalToWorld(cross1_start_local, surfaceRotation, center),
-                transformLocalToWorld(cross1_end_local, surfaceRotation, center),
-                quadRadius, color);
-        addGlowingLineToBuffer(matrices, cameraRotation, bufferBuilder,
-                transformLocalToWorld(cross2_start_local, surfaceRotation, center),
-                transformLocalToWorld(cross2_end_local, surfaceRotation, center),
-                quadRadius, color);
-    }
-
-    private Vec3d transformLocalToWorld(Vec3d local, Quaternionf rotation, Vec3d origin) {
-        Vector3f local_f = local.toVector3f();
-        rotation.transform(local_f);
-        return origin.add(new Vec3d(local_f));
-    }
-
-    private void addGlowingLineToBuffer(MatrixStack matrices, Quaternionf cameraRotation, BufferBuilder bufferBuilder, Vec3d start, Vec3d end, float quadRadius, float[] color) {
-        int segments = (int) Math.max(1, start.distanceTo(end) * 20);
-        for (int j = 0; j <= segments; j++) {
-            Vec3d interpPos = start.lerp(end, (double) j / segments);
-
-            matrices.push();
-            matrices.translate(interpPos.x, interpPos.y, interpPos.z);
-            matrices.multiply(cameraRotation);
-
-            Matrix4f matrix = matrices.peek().getPositionMatrix();
-            bufferBuilder.vertex(matrix, -quadRadius, -quadRadius, 0).texture(0, 0).color(color[0], color[1], color[2], color[3]);
-            bufferBuilder.vertex(matrix, -quadRadius, quadRadius, 0).texture(0, 1).color(color[0], color[1], color[2], color[3]);
-            bufferBuilder.vertex(matrix, quadRadius, quadRadius, 0).texture(1, 1).color(color[0], color[1], color[2], color[3]);
-            bufferBuilder.vertex(matrix, quadRadius, -quadRadius, 0).texture(1, 0).color(color[0], color[1], color[2], color[3]);
-
-            matrices.pop();
-        }
-    }
-
-    private Direction getDirection(HitResult result) {
-        if (result instanceof BlockHitResult blockHitResult) {
-            return blockHitResult.getSide();
-        }
-        return Direction.getFacing(result.getPos().subtract(mc.player.getEyePos()).normalize());
-    }
-
-    private void setupRenderState() {
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
-        RenderSystem.disableCull();
-        RenderSystem.depthMask(false);
-    }
-
-    private void cleanupRenderState() {
-        RenderSystem.depthMask(true);
-        RenderSystem.enableCull();
-        RenderSystem.defaultBlendFunc();
+    private Vec3d cosSin(int index, int total, double radius) {
+        double angle = Math.toRadians(((double) index / total) * 360.0);
+        return new Vec3d(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
     }
 }
