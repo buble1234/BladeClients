@@ -46,6 +46,7 @@ public class TargetESP extends Module {
     private final Animation animation = new Animation();
     private final Animation alphaAnimation = new Animation();
     private Entity lastTarget = null;
+    private Entity renderTarget = null;
 
     public TargetESP() {
         speed.setVisible(() -> Objects.equals(mode.getSelected(), "Призраки"));
@@ -63,6 +64,7 @@ public class TargetESP extends Module {
         startTime = System.currentTimeMillis();
         alphaAnimation.set(0);
         lastTarget = null;
+        renderTarget = null;
     }
 
     @EventHandler
@@ -74,17 +76,22 @@ public class TargetESP extends Module {
 
         if (target != lastTarget) {
             if (target != null) {
-                alphaAnimation.run(1.0, 5, Easing.EASE_OUT_CUBIC);
+                renderTarget = target;
+                alphaAnimation.run(1.0, 0.3, Easing.EASE_OUT_CUBIC);
             } else {
-                alphaAnimation.run(0.0, 5, Easing.EASE_IN_CUBIC);
+                alphaAnimation.run(0.0, 0.75, Easing.EASE_IN_CUBIC);
             }
+        } else if (target != null) {
+            renderTarget = target;
         }
 
         alphaAnimation.update();
 
-        Entity entityToRender = target != null ? target : lastTarget;
+        if (alphaAnimation.get() <= 0.01f && target == null) {
+            renderTarget = null;
+        }
 
-        if (alphaAnimation.get() <= 0.01f || entityToRender == null) {
+        if (renderTarget == null) {
             lastTarget = target;
             return;
         }
@@ -98,26 +105,26 @@ public class TargetESP extends Module {
         MatrixStack matrices = event.getMatrixStack();
         Vec3d camPos = mc.gameRenderer.getCamera().getPos();
 
-        double targetX = MathHelper.lerp(event.getPartialTicks(), entityToRender.prevX, entityToRender.getX());
-        double targetY = MathHelper.lerp(event.getPartialTicks(), entityToRender.prevY, entityToRender.getY());
-        double targetZ = MathHelper.lerp(event.getPartialTicks(), entityToRender.prevZ, entityToRender.getZ());
+        double targetX = MathHelper.lerp(event.getPartialTicks(), renderTarget.prevX, renderTarget.getX());
+        double targetY = MathHelper.lerp(event.getPartialTicks(), renderTarget.prevY, renderTarget.getY());
+        double targetZ = MathHelper.lerp(event.getPartialTicks(), renderTarget.prevZ, renderTarget.getZ());
 
         float alpha = alphaAnimation.get();
 
         if (Objects.equals(mode.getSelected(), "Призраки")) {
             setupRender();
             Matrix4f projectionMatrix = RenderSystem.getProjectionMatrix();
-            renderGhosts(matrices, projectionMatrix, camPos, targetX, targetY, targetZ, entityToRender, alpha);
+            renderGhosts(matrices, projectionMatrix, camPos, targetX, targetY, targetZ, renderTarget, alpha);
             cleanupRender();
         } else if (Objects.equals(mode.getSelected(), "Тор")) {
             animation.update();
             if (animation.isFinished()) {
-                animation.run(animation.get() > 0.5 ? 0.0 : 1.0, 650.0 / 1000.0, Easing.EASE_IN_OUT_SINE);
+                animation.run(animation.get() > 0.5 ? 0.0 : 0.75, 650.0 / 1000.0, Easing.EASE_IN_OUT_SINE);
             }
 
             float fov = (float) mc.gameRenderer.getFov(event.getCamera(), event.getPartialTicks(), true);
             Matrix4f projectionMatrix = mc.gameRenderer.getBasicProjectionMatrix(fov);
-            renderTorus(matrices, projectionMatrix, camPos, targetX, targetY, targetZ, entityToRender, event.getPartialTicks(), alpha);
+            renderTorus(matrices, projectionMatrix, camPos, targetX, targetY, targetZ, renderTarget, event.getPartialTicks(), alpha);
         }
 
         lastTarget = target;
