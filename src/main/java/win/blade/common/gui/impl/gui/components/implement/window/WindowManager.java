@@ -112,6 +112,10 @@ public class WindowManager extends AbstractComponent {
         return windows.stream().filter(window -> window.windowName.equalsIgnoreCase(windowName)).findFirst().orElse(null);
     }
 
+    public void clearWindows() {
+        windows.clear();
+    }
+
     public static void _renderBackground(float x, float y, float width, float height, float radius, boolean outline, QuadColorState outlineColor){
         AbstractTexture back = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/backgroundp.png"));
 
