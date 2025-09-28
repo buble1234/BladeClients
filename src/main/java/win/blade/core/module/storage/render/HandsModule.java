@@ -27,6 +27,7 @@ import static org.lwjgl.opengl.GL13C.*;
  * Автор: NoCap
  * Дата создания: 06.08.2025
  * Обновлено: Liquid Glass - искажение относительно центра предмета (локальный центр по глубине).
+ * Фикс: Убраны чёрные края путём отключения бленда при рендере шейдера в FBO.
  */
 @ModuleInfo(
         name = "Hands",
@@ -66,14 +67,24 @@ public class HandsModule extends Module {
             return;
         }
 
+        copyFbo.clear();
+        solidFbo.clear();
+        fbo1.clear();
+        fbo2.clear();
+
         copyFbo.beginWrite(true);
+        RenderSystem.clearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        RenderSystem.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         mainFbo.draw(copyFbo.textureWidth, copyFbo.textureHeight);
         copyFbo.copyDepthFrom(mainFbo);
 
         SimpleFramebuffer fboToBlur = copyFbo;
 
         if (mode.isSelected("Свой цвет")) {
+            solidFbo.clear();
             solidFbo.beginWrite(true);
+            RenderSystem.clearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            RenderSystem.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             RenderSystem.activeTexture(GL_TEXTURE0);
             RenderSystem.bindTexture(copyFbo.getColorAttachment());
@@ -86,8 +97,7 @@ public class HandsModule extends Module {
             GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             RenderSystem.disableDepthTest();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
+            // Убрали enableBlend и defaultBlendFunc — теперь прямой вывод шейдера без бленда с чёрным
 
             handShader.bind();
             handShader.setUniform1i("ColorTexture", 0);
@@ -119,6 +129,7 @@ public class HandsModule extends Module {
 
             handShader.unbind();
 
+            // Восстанавливаем текстуры copyFbo с NEAREST, как в старом коде, для стабильности
             RenderSystem.activeTexture(GL_TEXTURE0);
             RenderSystem.bindTexture(copyFbo.getColorAttachment());
             GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -134,8 +145,13 @@ public class HandsModule extends Module {
             RenderSystem.disableBlend();
 
             fboToBlur = solidFbo;
+
         } else if (mode.isSelected("Liquid Glass")) {
-            solidFbo.beginWrite(true); // Reuse solidFbo as liquidFbo
+            SimpleFramebuffer liquidFbo = ShaderHelper.getReflectionFbo();
+            liquidFbo.clear();
+            liquidFbo.beginWrite(true);
+            RenderSystem.clearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            RenderSystem.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             RenderSystem.activeTexture(GL_TEXTURE0);
             RenderSystem.bindTexture(copyFbo.getColorAttachment());
@@ -148,15 +164,13 @@ public class HandsModule extends Module {
             GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             RenderSystem.disableDepthTest();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
+            // Убрали enableBlend и defaultBlendFunc — то же самое
 
             liquidShader.bind();
             liquidShader.setUniform1i("ColorTexture", 0);
             liquidShader.setUniform1i("DepthTexture", 1);
             liquidShader.setUniform2f("iResolution", (float) mc.getWindow().getFramebufferWidth(), (float) mc.getWindow().getFramebufferHeight());
 
-            // Fixed values as in the example
             liquidShader.setUniform1f("BlurSize", 20.0f);
             liquidShader.setUniform1f("Quality", 10.0f);
             liquidShader.setUniform1f("Direction", 10.0f);
@@ -167,6 +181,7 @@ public class HandsModule extends Module {
 
             liquidShader.unbind();
 
+            // Восстанавливаем текстуры copyFbo с NEAREST
             RenderSystem.activeTexture(GL_TEXTURE0);
             RenderSystem.bindTexture(copyFbo.getColorAttachment());
             GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -181,8 +196,11 @@ public class HandsModule extends Module {
             RenderSystem.enableDepthTest();
             RenderSystem.disableBlend();
 
-            fboToBlur = solidFbo;
+            fboToBlur = liquidFbo;
         }
+
+        fbo1.clear();
+        fbo2.clear();
 
         GaussianShader.applyGaussianBlur(gaussianShader, fbo1, fbo2, fboToBlur, copyFbo, blurStrength.getValue(), true, true);
 
@@ -213,6 +231,7 @@ public class HandsModule extends Module {
         ShaderHelper.drawFullScreenQuad();
         blurHandShader.unbind();
 
+        // Восстанавливаем mainFbo текстуру с NEAREST, как в старом
         RenderSystem.activeTexture(GL_TEXTURE0);
         RenderSystem.bindTexture(mainFbo.getColorAttachment());
         RenderSystem.texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

@@ -338,4 +338,8 @@ public class MathUtility implements MinecraftInstance {
         double dz = z2 - z1;
         return sqrt(dx * dx + dy * dy + dz * dz);
     }
+
+    public static float normalizeAngle(float angle) {
+        return (angle + 180f) % 360f - 180f;
+    }
 }
