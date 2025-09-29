@@ -17,7 +17,7 @@ import win.blade.core.module.api.ModuleInfo;
 import java.util.List;
 
 @ModuleInfo(
-        name = "AutoLeaveModule",
+        name = "AutoLeave",
         category = Category.MISC,
         desc = ""
 )

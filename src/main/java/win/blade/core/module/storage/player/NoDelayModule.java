@@ -1,5 +1,6 @@
 package win.blade.core.module.storage.player;
 
+import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -7,6 +8,7 @@ import net.minecraft.util.math.Direction;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
 import win.blade.common.utils.network.PacketUtility;
+import win.blade.core.event.block.BlockBreakingEvent;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
@@ -51,9 +53,6 @@ public class NoDelayModule extends Module {
             resetItemUseCooldown();
         }
 
-        if (getBooleanSetting(delayOptions, "Ломание блоков").getValue()) {
-            resetBlockCooldown();
-        }
     }
 
     private void resetJumpCooldown() {
@@ -72,16 +71,14 @@ public class NoDelayModule extends Module {
         }
     }
 
-    private void resetBlockCooldown() {
-        if (mc.player == null || mc.world == null || mc.interactionManager == null) return;
-        if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK && mc.crosshairTarget instanceof BlockHitResult hitResult) {
-            float destroyProgress = mc.interactionManager.getBlockBreakingProgress();
-            if (destroyProgress > 0.5f) {
-                BlockPos pos = hitResult.getBlockPos();
-                Direction face = hitResult.getSide();
-
-                PacketUtility.finishDigging(pos, face);
-                PacketUtility.cancelDigging(pos, face);
+    @EventHandler
+    public void onBlockBreaking(BlockBreakingEvent e) {
+        if (getBooleanSetting(delayOptions, "Ломание блоков").getValue()) {
+            BlockPos blockPos = e.getBlockPos();
+            Direction direction = e.getDirection();
+            if (mc.interactionManager.currentBreakingProgress >= 0.5) {
+                mc.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, blockPos, direction));
+                mc.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK, blockPos, direction));
             }
         }
     }

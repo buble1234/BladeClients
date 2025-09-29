@@ -1,10 +1,13 @@
 package win.blade.mixin.minecraft.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.player.HungerManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -12,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.utils.minecraft.MinecraftInstance;
@@ -23,6 +27,8 @@ import win.blade.core.event.controllers.EventHolder;
 import win.blade.core.event.impl.player.MotionEvent;
 import win.blade.core.event.impl.minecraft.MotionEvents;
 import win.blade.core.event.impl.player.PlayerActionEvents;
+import win.blade.core.event.item.UsingItemEvent;
+import win.blade.core.module.storage.move.AutoSprintModule;
 import win.blade.core.module.storage.move.NoPushModule;
 import win.blade.core.module.storage.player.FreeCam;
 
@@ -125,6 +131,48 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
 
     @Shadow
     public net.minecraft.client.input.Input input;
+
+
+    @ModifyExpressionValue(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"))
+    private boolean usingItemHook(boolean original) {
+        AutoSprintModule autoSprint = Manager.getModuleManagement().get(AutoSprintModule.class);
+        if (original) {
+            UsingItemEvent event = new UsingItemEvent((byte) 1, false);
+            Manager.EVENT_BUS.post(event);
+            if (event.isCancelled()) {
+                autoSprint.tickStop = 1;
+                return false;
+            }
+            if (!event.isSprint()) {
+                autoSprint.tickStop = 1;
+            }
+        }
+        return original;
+    }
+
+    @WrapOperation(method = "canSprint", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/HungerManager;getFoodLevel()I"))
+    private int canSprintHook(HungerManager instance, Operation<Integer> original) {
+        AutoSprintModule autoSprint = Manager.getModuleManagement().get(AutoSprintModule.class);
+
+        return autoSprint.isEnabled() && autoSprint.ignoreHungerSetting.getValue() ? 20 : original.call(instance);
+    }
+
+
+    @Inject(method = "shouldStopSprinting", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"), cancellable = true)
+    public void shouldStopSprintingHook(CallbackInfoReturnable<Boolean> cir) {
+        AutoSprintModule autoSprint = Manager.getModuleManagement().get(AutoSprintModule.class);
+        if (autoSprint.isEnabled()) {
+            cir.setReturnValue(false);
+        }
+    }
+
+    @Inject(method = "canStartSprinting", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"), cancellable = true)
+    public void canStartSprintingHook(CallbackInfoReturnable<Boolean> cir) {
+        AutoSprintModule autoSprint = Manager.getModuleManagement().get(AutoSprintModule.class);
+        if (autoSprint.isEnabled()) {
+            cir.setReturnValue(false);
+        }
+    }
 
     @Inject(
             method = "sendMovementPackets",

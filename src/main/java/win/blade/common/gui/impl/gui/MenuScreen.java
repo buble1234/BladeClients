@@ -250,7 +250,7 @@ public class MenuScreen extends Screen implements MinecraftInstance {
             }
 
             savedSearchText = searchComponent.getText();
-            windowManager.clearWindows();
+//            windowManager.clearWindows();
             super.close();
         }
     }

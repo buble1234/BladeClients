@@ -22,6 +22,7 @@ import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 
 public class MathUtility implements MinecraftInstance {
@@ -47,6 +48,27 @@ public class MathUtility implements MinecraftInstance {
         return raycast(start, end, shapeType, RaycastContext.FluidHandling.NONE, entity);
     }
 
+    public static int getRandom(int min, int max) {
+        return (int) getRandom((float) min, (float) max + 1);
+    }
+
+    public static float getRandom(float min, float max) {
+        return (float) getRandom(min, (double) max);
+    }
+
+    public static double getRandom(double min, double max) {
+        if (min == max) {
+            return min;
+        } else {
+            if (min > max) {
+                double d = min;
+                min = max;
+                max = d;
+            }
+
+            return ThreadLocalRandom.current().nextDouble(min, max);
+        }
+    }
     public static BlockHitResult raycast(Vec3d start, Vec3d end, RaycastContext.ShapeType shapeType, RaycastContext.FluidHandling fluidHandling, Entity entity) {
         return mc.world.raycast(new RaycastContext(start, end, shapeType, fluidHandling, entity));
     }

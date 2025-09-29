@@ -23,10 +23,7 @@ import java.awt.*;
 
 import static win.blade.common.utils.other.StringUtil.getBindName;
 
-/**
- * Автор Ieo117
- * Дата создания: 25.07.2025, в 12:58:25
- */
+
 public class BindWindow extends AbstractWindow {
     ButtonComponent createButton;
     ButtonComponent deleteButton;
@@ -113,7 +110,7 @@ public class BindWindow extends AbstractWindow {
                 .render(context, mouseX, mouseY, delta);
 
 
-   }
+    }
 
 
     @Override
@@ -130,13 +127,6 @@ public class BindWindow extends AbstractWindow {
 
     public void openCreationWindow(){
         ModuleBindWindow bindWindow = new ModuleBindWindow(module);
-
-        var window = windowManager.findWindow("bindWindow");
-
-        if(window != null){
-            windowManager.delete(window);
-        }
-
         windowManager.add(bindWindow.position(x + width + 8, y - 4).size(105, 70).draggable(true));
     }
 }
