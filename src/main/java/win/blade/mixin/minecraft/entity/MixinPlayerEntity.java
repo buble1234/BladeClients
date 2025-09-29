@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
+import win.blade.core.event.impl.player.KeepSprintEvent;
 import win.blade.core.event.impl.player.PlayerActionEvents;
 
 @SuppressWarnings("all")
@@ -27,5 +28,10 @@ public class MixinPlayerEntity implements MinecraftInstance {
         if (event.isCancelled()) {
             ci.cancel();
         }
+    }
+
+    @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;setSprinting(Z)V", shift = At.Shift.AFTER))
+    public void attackHook(CallbackInfo callbackInfo) {
+        Manager.EVENT_BUS.post(new KeepSprintEvent());
     }
 }

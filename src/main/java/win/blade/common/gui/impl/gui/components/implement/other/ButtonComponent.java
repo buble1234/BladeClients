@@ -46,14 +46,14 @@ public class ButtonComponent extends AbstractComponent {
         height = 9.5f;
 
         Builder.rectangle()
-                .size(new SizeState(21, height))
+                .size(new SizeState(25, height))
                 .color(new QuadColorState(color))
                 .radius(new QuadRadiusState(1.5f))
                 .build()
-                .render(x+7, y);
+                .render(x, y);
 
-        float textWidth = fontRegular.getWidth(text, 6);
-        float centeredX = x + (width - textWidth) / 2;
+        float textWidth = fontRegular.getWidth(text, 4);
+        float centeredX = x + (25 - textWidth) / 2-1;
 
         Builder.text()
                 .font(FontType.popins_regular.get())
@@ -61,7 +61,7 @@ public class ButtonComponent extends AbstractComponent {
                 .size(4)
                 .color(Color.WHITE)
                 .build()
-                .render( centeredX +7f, y + 1.5f);
+                .render( centeredX, y + 1.5f);
     }
 
     @Override

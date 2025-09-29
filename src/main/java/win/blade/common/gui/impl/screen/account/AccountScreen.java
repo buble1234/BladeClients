@@ -98,7 +98,7 @@ public class AccountScreen extends BaseScreen {
     @Override
     public void close() {
         super.close();
-        windowManager.getWindows().clear();
+//        windowManager.clearWindows();
         AccountSaver.save(accountList);
     }
 

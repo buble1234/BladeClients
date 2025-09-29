@@ -28,6 +28,7 @@ import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
+import win.blade.core.module.storage.player.AutoToolModule;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -292,6 +293,12 @@ public class BedFuckerModule extends Module {
             return true;
         }
 
+        int originalSlot = mc.player.getInventory().selectedSlot;
+        int bestSlot = AutoToolModule.findBestTool(state);
+        if (bestSlot != -1) {
+            mc.player.getInventory().selectedSlot = bestSlot;
+        }
+
         Vec3d obstacleCenter = obstaclePos.toCenterPos();
         ViewDirection targetRotation = AimCalculator.calculateToPosition(mc.player.getEyePos(), obstacleCenter);
         AimSettings aimSettings = new AimSettings(new AdaptiveSmooth(120), false, motionCorrect.getValue(), true);
@@ -313,7 +320,6 @@ public class BedFuckerModule extends Module {
                 isBreaking = true;
                 breakingPos = obstaclePos;
                 breakingState = BreakingState.BREAKING_OBSTACLE;
-                System.out.println("BedFucker: Started breaking obstacle at " + obstaclePos);
             }
         }
 
@@ -326,6 +332,8 @@ public class BedFuckerModule extends Module {
                     attackDirection
             ));
         }
+
+        mc.player.getInventory().selectedSlot = originalSlot;
 
         return false;
     }
@@ -418,6 +426,12 @@ public class BedFuckerModule extends Module {
             return true;
         }
 
+        int originalSlot = mc.player.getInventory().selectedSlot;
+        int bestSlot = AutoToolModule.findBestTool(state);
+        if (bestSlot != -1) {
+            mc.player.getInventory().selectedSlot = bestSlot;
+        }
+
         ViewDirection targetRotation = AimCalculator.calculateToPosition(mc.player.getEyePos(), target.targetPos);
         AimSettings aimSettings = new AimSettings(new AdaptiveSmooth(100), false, motionCorrect.getValue(), true);
         TargetTask rotationTask = aimSettings.buildTask(targetRotation, target.targetPos, null);
@@ -450,6 +464,8 @@ public class BedFuckerModule extends Module {
                     attackDirection
             ));
         }
+
+        mc.player.getInventory().selectedSlot = originalSlot;
 
         return false;
     }

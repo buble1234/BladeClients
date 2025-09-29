@@ -1,8 +1,11 @@
 package win.blade.common.utils.attack;
 
 import net.minecraft.entity.LivingEntity;
+import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.player.PlayerUtility;
+import win.blade.core.Manager;
+import win.blade.core.module.storage.move.AutoSprintModule;
 
 /**
  * Автор: NoCap

@@ -7,10 +7,13 @@ import net.minecraft.client.gl.SimpleFramebuffer;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import win.blade.common.gui.impl.gui.setting.implement.ColorSetting;
+import win.blade.common.gui.impl.gui.setting.implement.SelectSetting;
 import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
-import win.blade.common.utils.render.shader.Shader;
 import win.blade.common.utils.render.shader.ShaderHelper;
-import win.blade.common.utils.render.shader.storage.*;
+import win.blade.common.utils.render.shader.storage.BlurredShader;
+import win.blade.common.utils.render.shader.storage.GaussianShader;
+import win.blade.common.utils.render.shader.storage.LiquidGlassShader;
+import win.blade.common.utils.render.shader.storage.SolidShader;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
@@ -23,6 +26,8 @@ import static org.lwjgl.opengl.GL13C.*;
 /**
  * Автор: NoCap
  * Дата создания: 06.08.2025
+ * Обновлено: Liquid Glass - искажение относительно центра предмета (локальный центр по глубине).
+ * Фикс: Убраны чёрные края путём отключения бленда при рендере шейдера в FBO.
  */
 @ModuleInfo(
         name = "Hands",
@@ -32,24 +37,25 @@ import static org.lwjgl.opengl.GL13C.*;
 )
 public class HandsModule extends Module {
 
-    public static final ColorSetting solidColor = new ColorSetting("Первый цвет", "Первый цвет для градиента.").value(new Color(0, 255, 0).getRGB());
-    public static final ColorSetting solidColor2 = new ColorSetting("Второй цвет", "Второй цвет для градиента.").value(new Color(255, 0, 0).getRGB());
-    public static final ValueSetting gradientSpeed = new ValueSetting("Скорость", "Скорость анимации градиента.").setValue(0.5f).range(0.1f, 1.0f);
+    public static final SelectSetting mode = new SelectSetting("Режим", "").value("Свой цвет", "Прозрачный", "Liquid Glass");
+    public static final ColorSetting solidColor = new ColorSetting("Первый цвет", "Первый цвет для градиента.").value(new Color(0, 255, 0).getRGB()).visible(() -> mode.isSelected("Свой цвет"));
+    public static final ColorSetting solidColor2 = new ColorSetting("Второй цвет", "Второй цвет для градиента.").value(new Color(255, 0, 0).getRGB()).visible(() -> mode.isSelected("Свой цвет"));
+    public static final ValueSetting gradientSpeed = new ValueSetting("Скорость", "Скорость анимации градиента.").setValue(0.5f).range(0.1f, 1.0f).visible(() -> mode.isSelected("Свой цвет"));
     public static final ValueSetting blurStrength = new ValueSetting("Сила размытия", "Сила размытия для руки.").range(2, 20);
 
     public HandsModule() {
-        addSettings(solidColor, solidColor2, gradientSpeed, blurStrength);
+        addSettings(mode, solidColor, solidColor2, gradientSpeed, blurStrength);
     }
 
     public static void render(float FarPlaneDistance) {
         if (!ShaderHelper.isInitialized()) return;
-
         renderCombined(FarPlaneDistance);
     }
 
     private static void renderCombined(float FarPlaneDistance) {
         Framebuffer mainFbo = mc.getFramebuffer();
         SolidShader handShader = ShaderHelper.getSolidShader();
+        LiquidGlassShader liquidShader = ShaderHelper.getLiquidGlassShader();
         BlurredShader blurHandShader = ShaderHelper.getBlurredShader();
         GaussianShader gaussianShader = ShaderHelper.getGaussianShader();
         SimpleFramebuffer copyFbo = ShaderHelper.getCopyFbo();
@@ -57,76 +63,146 @@ public class HandsModule extends Module {
         SimpleFramebuffer fbo2 = ShaderHelper.getFbo2();
         SimpleFramebuffer solidFbo = ShaderHelper.getTintFbo();
 
-        if (mainFbo == null || handShader == null || blurHandShader == null || gaussianShader == null || copyFbo == null || fbo1 == null || fbo2 == null || solidFbo == null) {
+        if (mainFbo == null || handShader == null || liquidShader == null || blurHandShader == null || gaussianShader == null || copyFbo == null || fbo1 == null || fbo2 == null || solidFbo == null) {
             return;
         }
 
-        copyFbo.beginWrite(true);
-        mainFbo.draw(copyFbo.textureWidth, copyFbo.textureHeight);
+        copyFbo.clear();
+        solidFbo.clear();
+        fbo1.clear();
+        fbo2.clear();
 
+        copyFbo.beginWrite(true);
+        RenderSystem.clearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        RenderSystem.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        mainFbo.draw(copyFbo.textureWidth, copyFbo.textureHeight);
         copyFbo.copyDepthFrom(mainFbo);
 
-        solidFbo.beginWrite(true);
+        SimpleFramebuffer fboToBlur = copyFbo;
 
-        RenderSystem.activeTexture(GL_TEXTURE0);
-        RenderSystem.bindTexture(copyFbo.getColorAttachment());
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if (mode.isSelected("Свой цвет")) {
+            solidFbo.clear();
+            solidFbo.beginWrite(true);
+            RenderSystem.clearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            RenderSystem.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        RenderSystem.activeTexture(GL_TEXTURE1);
-        RenderSystem.bindTexture(copyFbo.getDepthAttachment());
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            RenderSystem.activeTexture(GL_TEXTURE0);
+            RenderSystem.bindTexture(copyFbo.getColorAttachment());
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        RenderSystem.disableDepthTest();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+            RenderSystem.activeTexture(GL_TEXTURE1);
+            RenderSystem.bindTexture(copyFbo.getDepthAttachment());
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        handShader.bind();
-        handShader.setUniform1i("ColorTexture", 0);
-        handShader.setUniform1i("DepthTexture", 1);
-        float gameTime = (System.nanoTime() / 1_000_000_000.0f) * gradientSpeed.getValue();
-        handShader.setUniform1f("time", gameTime);
+            RenderSystem.disableDepthTest();
+            // Убрали enableBlend и defaultBlendFunc — теперь прямой вывод шейдера без бленда с чёрным
 
-        Color color1 = new Color(solidColor.getColor());
-        Vector3f customColor1 = new Vector3f(
-                color1.getRed() / 255.0f,
-                color1.getGreen() / 255.0f,
-                color1.getBlue() / 255.0f
-        );
-        handShader.setUniform3f("customColor1", customColor1);
+            handShader.bind();
+            handShader.setUniform1i("ColorTexture", 0);
+            handShader.setUniform1i("DepthTexture", 1);
+            float gameTime = (System.nanoTime() / 1_000_000_000.0f) * gradientSpeed.getValue();
+            handShader.setUniform1f("time", gameTime);
 
-        Color color2 = new Color(solidColor2.getColor());
-        Vector3f customColor2 = new Vector3f(
-                color2.getRed() / 255.0f,
-                color2.getGreen() / 255.0f,
-                color2.getBlue() / 255.0f
-        );
-        handShader.setUniform3f("customColor2", customColor2);
+            Color color1 = new Color(solidColor.getColor());
+            Vector3f customColor1 = new Vector3f(
+                    color1.getRed() / 255.0f,
+                    color1.getGreen() / 255.0f,
+                    color1.getBlue() / 255.0f
+            );
+            handShader.setUniform3f("customColor1", customColor1);
 
-        handShader.setUniform1f("effectAlpha", Math.max(solidColor.getAlpha(), solidColor2.getAlpha()));
-        handShader.setUniform1f("nearPlane", 0.05f);
-        handShader.setUniform1f("farPlane", FarPlaneDistance);
+            Color color2 = new Color(solidColor2.getColor());
+            Vector3f customColor2 = new Vector3f(
+                    color2.getRed() / 255.0f,
+                    color2.getGreen() / 255.0f,
+                    color2.getBlue() / 255.0f
+            );
+            handShader.setUniform3f("customColor2", customColor2);
 
-        ShaderHelper.drawFullScreenQuad();
+            handShader.setUniform1f("effectAlpha", Math.max(solidColor.getAlpha(), solidColor2.getAlpha()));
+            handShader.setUniform1f("nearPlane", 0.05f);
+            handShader.setUniform1f("farPlane", FarPlaneDistance);
 
-        handShader.unbind();
+            ShaderHelper.drawFullScreenQuad();
 
-        RenderSystem.activeTexture(GL_TEXTURE0);
-        RenderSystem.bindTexture(copyFbo.getColorAttachment());
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            handShader.unbind();
 
-        RenderSystem.activeTexture(GL_TEXTURE1);
-        RenderSystem.bindTexture(copyFbo.getDepthAttachment());
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            // Восстанавливаем текстуры copyFbo с NEAREST, как в старом коде, для стабильности
+            RenderSystem.activeTexture(GL_TEXTURE0);
+            RenderSystem.bindTexture(copyFbo.getColorAttachment());
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        RenderSystem.activeTexture(GL_TEXTURE0);
-        RenderSystem.enableDepthTest();
-        RenderSystem.disableBlend();
+            RenderSystem.activeTexture(GL_TEXTURE1);
+            RenderSystem.bindTexture(copyFbo.getDepthAttachment());
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        GaussianShader.applyGaussianBlur(gaussianShader, fbo1, fbo2, solidFbo, copyFbo, blurStrength.getValue(), true, true);
+            RenderSystem.activeTexture(GL_TEXTURE0);
+            RenderSystem.enableDepthTest();
+            RenderSystem.disableBlend();
+
+            fboToBlur = solidFbo;
+
+        } else if (mode.isSelected("Liquid Glass")) {
+            SimpleFramebuffer liquidFbo = ShaderHelper.getReflectionFbo();
+            liquidFbo.clear();
+            liquidFbo.beginWrite(true);
+            RenderSystem.clearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            RenderSystem.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            RenderSystem.activeTexture(GL_TEXTURE0);
+            RenderSystem.bindTexture(copyFbo.getColorAttachment());
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            RenderSystem.activeTexture(GL_TEXTURE1);
+            RenderSystem.bindTexture(copyFbo.getDepthAttachment());
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            RenderSystem.disableDepthTest();
+            // Убрали enableBlend и defaultBlendFunc — то же самое
+
+            liquidShader.bind();
+            liquidShader.setUniform1i("ColorTexture", 0);
+            liquidShader.setUniform1i("DepthTexture", 1);
+            liquidShader.setUniform2f("iResolution", (float) mc.getWindow().getFramebufferWidth(), (float) mc.getWindow().getFramebufferHeight());
+
+            liquidShader.setUniform1f("BlurSize", 20.0f);
+            liquidShader.setUniform1f("Quality", 10.0f);
+            liquidShader.setUniform1f("Direction", 10.0f);
+            liquidShader.setUniform1f("nearPlane", 0.05f);
+            liquidShader.setUniform1f("farPlane", FarPlaneDistance);
+
+            ShaderHelper.drawFullScreenQuad();
+
+            liquidShader.unbind();
+
+            // Восстанавливаем текстуры copyFbo с NEAREST
+            RenderSystem.activeTexture(GL_TEXTURE0);
+            RenderSystem.bindTexture(copyFbo.getColorAttachment());
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+            RenderSystem.activeTexture(GL_TEXTURE1);
+            RenderSystem.bindTexture(copyFbo.getDepthAttachment());
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+            RenderSystem.activeTexture(GL_TEXTURE0);
+            RenderSystem.enableDepthTest();
+            RenderSystem.disableBlend();
+
+            fboToBlur = liquidFbo;
+        }
+
+        fbo1.clear();
+        fbo2.clear();
+
+        GaussianShader.applyGaussianBlur(gaussianShader, fbo1, fbo2, fboToBlur, copyFbo, blurStrength.getValue(), true, true);
 
         mainFbo.beginWrite(true);
 
@@ -155,6 +231,7 @@ public class HandsModule extends Module {
         ShaderHelper.drawFullScreenQuad();
         blurHandShader.unbind();
 
+        // Восстанавливаем mainFbo текстуру с NEAREST, как в старом
         RenderSystem.activeTexture(GL_TEXTURE0);
         RenderSystem.bindTexture(mainFbo.getColorAttachment());
         RenderSystem.texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

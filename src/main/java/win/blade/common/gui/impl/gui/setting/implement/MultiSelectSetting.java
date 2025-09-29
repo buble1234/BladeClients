@@ -23,6 +23,11 @@ public class MultiSelectSetting extends Setting {
         return list;
     }
 
+    public void setSelected(List<String> selected) {
+        this.selected.clear();
+        this.selected.addAll(selected);
+    }
+
     public MultiSelectSetting value(String... values) {
         this.list = Arrays.asList(values);
         return this;

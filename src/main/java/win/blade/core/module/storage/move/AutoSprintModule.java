@@ -1,10 +1,13 @@
 package win.blade.core.module.storage.move;
 
+import net.minecraft.entity.effect.StatusEffects;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.utils.player.SprintUtility;
 import win.blade.core.event.controllers.EventHandler;
 import win.blade.core.event.impl.minecraft.UpdateEvents;
+import win.blade.core.event.impl.player.KeepSprintEvent;
 import win.blade.core.event.impl.player.PlayerActionEvents;
+import win.blade.core.event.impl.render.WorldLoadEvent;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
@@ -15,46 +18,44 @@ import win.blade.core.module.api.ModuleInfo;
         desc = "Автоматически включает бег при движении."
 )
 public class AutoSprintModule extends Module {
-
-    private final BooleanSetting keepSprintOption = new BooleanSetting("Сбрасывать спринт", "Сохранять бег во время атаки.").setValue(false);
+    public int tickStop = 0;
+    private final BooleanSetting keepSprintSetting = new BooleanSetting("Keep Sprint", "Preserve sprint knock-back momentum").setValue(true);
+    public final BooleanSetting ignoreHungerSetting = new BooleanSetting("Ignore Hunger", "Sprint even with low saturation").setValue(true);
 
     public AutoSprintModule() {
-        addSettings(keepSprintOption);
+        addSettings(keepSprintSetting,ignoreHungerSetting);
+    }
+
+    @EventHandler
+    public void onWorldLoad(WorldLoadEvent e) {
+        tickStop = 3;
     }
 
     @EventHandler
     public void onTick(UpdateEvents.Update event) {
-        if (mc.player == null) return;
-
-        boolean canSprint = SprintUtility.canStartSprinting();
-
-        if (canSprint && !mc.player.horizontalCollision) {
-            if (!mc.player.isSprinting()) {
-                mc.player.setSprinting(true);
-            }
-        } else if (!canSprint || SprintUtility.isEmergencyStop()) {
-            if (mc.player.isSprinting()) {
-                mc.player.setSprinting(false);
-            }
+        if (mc.player == null || mc.world == null) {
+            return;
         }
-
-        SprintUtility.setEmergencyStop(false);
+        boolean collidedHoriz = mc.player.horizontalCollision && !mc.player.collidedSoftly;
+        boolean sneaking = mc.player.isSneaking() && !mc.player.isSwimming();
+        if (tickStop > 0 || sneaking) {
+            mc.player.setSprinting(false);
+        } else if (canStartSprinting() && !collidedHoriz && !mc.options.sprintKey.isPressed()) {
+            mc.player.setSprinting(true);
+        }
+        if (tickStop > 0) tickStop--;
     }
 
     @EventHandler
-    public void onKeepSprint(PlayerActionEvents.Attack event) {
-        if (mc.player == null) return;
-
-        if (keepSprintOption.getValue() && SprintUtility.isKeepSprint() && !mc.player.horizontalCollision && !mc.player.isSprinting()) {
+    public void onKeepSprint(KeepSprintEvent e) {
+        if (keepSprintSetting.getValue()) {
+            mc.player.setVelocity(mc.player.getVelocity().x / 0.6F, mc.player.getVelocity().y, mc.player.getVelocity().z / 0.6F);
             mc.player.setSprinting(true);
         }
     }
-
-    @Override
-    protected void onDisable() {
-        if (mc.player != null && mc.player.isSprinting()) {
-            mc.player.setSprinting(false);
-        }
-        super.onDisable();
+    private boolean canStartSprinting() {
+        boolean blinded = mc.player.hasStatusEffect(StatusEffects.BLINDNESS);
+        return !mc.player.isSprinting() && mc.player.input.hasForwardMovement() && !blinded && !mc.player.isGliding();
     }
+
 }

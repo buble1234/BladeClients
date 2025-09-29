@@ -1,5 +1,6 @@
 package win.blade.common.utils.math;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
@@ -9,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
@@ -20,6 +22,9 @@ import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Predicate;
+
 public class MathUtility implements MinecraftInstance {
 
     public static final Matrix4f lastProjMat = new Matrix4f();
@@ -30,11 +35,56 @@ public class MathUtility implements MinecraftInstance {
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
 
+    public static Vec3d cosSin(int i, int size, double width) {
+         double PI2 = Math.PI * 2;
+        int index = Math.min(i, size);
+        float cos = (float) (Math.cos(index * PI2 / size) * width);
+        float sin = (float) (-Math.sin(index * PI2 / size) * width);
+        return new Vec3d(cos, 0, sin);
+    }
+
+
+    public static BlockHitResult raycast(Vec3d start, Vec3d end, RaycastContext.ShapeType shapeType, Entity entity) {
+        return raycast(start, end, shapeType, RaycastContext.FluidHandling.NONE, entity);
+    }
+
+    public static int getRandom(int min, int max) {
+        return (int) getRandom((float) min, (float) max + 1);
+    }
+
+    public static float getRandom(float min, float max) {
+        return (float) getRandom(min, (double) max);
+    }
+
+    public static double getRandom(double min, double max) {
+        if (min == max) {
+            return min;
+        } else {
+            if (min > max) {
+                double d = min;
+                min = max;
+                max = d;
+            }
+
+            return ThreadLocalRandom.current().nextDouble(min, max);
+        }
+    }
+    public static BlockHitResult raycast(Vec3d start, Vec3d end, RaycastContext.ShapeType shapeType, RaycastContext.FluidHandling fluidHandling, Entity entity) {
+        return mc.world.raycast(new RaycastContext(start, end, shapeType, fluidHandling, entity));
+    }
     public static Vec3d interpolate(Entity entity, float partialTicks) {
         double posX = lerp(entity.lastRenderX, entity.getX(), partialTicks);
         double posY = lerp(entity.lastRenderY, entity.getY(), partialTicks);
         double posZ = lerp(entity.lastRenderZ, entity.getZ(), partialTicks);
         return new Vec3d(posX, posY, posZ);
+    }
+
+    public static boolean isBoxInBlock(Box box, Block block) {
+        return isBox(box,pos -> mc.world.getBlockState(pos).getBlock().equals(block));
+    }
+
+    public static boolean isBox(Box box, Predicate<BlockPos> pos) {
+        return BlockPos.stream(box).anyMatch(pos);
     }
 
     public static double lerp(double input, double target, double step) {
@@ -309,5 +359,9 @@ public class MathUtility implements MinecraftInstance {
         double dy = y2 - y1;
         double dz = z2 - z1;
         return sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    public static float normalizeAngle(float angle) {
+        return (angle + 180f) % 360f - 180f;
     }
 }

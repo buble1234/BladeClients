@@ -12,7 +12,7 @@ import win.blade.common.utils.aim.core.ViewDirection;
 public record AdaptiveSmooth(float baseSpeed, float acceleration) implements SmoothTransition {
 
     public AdaptiveSmooth(float speed) {
-        this(speed, 50);
+        this(speed, 10);
     }
 
     @Override

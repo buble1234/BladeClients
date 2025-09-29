@@ -17,7 +17,7 @@ import win.blade.core.module.api.ModuleInfo;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.mixin.accessor.CameraAccessor;
 
-@ModuleInfo(name = "FreeCam", category = Category.RENDER, desc = "Позволяет летать камерой отдельно от тела.")
+@ModuleInfo(name = "FreeCam", category = Category.PLAYER, desc = "Позволяет летать камерой отдельно от тела.")
 public class FreeCam extends Module {
 
     private final ValueSetting speed = new ValueSetting("Скорость", "").setValue(1f).range(0.1f, 5f);

@@ -1,6 +1,5 @@
 package win.blade.common.gui.impl.gui.components.implement.window;
 
-import it.unimi.dsi.fastutil.doubles.DoubleIterable;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.texture.AbstractTexture;
@@ -23,6 +22,9 @@ public class WindowManager extends AbstractComponent {
     }
 
     public void add(AbstractWindow window) {
+        if ("accountEditor".equalsIgnoreCase(window.windowName)) {
+            windows.clear();
+        }
         windows.add(window);
     }
 
