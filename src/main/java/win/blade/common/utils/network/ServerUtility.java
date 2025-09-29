@@ -112,6 +112,10 @@ public class ServerUtility {
         });
     }
 
+
+    public static String getWorldType() {
+        return mc.world.getRegistryKey().getValue().getPath();
+    }
     public static boolean isPvpActive() {
         return getCachedValue("pvp_active", () -> {
             if (checkPvpInBossBar()) return true;

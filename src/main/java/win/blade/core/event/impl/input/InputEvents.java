@@ -125,4 +125,8 @@ public abstract class InputEvents extends Event {
     public void inputNone() {
         input = new PlayerInput(false, false, false, false, false, false, false);
     }
+
+    public void setJumping(boolean jump) {
+        input = new PlayerInput(input.forward(), input.backward(), input.left(), input.right(), jump, input.sneak(), input.sprint());
+    }
 }

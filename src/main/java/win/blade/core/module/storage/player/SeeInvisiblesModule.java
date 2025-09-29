@@ -1,4 +1,4 @@
-package win.blade.core.module.storage.misc;
+package win.blade.core.module.storage.player;
 
 import win.blade.common.gui.impl.gui.setting.implement.ValueSetting;
 import win.blade.core.module.api.Category;
@@ -7,7 +7,7 @@ import win.blade.core.module.api.ModuleInfo;
 
 @ModuleInfo(
         name = "SeeInvisibles",
-        category = Category.MISC,
+        category = Category.PLAYER,
         desc = "Раскрывает невидимых существ."
 )
 public class SeeInvisiblesModule extends Module {

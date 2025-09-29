@@ -28,7 +28,7 @@ import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
-import win.blade.core.module.storage.misc.AutoToolModule;
+import win.blade.core.module.storage.player.AutoToolModule;
 
 import java.util.ArrayList;
 import java.util.Comparator;

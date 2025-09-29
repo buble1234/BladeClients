@@ -1,4 +1,4 @@
-package win.blade.core.module.storage.misc;
+package win.blade.core.module.storage.player;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -21,7 +21,7 @@ import win.blade.core.module.api.ModuleInfo;
  * Автор: NoCap
  * Дата создания: 26.09.2025
  */
-@ModuleInfo(name = "AutoTool", category = Category.MISC, desc = "Автоматически берет лучший инструмент")
+@ModuleInfo(name = "AutoTool", category = Category.PLAYER, desc = "Автоматически берет лучший инструмент")
 public class AutoToolModule extends Module {
 
     private final TimerUtil switchDelay = new TimerUtil();
