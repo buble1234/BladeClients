@@ -7,10 +7,11 @@ import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.other.Pool;
 import java.util.Stack;
 public class ScissorManager implements MinecraftInstance {
-    Pool<Scissor> scissorPool = new Pool<>(Scissor::new);
-    Stack<Scissor> scissorStack = new Stack<>();
+    static Pool<Scissor> scissorPool = new Pool<>(Scissor::new);
+    static Stack<Scissor> scissorStack = new Stack<>();
 
-    public void push(Matrix4f matrix4f, float x, float y, float width, float height) {
+
+    public static void push(Matrix4f matrix4f, float x, float y, float width, float height) {
         Scissor currentScissor = scissorPool.get().copy();
 
         Vector3f pos = matrix4f.transformPosition(x,y,0, new Vector3f());
@@ -21,7 +22,7 @@ public class ScissorManager implements MinecraftInstance {
         setScissor(currentScissor);
     }
 
-    public void pop() {
+    public static void pop() {
         if (!scissorStack.isEmpty()) {
             scissorPool.free(scissorStack.pop());
             if (scissorStack.isEmpty()) {
@@ -32,10 +33,10 @@ public class ScissorManager implements MinecraftInstance {
         }
     }
 
-    private void setScissor(Scissor scissor) {
-        int scaleFactor = (int) window.getScaleFactor();
+    private static void setScissor(Scissor scissor) {
+        int scaleFactor = (int) mc.getWindow().getScaleFactor();
         int x = scissor.x * scaleFactor;
-        int y = window.getHeight() - (scissor.y * scaleFactor + scissor.height * scaleFactor);
+        int y = mc.getWindow().getHeight() - (scissor.y * scaleFactor + scissor.height * scaleFactor);
         int width = scissor.width * scaleFactor;
         int height = scissor.height * scaleFactor;
 

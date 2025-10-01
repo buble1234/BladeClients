@@ -9,7 +9,7 @@ import win.blade.common.ui.element.InteractiveUIElement;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
 import win.blade.common.utils.minecraft.MinecraftInstance;
-import win.blade.common.utils.render.Stencil;
+import win.blade.common.utils.render.ScissorManager;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
@@ -160,10 +160,8 @@ public class Hotkey extends Module implements MinecraftInstance, NonRegistrable 
                     .smoothness(1.0f)
                     .build();
 
-            Stencil.push();
+            ScissorManager.push(matrix, getX(), getY(), getWidth(), getHeight());
             background.render(matrix, getX(), getY());
-            Stencil.read(1);
-
             background.render(matrix, getX(), getY());
 
             float maskW = 39;
@@ -236,7 +234,7 @@ public class Hotkey extends Module implements MinecraftInstance, NonRegistrable 
                 }
             }
 
-            Stencil.pop();
+            ScissorManager.pop();
 
             BuiltBorder border = Builder.border()
                     .size(new SizeState(getWidth(), getHeight()))

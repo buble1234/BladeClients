@@ -11,6 +11,5 @@ import win.blade.common.gui.impl.gui.components.implement.window.WindowManager;
 
 public interface MinecraftInstance {
     MinecraftClient mc = MinecraftClient.getInstance();
-    Window window = mc.getWindow();
     WindowManager windowManager = new WindowManager();
 }

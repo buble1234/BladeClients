@@ -15,7 +15,7 @@ import win.blade.common.utils.math.TimerUtil;
 import win.blade.common.utils.math.animation.Animation;
 import win.blade.common.utils.math.animation.Easing;
 import win.blade.common.utils.minecraft.MinecraftInstance;
-import win.blade.common.utils.render.Stencil;
+import win.blade.common.utils.render.ScissorManager;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
 import win.blade.common.utils.render.builders.states.QuadRadiusState;
@@ -157,9 +157,8 @@ public class MusicHud extends Module implements MinecraftInstance, NonRegistrabl
                     .radius(new QuadRadiusState(6.5f))
                     .smoothness(1.0f)
                     .build();
-            Stencil.push();
+            ScissorManager.push(matrix, getX(), getY(), getWidth(), getHeight());
             background.render(matrix, getX(), getY());
-            Stencil.read(1);
             background.render(matrix, getX(), getY());
         }
 
@@ -263,7 +262,7 @@ public class MusicHud extends Module implements MinecraftInstance, NonRegistrabl
             Builder.border().size(new SizeState(getWidth(), getHeight()))
                     .color(new QuadColorState(new Color(170, 160, 200, 25)))
                     .radius(new QuadRadiusState(6.5f)).thickness(1).build().render(matrix, getX(), getY());
-            Stencil.pop();
+            ScissorManager.pop();
         }
 
         private String formatTime(long seconds) {

@@ -228,7 +228,7 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
     }
 
     private void pasteFromClipboard() {
-        String clipboardText = GLFW.glfwGetClipboardString(window.getHandle());
+        String clipboardText = GLFW.glfwGetClipboardString(mc.getWindow().getHandle());
         if (clipboardText != null) {
             replaceText(cursorPosition, cursorPosition, clipboardText);
         }
@@ -236,7 +236,7 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
 
     private void copyToClipboard() {
         if (hasSelection()) {
-            GLFW.glfwSetClipboardString(window.getHandle(), getSelectedText());
+            GLFW.glfwSetClipboardString(mc.getWindow().getHandle(), getSelectedText());
         }
     }
 
