@@ -9,4 +9,5 @@ import net.minecraft.util.math.Vec3d;
  */
 public interface PointProvider {
     Vec3d getPoint(Entity entity);
+    double SHRINK_FACTOR = 0.05;
 }

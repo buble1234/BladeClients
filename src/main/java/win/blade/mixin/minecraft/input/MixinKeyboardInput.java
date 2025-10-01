@@ -22,6 +22,7 @@ import java.awt.event.InputEvent;
 @Mixin(KeyboardInput.class)
 public class MixinKeyboardInput implements MinecraftInstance {
 
+    @SuppressWarnings("all")
     @Inject(method = "tick", at = @At("TAIL"))
     private void fixMovementCorrection(CallbackInfo ci) {
         KeyboardInput input = (KeyboardInput) (Object) this;
@@ -87,37 +88,37 @@ public class MixinKeyboardInput implements MinecraftInstance {
         input.movementSideways = KeyboardInput.getMovementMultiplier(newLeft, newRight);
     }
 
-    @ModifyExpressionValue(method = "tick", at = @At(value = "NEW", target = "(ZZZZZZZ)Lnet/minecraft/util/PlayerInput;"))
-    private PlayerInput tickHook(PlayerInput original) {
-        PlayerInputEvent event = new PlayerInputEvent(original);
-        Manager.EVENT_BUS.post(event);
-        input(event);
-        return transformInput(event.getInput());
-    }
-    public boolean canMove = true;
-
-    public void input(PlayerInputEvent e) {
-        if (!canMove) e.inputNone();
-    }
-
-
-    @Unique
-    private PlayerInput transformInput(PlayerInput input) {
-        AimManager manager = AimManager.INSTANCE;
-        ViewDirection direction = manager.getCurrentDirection();
-        TargetTask task = manager.getActiveTask();
-
-        if (mc.player == null || direction == null || task == null || !(task.settings().enableMovementFix() && task.settings().enableSilentAim())) {
-            return input;
-        }
-
-        float deltaYaw = mc.player.getYaw() - direction.yaw();
-        float z = KeyboardInput.getMovementMultiplier(input.forward(), input.backward());
-        float x = KeyboardInput.getMovementMultiplier(input.left(), input.right());
-        float newX = x * MathHelper.cos(deltaYaw * 0.017453292f) - z * MathHelper.sin(deltaYaw * 0.017453292f);
-        float newZ = z * MathHelper.cos(deltaYaw * 0.017453292f) + x * MathHelper.sin(deltaYaw * 0.017453292f);
-        int movementSideways = Math.round(newX), movementForward = Math.round(newZ);
-
-        return new PlayerInput(movementForward > 0F, movementForward < 0F, movementSideways > 0F, movementSideways < 0F, input.jump(), input.sneak(), input.sprint());
-    }
+//    @ModifyExpressionValue(method = "tick", at = @At(value = "NEW", target = "(ZZZZZZZ)Lnet/minecraft/util/PlayerInput;"))
+//    private PlayerInput tickHook(PlayerInput original) {
+//        PlayerInputEvent event = new PlayerInputEvent(original);
+//        Manager.EVENT_BUS.post(event);
+//        input(event);
+//        return transformInput(event.getInput());
+//    }
+//    public boolean canMove = true;
+//
+//    public void input(PlayerInputEvent e) {
+//        if (!canMove) e.inputNone();
+//    }
+//
+//
+//    @Unique
+//    private PlayerInput transformInput(PlayerInput input) {
+//        AimManager manager = AimManager.INSTANCE;
+//        ViewDirection direction = manager.getCurrentDirection();
+//        TargetTask task = manager.getActiveTask();
+//
+//        if (mc.player == null || direction == null || task == null || !(task.settings().enableMovementFix() && task.settings().enableSilentAim())) {
+//            return input;
+//        }
+//
+//        float deltaYaw = mc.player.getYaw() - direction.yaw();
+//        float z = KeyboardInput.getMovementMultiplier(input.forward(), input.backward());
+//        float x = KeyboardInput.getMovementMultiplier(input.left(), input.right());
+//        float newX = x * MathHelper.cos(deltaYaw * 0.017453292f) - z * MathHelper.sin(deltaYaw * 0.017453292f);
+//        float newZ = z * MathHelper.cos(deltaYaw * 0.017453292f) + x * MathHelper.sin(deltaYaw * 0.017453292f);
+//        int movementSideways = Math.round(newX), movementForward = Math.round(newZ);
+//
+//        return new PlayerInput(movementForward > 0F, movementForward < 0F, movementSideways > 0F, movementSideways < 0F, input.jump(), input.sneak(), input.sprint());
+//    }
 }

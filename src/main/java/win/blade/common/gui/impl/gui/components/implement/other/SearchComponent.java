@@ -18,6 +18,8 @@ import win.blade.common.utils.render.msdf.FontType;
 import java.awt.Color;
 
 public class SearchComponent extends AbstractComponent {
+    private static final String ru = "йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ";
+    private static final String en = "qwertyuiop[]asdfghjkl;'zxcvbnm,.QWERTYUIOP[]ASDFGHJKL;'ZXCVBNM,.";
 
     private final TextBox textBox;
 
@@ -103,7 +105,9 @@ public class SearchComponent extends AbstractComponent {
     @Override
     public boolean charTyped(char chr, int modifiers) {
         if (textBox.selected) {
-            textBox.charTyped(chr, modifiers);
+            int index = ru.indexOf(chr);
+            char newChar = index != -1 ? en.charAt(index) : chr;
+            textBox.charTyped(newChar, modifiers);
             return true;
         }
         return super.charTyped(chr, modifiers);

@@ -7,5 +7,7 @@ package win.blade.common.utils.aim.point;
 public enum PointMode {
     CENTER,
     SMART,
-    MULTI
+    HEAD,
+    BODY,
+    FEET
 }

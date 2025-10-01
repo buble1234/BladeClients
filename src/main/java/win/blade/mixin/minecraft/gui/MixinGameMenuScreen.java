@@ -37,7 +37,11 @@ public class MixinGameMenuScreen {
     private Screen blade$replaceMultiplayerScreenOnDisconnect(Screen screen) {
         if (!Manager.isPanic()) {
             return new MultiplayerScreen();
+        if (screen instanceof net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen && !Manager.isPanic()) {
+            return new win.blade.common.gui.impl.screen.multiplayer.MultiplayerScreen();
+
         }
+
         return screen;
     }
 

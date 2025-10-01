@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
+import win.blade.common.utils.minecraft.ChatUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.manager.AimManager;
@@ -35,6 +37,10 @@ import java.util.Optional;
 
 @Mixin(Entity.class)
 public abstract class MixinEntity implements MinecraftInstance, IEntity {
+
+    @Shadow public abstract boolean isFireImmune();
+
+    @Shadow protected abstract boolean isFlappingWings();
 
     @Unique
     public List<Particles.Point> points = new ArrayList<>();
@@ -111,12 +117,17 @@ public abstract class MixinEntity implements MinecraftInstance, IEntity {
         }
     }
 
+    @SuppressWarnings("all")
     @Inject(method = "updateVelocity", at = @At("HEAD"), cancellable = true)
     public void updateVelocityHook(float speed, Vec3d movementInput, CallbackInfo ci) {
         if ((Object) this == mc.player) {
             AimManager aimManager = AimManager.INSTANCE;
             ViewDirection aimDirection = aimManager.getCurrentDirection();
             TargetTask task = aimManager.getActiveTask();
+
+//            if(mc.player.isGliding()){
+//                ChatUtility.print("asd");
+//            }
 
             if (task != null && aimDirection != null && task.settings().enableMovementFix()) {
                 ci.cancel();
