@@ -53,6 +53,7 @@ public abstract class MixinLivingEntity implements MinecraftInstance {
     @Shadow protected abstract double getEffectiveGravity();
     @Shadow protected abstract void checkGlidingCollision(double d, double e);
 
+
     @SuppressWarnings("all")
     @Inject(method = "travelGliding", at = @At("HEAD"), cancellable = true)
     private void onTravelGliding(CallbackInfo ci) {
@@ -161,4 +162,42 @@ public abstract class MixinLivingEntity implements MinecraftInstance {
 
         return new Vec3d(newX, yVelocity, newZ);
     }
+
+
+
+    @Redirect(
+            method = "travelInFluid(Lnet/minecraft/util/math/Vec3d;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;updateVelocity(FLnet/minecraft/util/math/Vec3d;)V")
+    )
+    private void redirectFluidMovement(LivingEntity instance, float speed, Vec3d movementInput) {
+        if (instance instanceof ClientPlayerEntity) {
+            AimManager manager = AimManager.INSTANCE;
+            ViewDirection direction = manager.getCurrentDirection();
+            TargetTask task = manager.getActiveTask();
+
+            if (manager.isEnabled() && direction != null && task != null && task.settings().enableMovementFix()) {
+                blade$updateVelocityWithCorrectedYaw(instance, speed, movementInput, direction.yaw());
+                return;
+            }
+        }
+
+        instance.updateVelocity(speed, movementInput);
+    }
+
+    @Unique
+    private void blade$updateVelocityWithCorrectedYaw(LivingEntity entity, float speed, Vec3d movementInput, float yaw) {
+        double d = movementInput.lengthSquared();
+        if (d < 1.0E-7) {
+            return;
+        }
+
+        Vec3d vec3d = (d > 1.0 ? movementInput.normalize() : movementInput).multiply(speed);
+        float f = MathHelper.sin(yaw * 0.017453292F);
+        float g = MathHelper.cos(yaw * 0.017453292F);
+
+        Vec3d correctedVelocity = new Vec3d(vec3d.x * (double)g - vec3d.z * (double)f, vec3d.y, vec3d.z * (double)g + vec3d.x * (double)f);
+
+        entity.setVelocity(entity.getVelocity().add(correctedVelocity));
+    }
+
 }

@@ -31,16 +31,8 @@ public class ReconnectCommand extends Command {
     @Override
     public void executeBuild(LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(s -> {
-//            boolean bl = mc.isInSingleplayer();
-//            mc.execute(() -> {
-//                mc.disconnect();
-//                var screen = new MultiplayerScreen();
-//                mc.setScreen(screen);
-//                Manager.executorService.schedule(() -> {
-//                    ConnectScreen.connect(screen, mc, ServerAddress.parse(entry.address), entry, false, null);
-//                }, 500, TimeUnit.MILLISECONDS);
-//            });
             ServerInfo entry = mc.getCurrentServerEntry();
+//            ServerInfo serverInfo = new ServerInfo("adof", "ip", ServerInfo.ServerType.OTHER);
             PauseScreen.disconnect(mc);
             ConnectScreen.connect(new MenuScreen(), mc, ServerAddress.parse(entry.address), entry, false, null);
 
