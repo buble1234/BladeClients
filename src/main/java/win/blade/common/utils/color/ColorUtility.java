@@ -33,6 +33,37 @@ public class ColorUtility {
         return fade(5, index, clientColor, darkColor);
     }
 
+    public static int red(int c) {return (c >> 16) & 0xFF;}
+
+    public static int green(int c) {
+        return (c >> 8) & 0xFF;
+    }
+
+    public static int blue(int c) {
+        return c & 0xFF;
+    }
+
+    public static int alpha(int c) {
+        return (c >> 24) & 0xFF;
+    }
+
+
+    public static float redf(int c) {
+        return red(c) / 255.0f;
+    }
+
+    public static float greenf(int c) {
+        return green(c) / 255.0f;
+    }
+
+    public static float bluef(int c) {
+        return blue(c) / 255.0f;
+    }
+
+    public static float alphaf(int c) {
+        return alpha(c) / 255.0f;
+    }
+
 
     public static int overCol(int color1, int color2, float factor) {
         float f = MathHelper.clamp(factor, 0.0f, 1.0f);
