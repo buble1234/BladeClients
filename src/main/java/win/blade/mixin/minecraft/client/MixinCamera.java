@@ -39,6 +39,9 @@ public abstract class MixinCamera implements MinecraftInstance {
             float deltaYaw = current.yaw() - previous.yaw();
             deltaYaw = ((deltaYaw % 360) + 540) % 360 - 180;
 
+            // -370 = -10 + 540 = -530 % 360 = -170 - 180 = -350
+            // 370 = 10 + 540 = 550 % 360 = 180 - 180 = 0
+
             float yaw = previous.yaw() + deltaYaw * tickDelta;
             yaw = MathHelper.wrapDegrees(yaw);
 

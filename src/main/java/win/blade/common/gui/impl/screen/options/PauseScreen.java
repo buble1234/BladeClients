@@ -3,13 +3,13 @@ package win.blade.common.gui.impl.screen.options;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.advancement.AdvancementsScreen;
-import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.SocialInteractionsScreen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import win.blade.common.gui.button.Button;
+import win.blade.common.gui.impl.screen.multiplayer.MultiplayerScreen;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.SizeState;
 
@@ -97,7 +97,7 @@ public class PauseScreen extends Screen {
         } else if (serverInfo != null && serverInfo.isRealm()) {
             this.client.setScreen(new RealmsMainScreen(titleScreen));
         } else {
-            this.client.setScreen(new MultiplayerScreen(titleScreen));
+            this.client.setScreen(new MultiplayerScreen());
         }
     }
 

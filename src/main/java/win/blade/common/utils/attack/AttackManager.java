@@ -58,15 +58,14 @@ public class AttackManager implements MinecraftInstance {
             mc.interactionManager.stopUsingItem(mc.player);
         }
         boolean wasSprint = mc.player.isSprinting();
-        //mc.player.stopGliding();
-        settings.attackMode().handleSprintBeforeAttack(settings, state);
+        if(!mc.player.isGliding())
+            settings.attackMode().handleSprintBeforeAttack(settings, state);
 
         sendAttackPackets(target);
 
         if (wasSprint != mc.player.isSprinting()) {
             settings.attackMode().handleSprintAfterAttack(settings, state);
         }
-        //mc.player.startGliding();
 
         state.setLastAttackTime(System.currentTimeMillis());
         state.setIsAttacking(false);

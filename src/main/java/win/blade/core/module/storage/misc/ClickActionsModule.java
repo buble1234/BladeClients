@@ -101,7 +101,7 @@ public class ClickActionsModule extends Module {
             mc.player.swingHand(Hand.MAIN_HAND);
             mc.player.getInventory().selectedSlot = wrapSlot;
 
-            mc.interactionManager.pickItemFromEntity();
+//            mc.interactionManager.pickItemFromEntity();
             // another
 
             return inventory;

@@ -205,7 +205,7 @@ public class AuraModule extends Module {
         updateCurrentTarget();
 
         if (currentTarget == null) {
-            AimManager.INSTANCE.disableWithSmooth(0.9f);
+            AimManager.INSTANCE.disableWithSmooth(5);
             return;
         }
 
@@ -375,11 +375,8 @@ public class AuraModule extends Module {
             if (moveCorrectionGroup.getValue()) {
                 enableMovementCorrection = true;
 
-                if (moveCorrectionMode.isSelected("Слабая")) {
-                    enableSilent = true;
-                } else {
-                    enableSilent = false;
-                }
+                enableSilent= moveCorrectionMode.isSelected("Слабая");
+
             }
 
             ViewDirection targetDirection = new ViewDirection(targetYaw, targetPitch);
@@ -470,4 +467,9 @@ public class AuraModule extends Module {
     public double getDistanceToTarget() {
         return currentTarget != null ? mc.player.distanceTo(currentTarget) : -1;
     }
+
+
+//    public static void update(){
+
+//    }
 }

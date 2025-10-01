@@ -124,9 +124,6 @@ public class AimManager {
         return player != null ? new ViewDirection(player.getYaw(), player.getPitch()) : ViewDirection.ORIGIN;
     }
 
-
-
-
     public ViewDirection getCurrentDirection() {
         return isActive ? currentDirection : null;
     }

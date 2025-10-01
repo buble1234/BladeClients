@@ -22,6 +22,7 @@ import java.awt.event.InputEvent;
 @Mixin(KeyboardInput.class)
 public class MixinKeyboardInput implements MinecraftInstance {
 
+    @SuppressWarnings("all")
     @Inject(method = "tick", at = @At("TAIL"))
     private void fixMovementCorrection(CallbackInfo ci) {
         KeyboardInput input = (KeyboardInput) (Object) this;
