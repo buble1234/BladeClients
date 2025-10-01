@@ -48,7 +48,7 @@ public class MixinGameMenuScreen {
             return originalUri;
         }
 
-        String link = "https://discord.gg/bladerecode";
+        String link = "https://dsc.gg/bladedlc";
         try {
             return new URI(link);
         } catch (URISyntaxException e) {
@@ -62,7 +62,7 @@ public class MixinGameMenuScreen {
             return originalUri;
         }
 
-        String link = "https://t.me/bladeclient_tg";
+        String link = "https://t.me/blademinecraft_tg";
         try {
             return new URI(link);
         } catch (URISyntaxException e) {
