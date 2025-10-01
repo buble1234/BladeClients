@@ -1,5 +1,6 @@
 package win.blade.common.gui.impl.screen.options;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.advancement.AdvancementsScreen;
@@ -78,27 +79,27 @@ public class PauseScreen extends Screen {
 
         currentY += rowHeight;
 
-        this.addDrawableChild(new Button(centerX - halfButtonWidth, currentY, buttonWidth, buttonHeight, Text.translatable("menu.returnToMenu"), this::disconnect));
+        this.addDrawableChild(new Button(centerX - halfButtonWidth, currentY, buttonWidth, buttonHeight, Text.translatable("menu.returnToMenu"), () -> disconnect(MinecraftClient.getInstance())));
     }
 
-    private void disconnect() {
-        boolean bl = this.client.isInSingleplayer();
-        ServerInfo serverInfo = this.client.getCurrentServerEntry();
-        this.client.world.disconnect();
+    public static void disconnect(MinecraftClient client) {
+        boolean bl = client.isInSingleplayer();
+        ServerInfo serverInfo = client.getCurrentServerEntry();
+        client.world.disconnect();
         if (bl) {
-            this.client.disconnect(new MessageScreen(Text.translatable("menu.savingLevel")));
+            client.disconnect(new MessageScreen(Text.translatable("menu.savingLevel")));
         } else {
-            this.client.disconnect();
+            client.disconnect();
         }
-
         TitleScreen titleScreen = new TitleScreen();
         if (bl) {
-            this.client.setScreen(titleScreen);
+            client.setScreen(titleScreen);
         } else if (serverInfo != null && serverInfo.isRealm()) {
-            this.client.setScreen(new RealmsMainScreen(titleScreen));
+            client.setScreen(new RealmsMainScreen(titleScreen));
         } else {
-            this.client.setScreen(new MultiplayerScreen());
+            client.setScreen(new MultiplayerScreen());
         }
+
     }
 
     @Override

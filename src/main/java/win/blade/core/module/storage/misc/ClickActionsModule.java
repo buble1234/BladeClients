@@ -8,8 +8,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.BundleItemSelectedC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
+import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Util;
 import net.minecraft.util.hit.EntityHitResult;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
@@ -66,10 +68,10 @@ public class ClickActionsModule extends Module {
             mc.player.swingHand(Hand.MAIN_HAND);
         } else{
             int slot = useItem(Items.ENDER_PEARL);
-            if(slot > 8){
-//                mc.interactionManager.clickSlot(0, slot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
-                // anouther one!
-            }
+//            if(slot > 8){
+////                mc.interactionManager.clickSlot(0, slot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
+//                // anouther one!
+//            }
         }
     }
 
@@ -82,9 +84,11 @@ public class ClickActionsModule extends Module {
 
             mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
             mc.player.swingHand(Hand.MAIN_HAND);
+
             if (hotBar != mc.player.getInventory().selectedSlot) {
                 mc.player.networkHandler.sendPacket(new BundleItemSelectedC2SPacket(mc.player.getInventory().selectedSlot, mc.player.getInventory().selectedSlot));
             }
+
             mc.player.getInventory().selectedSlot = wrapSlot;
             return hotBar;
         }
@@ -93,21 +97,21 @@ public class ClickActionsModule extends Module {
 
         if (inventory != - 1) {
             int wrapSlot = mc.player.getInventory().selectedSlot;
-            //there should be one handlePickItem
-
-            mc.interactionManager.clickSlot(0, inventory, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
-
+            pickItem(inventory);
             mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
             mc.player.swingHand(Hand.MAIN_HAND);
             mc.player.getInventory().selectedSlot = wrapSlot;
-
-//            mc.interactionManager.pickItemFromEntity();
-            // another
+//            pickItem(inventory);
 
             return inventory;
         }
         return -1;
     }
+
+    public static void pickItem(int slotId){
+        mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(slotId));
+    }
+
     public static int getItemOnNeededSlot(boolean hotBar, Item item){
         int hot = hotBar ? 0 : 9;
         int inv = hotBar ? 9 : 36;
