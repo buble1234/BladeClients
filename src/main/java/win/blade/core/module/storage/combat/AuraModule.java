@@ -1,5 +1,6 @@
 package win.blade.core.module.storage.combat;
 
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.hit.EntityHitResult;
@@ -22,6 +23,8 @@ import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
+
+import java.util.Random;
 
 /**
  * Автор: NoCap
@@ -58,7 +61,7 @@ public class AuraModule extends Module {
             .value("Всегда", "Умные", "Нету");
 
     private final SelectSetting pointMode = new SelectSetting("Точка прицеливания", "Точка на теле цели для прицеливания.")
-            .value("Умные", "Центр", "Мульти")
+            .value("Голова", "Тело", "Ноги", "Умные")
             .visible(() -> aimGroup.getValue());
 
     private final GroupSetting targetTypes = new GroupSetting("Типы целей", "Какие типы существ атаковать.").setToggleable().settings(
@@ -71,6 +74,11 @@ public class AuraModule extends Module {
             new BooleanSetting("Животные", "Атаковать мирных животных.").setValue(false),
             new BooleanSetting("Жители", "Атаковать деревенских жителей.").setValue(false)
     );
+
+    private final BooleanSetting ignoreOpenInventory = new BooleanSetting("Игнорировать инвентарь", "Атаковать при открытом инвентаре.").setValue(false);
+    private final BooleanSetting simulateInventoryClosing = new BooleanSetting("Симулировать закрытие инвентаря", "Обходить ограничения атаки при открытом инвентаре.")
+            .setValue(false)
+            .visible(() -> ignoreOpenInventory.getValue());
 
     private final GroupSetting behaviorOptions = new GroupSetting("Опции", "Дополнительные настройки поведения.").setToggleable().settings(
             new BooleanSetting("Сбрасывать спринт", "Сбрасывать спринт перед атакой.").setValue(true),
@@ -93,23 +101,32 @@ public class AuraModule extends Module {
     private final SelectSetting sortMode = new SelectSetting("Сортировка целей", "Критерий выбора приоритетной цели.")
             .value("Дистанция", "Здоровье", "Броня", "Поле зрения", "Общая");
 
-    private final ValueSetting smoothReturn = new ValueSetting("Плавное возрашение", "Скорость плавного возращения")
+    private final ValueSetting smoothReturn = new ValueSetting("Скорость", "Скорость возрашение ротации к прицелу.")
             .setValue(2.5f).range(0.1f, 5f);
 
-    private final GroupSetting smoothReturnGroup = new GroupSetting("Скорость", "Скорость возрашение ротации к прицелу")
+    private final GroupSetting smoothReturnGroup = new GroupSetting("Плавное возрашение", "Плавное возращение ротации.")
             .visible(() -> aimGroup.getValue())
             .setValue(true)
             .settings(smoothReturn);
 
+    private final ValueSetting failSwingChance = new ValueSetting("Шанс", "Вероятность имитации атаки при неудачном попадании.")
+            .setValue(50f).range(0f, 100f);
+
+    private final GroupSetting failSwingGroup = new GroupSetting("Фейковые свинги", "Имитация атаки при неудачном попадании по цели.")
+            .setValue(false)
+            .settings(failSwingChance);
+
     private Entity currentTarget;
     private float aimTicks;
+    private static final Random RANDOM = new Random();
 
     public AuraModule() {
         addSettings(
                 aimGroup, attackRange, aimRange, rotateTick,
-                pointMode, moveCorrectionGroup, pvpMode,
-                cps, criticalMode, targetTypes,
-                behaviorOptions, sortMode, smoothReturnGroup
+                pointMode, moveCorrectionGroup, pvpMode, cps,
+                criticalMode, targetTypes, ignoreOpenInventory,
+                simulateInventoryClosing, behaviorOptions, sortMode,
+                smoothReturnGroup, failSwingGroup
         );
     }
 
@@ -154,6 +171,16 @@ public class AuraModule extends Module {
             return;
         }
 
+        boolean isInventoryOpen = mc.currentScreen != null;
+        boolean ignoreInventory = ignoreOpenInventory.getValue();
+        if (isInventoryOpen && !ignoreInventory) {
+            clearTarget();
+            if (failSwingGroup.getValue()) {
+                dealWithFakeSwing();
+            }
+            return;
+        }
+
         updateTargetTypes();
         updateCurrentTarget();
 
@@ -162,6 +189,9 @@ public class AuraModule extends Module {
                 AimManager.INSTANCE.disableWithSmooth(smoothReturn.getValue());
             } else {
                 AimManager.INSTANCE.disable();
+            }
+            if (failSwingGroup.getValue()) {
+                dealWithFakeSwing();
             }
             return;
         }
@@ -181,6 +211,8 @@ public class AuraModule extends Module {
 
         if (attackConditionMet) {
             performAttack();
+        } else if (failSwingGroup.getValue()) {
+            dealWithFakeSwing();
         }
     }
 
@@ -236,31 +268,21 @@ public class AuraModule extends Module {
     private void aimAtTarget() {
         PointMode selectedPointMode;
         switch (pointMode.getSelected()) {
+            case "Голова" -> selectedPointMode = PointMode.HEAD;
+            case "Тело" -> selectedPointMode = PointMode.BODY;
+            case "Ноги" -> selectedPointMode = PointMode.FEET;
             case "Умные" -> selectedPointMode = PointMode.SMART;
-            case "Мульти" -> selectedPointMode = PointMode.MULTI;
             default -> selectedPointMode = PointMode.CENTER;
         }
 
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
 
         boolean enableViewSync = getBooleanSetting(behaviorOptions, "Синхронизировать взгляд").getValue();
-
-        boolean enableMovementCorrection = false;
-        boolean enableSilent = false;
-
-        if (moveCorrectionGroup.getValue()) {
-            enableMovementCorrection = true;
-
-//            if (moveCorrectionMode.isSelected("Слабая")) {
-//                enableSilent = true;
-//            } else {
-//                enableSilent = false;
-//            }
-            enableSilent = moveCorrectionMode.isSelected("Слабая");
-        }
+        boolean enableMovementCorrection = moveCorrectionGroup.getValue();
+        boolean enableSilent = moveCorrectionGroup.getValue() && moveCorrectionMode.isSelected("Слабая");
 
         AimSettings aimSettings = new AimSettings(
-                new AdaptiveSmooth(5000),
+                new AdaptiveSmooth(25),
                 enableViewSync,
                 enableMovementCorrection,
                 enableSilent
@@ -275,8 +297,32 @@ public class AuraModule extends Module {
             return;
         }
 
+        boolean isInventoryOpen = mc.currentScreen != null;
+        boolean ignoreInventory = ignoreOpenInventory.getValue();
+        boolean simulateInventoryClos = simulateInventoryClosing.getValue();
+
+        if (isInventoryOpen && !ignoreInventory) {
+            return;
+        }
+
+        Screen originalScreen = null;
+        if (isInventoryOpen && ignoreInventory && simulateInventoryClos) {
+            originalScreen = mc.currentScreen;
+            mc.currentScreen = null;
+        }
+
         AttackSettings settings = buildAttackSettings();
         AttackManager.attack(livingTarget, settings);
+
+        if (originalScreen != null) {
+            mc.currentScreen = originalScreen;
+        }
+    }
+
+    private void dealWithFakeSwing() {
+        if (RANDOM.nextFloat() * 100 < failSwingChance.getValue()) {
+            AttackManager.fakeSwing();
+        }
     }
 
     private AttackSettings buildAttackSettings() {

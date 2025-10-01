@@ -20,6 +20,10 @@ public class AttackManager implements MinecraftInstance {
             AttackManager.performAttack(target, settings);
         }
     }
+
+    public static void fakeSwing() {
+        mc.player.swingHand(PlayerUtility.getAttackHand());
+    }
     public static boolean canAttack(LivingEntity target, AttackSettings settings) {
         if (mc.player == null || mc.interactionManager == null || target == null) {
             return false;
