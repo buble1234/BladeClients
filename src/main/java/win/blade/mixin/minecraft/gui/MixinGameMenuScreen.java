@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import win.blade.common.gui.impl.screen.multiplayer.MultiplayerScreen;
 import win.blade.common.gui.impl.screen.options.PauseScreen;
 import win.blade.core.Manager;
 
@@ -34,8 +35,8 @@ public class MixinGameMenuScreen {
             )
     )
     private Screen blade$replaceMultiplayerScreenOnDisconnect(Screen screen) {
-        if (screen instanceof net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen && !Manager.isPanic()) {
-            return new win.blade.common.gui.impl.screen.multiplayer.MultiplayerScreen();
+        if (!Manager.isPanic()) {
+            return new MultiplayerScreen();
         }
         return screen;
     }

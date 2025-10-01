@@ -122,6 +122,8 @@ public class Watermark extends Module implements MinecraftInstance, NonRegistrab
                     .build();
             mainBorder.render(matrix, getX(), getY());
 
+
+
             float curX = getX() + padding;
             float tY = getY() + (getHeight() - tSize) / 2f -2;
 

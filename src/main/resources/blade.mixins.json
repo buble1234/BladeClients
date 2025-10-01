@@ -28,6 +28,7 @@
     "minecraft.network.MixinClientConnection",
     "minecraft.network.MixinClientPlayNetworkHandler",
     "minecraft.other.fluid.MixinFlowableFluid",
+    "minecraft.render.BackGroundRendererMixin",
     "minecraft.render.MixinChunkBuilderBuiltChunk",
     "minecraft.render.MixinEntityRenderer",
     "minecraft.render.MixinHeadFeatureRenderer"
