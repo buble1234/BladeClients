@@ -251,11 +251,12 @@ public class AuraModule extends Module {
         if (moveCorrectionGroup.getValue()) {
             enableMovementCorrection = true;
 
-            if (moveCorrectionMode.isSelected("Слабая")) {
-                enableSilent = true;
-            } else {
-                enableSilent = false;
-            }
+//            if (moveCorrectionMode.isSelected("Слабая")) {
+//                enableSilent = true;
+//            } else {
+//                enableSilent = false;
+//            }
+            enableSilent = moveCorrectionMode.isSelected("Слабая");
         }
 
         AimSettings aimSettings = new AimSettings(

@@ -30,12 +30,15 @@ public class CommandManager implements MinecraftInstance {
         add(new BlockESPCommand());
         add(new ToggleCommand());
         add(new BindCommand());
+        add(new ReconnectCommand());
     }
+
+
 
     private void add(@NotNull Command command) {
         command.register(englishDispatcher, russianDispatcher);
-        EVENT_BUS.registerLambdaFactory("ru.blade",
-                (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
+//        EVENT_BUS.registerLambdaFactory("win.blade",
+//                (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
         EVENT_BUS.subscribe(command);
         commands.add(command);
     }
