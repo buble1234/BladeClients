@@ -3,17 +3,13 @@ package win.blade.core.module.storage.combat;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Vec3d;
 import win.blade.common.gui.impl.gui.setting.implement.*;
-import win.blade.common.gui.impl.gui.setting.implement.GroupSetting;
-import win.blade.common.ui.NotificationType;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
 import win.blade.common.utils.aim.base.AimCalculator;
 import win.blade.common.utils.aim.core.AimSettings;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.mode.AdaptiveSmooth;
-import win.blade.common.utils.aim.point.PointCalculator;
 import win.blade.common.utils.aim.point.PointMode;
 import win.blade.common.utils.attack.AttackSettings;
 import win.blade.common.utils.attack.AttackManager;
@@ -26,11 +22,6 @@ import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
-import win.blade.core.neuro.NeuralController;
-import win.blade.core.neuro.model.ModelType;
-import win.blade.core.neuro.model.ModelData;
-import win.blade.core.Manager;
-import java.util.Random;
 
 /**
  * Автор: NoCap
@@ -40,7 +31,7 @@ import java.util.Random;
 public class AuraModule extends Module {
 
     private final SelectSetting aimModeSetting = new SelectSetting("Режим", "Когда активировать прицеливание.")
-            .value("Постоянный", "Во время удара", "Нейро");
+            .value("Постоянный", "Во время удара");
 
     public final GroupSetting aimGroup = new GroupSetting("Прицеливание", "Настройки наведения на цель.")
             .settings(aimModeSetting);
@@ -56,18 +47,6 @@ public class AuraModule extends Module {
             .setValue(5f).range(1f, 10f)
             .visible(() -> aimGroup.getValue() && aimModeSetting.isSelected("Во время удара"));
 
-    private final SelectSetting neuralModel = new SelectSetting("Нейро модель", "Выбор модели для нейронного режима.")
-            .value("BLD1", "BLD2")
-            .visible(() -> aimModeSetting.isSelected("Нейро"));
-
-    private final BooleanSetting neuralRecord = new BooleanSetting("Запись", "Записывать данные для обучения нейросети.")
-            .setValue(false)
-            .visible(() -> aimModeSetting.isSelected("Нейро"));
-
-    private final ValueSetting recordDuration = new ValueSetting("Длительность записи", "Продолжительность записи в минутах.")
-            .setValue(5f).range(1f, 30f)
-            .visible(() -> aimModeSetting.isSelected("Нейро") && neuralRecord.getValue());
-
     private final SelectSetting pvpMode = new SelectSetting("Режим PvP", "Адаптация под боевую систему 1.8 или 1.9+.")
             .value("1.9", "1.8");
 
@@ -80,7 +59,7 @@ public class AuraModule extends Module {
 
     private final SelectSetting pointMode = new SelectSetting("Точка прицеливания", "Точка на теле цели для прицеливания.")
             .value("Умные", "Центр", "Мульти")
-            .visible(() -> aimGroup.getValue() && !aimModeSetting.isSelected("Нейро"));
+            .visible(() -> aimGroup.getValue());
 
     private final GroupSetting targetTypes = new GroupSetting("Типы целей", "Какие типы существ атаковать.").setToggleable().settings(
             new BooleanSetting("Игроки без брони", "Атаковать игроков без брони.").setValue(true),
@@ -114,23 +93,23 @@ public class AuraModule extends Module {
     private final SelectSetting sortMode = new SelectSetting("Сортировка целей", "Критерий выбора приоритетной цели.")
             .value("Дистанция", "Здоровье", "Броня", "Поле зрения", "Общая");
 
+    private final ValueSetting smoothReturn = new ValueSetting("Плавное возрашение", "Скорость плавного возращения")
+            .setValue(2.5f).range(0.1f, 5f);
+
+    private final GroupSetting smoothReturnGroup = new GroupSetting("Скорость", "Скорость возрашение ротации к прицелу")
+            .visible(() -> aimGroup.getValue())
+            .setValue(true)
+            .settings(smoothReturn);
+
     private Entity currentTarget;
     private float aimTicks;
-    private final NeuralController neuralController = new NeuralController();
-    private long recordStartTime = 0;
-    private long combatStartTime = 0;
-    private boolean wasAttacking = false;
-    private boolean attackConditionMet = false;
-    private int recordFrameCount = 0;
-    private final Random random = new Random();
 
     public AuraModule() {
         addSettings(
                 aimGroup, attackRange, aimRange, rotateTick,
-                neuralModel, neuralRecord, recordDuration,
-                pointMode, moveCorrectionGroup,
-                pvpMode, cps, criticalMode,
-                targetTypes, behaviorOptions, sortMode
+                pointMode, moveCorrectionGroup, pvpMode,
+                cps, criticalMode, targetTypes,
+                behaviorOptions, sortMode, smoothReturnGroup
         );
     }
 
@@ -142,49 +121,23 @@ public class AuraModule extends Module {
     public void onEnable() {
         currentTarget = null;
         aimTicks = 0;
-        combatStartTime = System.currentTimeMillis();
-        recordFrameCount = 0;
-
-        if (aimModeSetting.isSelected("Нейро")) {
-            ModelType modelType = neuralModel.isSelected("BLD1") ? ModelType.BLD1 : ModelType.BLD2;
-            neuralController.switchModel(modelType);
-            Manager.notificationManager.add("Aura: Нейро-модель " + modelType.name() + " загружена", NotificationType.INFO, 1500);
-
-            if (neuralRecord.getValue()) {
-                recordStartTime = System.currentTimeMillis();
-                neuralController.startRecord("aura_session_" + System.currentTimeMillis());
-                Manager.notificationManager.add("Aura: Начата запись данных (" + recordDuration.getValue() + " мин)", NotificationType.SUCCESS, 2000);
-            } else {
-                neuralController.start();
-                Manager.notificationManager.add("Aura: Нейро-предсказание активировано", NotificationType.SUCCESS, 1500);
-            }
-        }
-
         super.onEnable();
     }
 
     @Override
     protected void onDisable() {
         clearTarget();
-
-        if (aimModeSetting.isSelected("Нейро")) {
-            if (neuralController.isRecording()) {
-                neuralController.stopRecord();
-                Manager.notificationManager.add("Aura: Запись остановлена и модель обновлена", NotificationType.INFO, 2000);
-            }
-            if (neuralController.isActive()) {
-                neuralController.stop();
-                Manager.notificationManager.add("Aura: Нейро-предсказание деактивировано", NotificationType.INFO, 1500);
-            }
-        }
-
         super.onDisable();
     }
 
     private void clearTarget() {
         currentTarget = null;
         aimTicks = 0;
-        AimManager.INSTANCE.disableWithSmooth(0.9f);
+        if (smoothReturnGroup.getValue()) {
+            AimManager.INSTANCE.disableWithSmooth(smoothReturn.getValue());
+        } else {
+            AimManager.INSTANCE.disable();
+        }
     }
 
     private void updateTargetTypes() {
@@ -205,12 +158,19 @@ public class AuraModule extends Module {
         updateCurrentTarget();
 
         if (currentTarget == null) {
-            AimManager.INSTANCE.disableWithSmooth(5);
+            if (smoothReturnGroup.getValue()) {
+                AimManager.INSTANCE.disableWithSmooth(smoothReturn.getValue());
+            } else {
+                AimManager.INSTANCE.disable();
+            }
             return;
         }
 
+        handleAimLogic();
+
         boolean hitThroughBlocks = getBooleanSetting(behaviorOptions, "Бить сквозь блоки").getValue();
-        attackConditionMet = false;
+        boolean attackConditionMet = false;
+
         if (hitThroughBlocks) {
             attackConditionMet = MathUtility.canRaytraceToTarget(currentTarget, attackRange.getValue(), true);
         } else {
@@ -218,18 +178,6 @@ public class AuraModule extends Module {
                 attackConditionMet = true;
             }
         }
-
-        if (aimModeSetting.isSelected("Нейро") && neuralRecord.getValue()) {
-            long recordTime = (System.currentTimeMillis() - recordStartTime) / 1000 / 60;
-            if (recordTime >= recordDuration.getValue() || recordFrameCount >= 5000) {
-                neuralController.stopRecord();
-                neuralController.start();
-                neuralRecord.setValue(false);
-                Manager.notificationManager.add("Aura: Запись завершена (лимит/время), предсказание активно", NotificationType.SUCCESS, 2000);
-            }
-        }
-
-        handleAimLogic();
 
         if (attackConditionMet) {
             performAttack();
@@ -247,7 +195,6 @@ public class AuraModule extends Module {
         LivingEntity potentialTarget = TargetUtility.findBestTarget(totalRange, sortMode.getSelected());
         if (potentialTarget != null && TargetUtility.isValidTarget(potentialTarget)) {
             currentTarget = potentialTarget;
-            AimManager.INSTANCE.disableWithSmooth(0.9f);
         } else {
             currentTarget = null;
         }
@@ -255,18 +202,24 @@ public class AuraModule extends Module {
 
     private void handleAimLogic() {
         if (!aimGroup.getValue()) {
-            AimManager.INSTANCE.disableWithSmooth(0.9f);
+            if (smoothReturnGroup.getValue()) {
+                AimManager.INSTANCE.disableWithSmooth(smoothReturn.getValue());
+            } else {
+                AimManager.INSTANCE.disable();
+            }
             return;
         }
 
-        if (aimModeSetting.isSelected("Нейро")) {
-            handleNeuralAim();
-        } else if (aimModeSetting.isSelected("Во время удара")) {
+        if (aimModeSetting.isSelected("Во время удара")) {
             if (aimTicks > 0) {
                 aimTicks--;
                 aimAtTarget();
             } else {
-                AimManager.INSTANCE.disableWithSmooth(0.9f);
+                if (smoothReturnGroup.getValue()) {
+                    AimManager.INSTANCE.disableWithSmooth(smoothReturn.getValue());
+                } else {
+                    AimManager.INSTANCE.disable();
+                }
             }
 
             if (currentTarget instanceof LivingEntity livingTarget) {
@@ -277,118 +230,6 @@ public class AuraModule extends Module {
             }
         } else {
             aimAtTarget();
-        }
-    }
-
-    private void handleNeuralAim() {
-        if (currentTarget == null) return;
-
-        float currentYaw = mc.player.getYaw();
-        float currentPitch = mc.player.getPitch();
-        float distance = (float) mc.player.distanceTo(currentTarget);
-        boolean targetMoving = currentTarget.getVelocity().lengthSquared() > 0.01;
-        float playerHealth = mc.player.getHealth();
-        long combatTime = System.currentTimeMillis() - combatStartTime;
-
-        boolean isAttackingIntent = attackConditionMet;
-        wasAttacking = isAttackingIntent;
-
-        PointMode selectedPointMode;
-        switch (pointMode.getSelected()) {
-            case "Умные" -> selectedPointMode = PointMode.SMART;
-            case "Мульти" -> selectedPointMode = PointMode.MULTI;
-            default -> selectedPointMode = PointMode.CENTER;
-        }
-
-        ViewDirection baseDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
-        float baseYaw = baseDirection.yaw();
-        float basePitch = baseDirection.pitch();
-
-        float desiredYawDelta = MathUtility.normalizeAngle(baseYaw - currentYaw);
-        float desiredPitchDelta = MathUtility.clamp(basePitch - currentPitch, -90f, 90f);
-        float desiredSpeed = 0.5f;
-        if (targetMoving) {
-            double targetSpeed = currentTarget.getVelocity().length();
-            double leadTime = distance / (0.3 + targetSpeed * 0.5);
-            Vec3d velocity = currentTarget.getVelocity();
-            Vec3d currentTargetPoint = PointCalculator.getPoint(currentTarget, selectedPointMode);
-            Vec3d predictedTargetPoint = currentTargetPoint.add(velocity.multiply(leadTime));
-            ViewDirection leadDirection = AimCalculator.calculateToPosition(mc.player.getCameraPosVec(1.0f), predictedTargetPoint);
-            desiredYawDelta = MathUtility.normalizeAngle(leadDirection.yaw() - currentYaw);
-            desiredPitchDelta = MathUtility.clamp(leadDirection.pitch() - currentPitch, -90f, 90f);
-            desiredSpeed = 0.8f;
-        }
-        desiredSpeed = isAttackingIntent ? 1.0f : desiredSpeed;
-        desiredSpeed *= (1.0f - (distance / aimRange.getValue()));
-
-        desiredYawDelta = Math.max(-90f, Math.min(90f, desiredYawDelta));
-        desiredPitchDelta = Math.max(-90f, Math.min(90f, desiredPitchDelta));
-
-        if (neuralController.isRecording()) {
-            recordFrameCount++;
-            neuralController.record(currentYaw, currentPitch, distance, isAttackingIntent, targetMoving, playerHealth, combatTime, desiredYawDelta, desiredPitchDelta, desiredSpeed);
-        } else if (neuralController.isActive()) {
-            ModelData prediction = neuralController.predict(currentYaw, currentPitch, distance, targetMoving, playerHealth, combatTime, isAttackingIntent);
-
-            float neuralYawAdjust = prediction.getYaw();
-            float neuralPitchAdjust = prediction.getPitch();
-            float targetYaw = baseYaw + neuralYawAdjust;
-            float targetPitch = basePitch + neuralPitchAdjust;
-
-            long currentTimeMillis = System.currentTimeMillis();
-            float timeFactor = ((currentTimeMillis - combatStartTime) % 10000L) / 10000f;
-            float distFactor = (float) Math.sin(distance * 0.1f) * 2f;
-            double gaussianYaw = random.nextGaussian();
-            double gaussianPitch = random.nextGaussian();
-            float patternYaw = (float) (Math.sin(timeFactor * Math.PI * 2) * 2f + distFactor + gaussianYaw * 0.5f);
-            float patternPitch = (float) (Math.cos(timeFactor * Math.PI * 2) * 2f - distFactor + gaussianPitch * 0.5f);
-
-            targetYaw += patternYaw;
-            targetPitch = MathUtility.clamp(targetPitch + patternPitch, -90f, 90f);
-
-            Vec3d predictedPos = currentTarget.getPos();
-            if (targetMoving) {
-                double targetSpeed = currentTarget.getVelocity().length();
-                double leadTime = distance / (0.3 + targetSpeed * 0.5);
-                Vec3d velocity = currentTarget.getVelocity();
-                predictedPos = predictedPos.add(velocity.multiply(leadTime));
-            }
-
-            float neuralSpeed = prediction.getSpeed();
-            float speedNoise = (random.nextFloat() - 0.5f) * 0.1f;
-            neuralSpeed = Math.max(0f, Math.min(1f, neuralSpeed + speedNoise));
-            int smoothTime = (int) (1000 + 4000 * (1 - neuralSpeed));
-
-            float pitchDeviation = Math.abs(currentPitch - basePitch);
-            if (distance < 2.5f && pitchDeviation > 10f) {
-                smoothTime = (int) Math.max(500, smoothTime * 0.5f);
-                float correctionFactor = 1.0f - (pitchDeviation / 90f);
-                targetPitch = basePitch + (targetPitch - basePitch) * correctionFactor;
-                targetPitch = MathUtility.clamp(targetPitch, -90f, 90f);
-            }
-
-            boolean enableViewSync = getBooleanSetting(behaviorOptions, "Синхронизировать взгляд").getValue();
-
-            boolean enableMovementCorrection = false;
-            boolean enableSilent = false;
-
-            if (moveCorrectionGroup.getValue()) {
-                enableMovementCorrection = true;
-
-                enableSilent= moveCorrectionMode.isSelected("Слабая");
-
-            }
-
-            ViewDirection targetDirection = new ViewDirection(targetYaw, targetPitch);
-            AimSettings aimSettings = new AimSettings(
-                    new AdaptiveSmooth(smoothTime),
-                    enableViewSync,
-                    enableMovementCorrection,
-                    enableSilent
-            );
-
-            TargetTask smoothTask = aimSettings.buildTask(targetDirection, predictedPos, currentTarget);
-            AimManager.INSTANCE.execute(smoothTask);
         }
     }
 
@@ -418,7 +259,7 @@ public class AuraModule extends Module {
         }
 
         AimSettings aimSettings = new AimSettings(
-                new AdaptiveSmooth(4),
+                new AdaptiveSmooth(5000),
                 enableViewSync,
                 enableMovementCorrection,
                 enableSilent
@@ -434,9 +275,7 @@ public class AuraModule extends Module {
         }
 
         AttackSettings settings = buildAttackSettings();
-        wasAttacking = true;
         AttackManager.attack(livingTarget, settings);
-        wasAttacking = false;
     }
 
     private AttackSettings buildAttackSettings() {
@@ -467,9 +306,4 @@ public class AuraModule extends Module {
     public double getDistanceToTarget() {
         return currentTarget != null ? mc.player.distanceTo(currentTarget) : -1;
     }
-
-
-//    public static void update(){
-
-//    }
 }
