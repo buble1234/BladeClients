@@ -8,14 +8,11 @@ import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.utils.math.TimerUtil;
 import win.blade.common.utils.player.MovementUtility;
 import win.blade.core.event.controllers.EventHandler;
-import win.blade.core.event.impl.input.InputEvents;
+import win.blade.core.event.impl.minecraft.UpdateEvents;
 import win.blade.core.event.impl.player.PlayerActionEvents;
-import win.blade.core.event.impl.player.PlayerInputEvent;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
-
-import java.awt.event.InputEvent;
 
 @ModuleInfo(
         name = "ElytraRecast",
@@ -23,13 +20,10 @@ import java.awt.event.InputEvent;
         desc = "Буст от элитр"
 )
 public class ElytraRecastModule extends Module {
-
-
-
     TimerUtil jumpWindow = new TimerUtil();
-    BooleanSetting runwayAssistSetting = new BooleanSetting("Runway Assist", "Assists liftoff while moving")
+    BooleanSetting runwayAssistSetting = new BooleanSetting("Помощь при взлёте", "Помогает взлететь при движении")
             .setValue(true);
-    BooleanSetting wearToleranceSetting = new BooleanSetting("Worn Tolerance", "Allows takeoff with worn elytra")
+    BooleanSetting wearToleranceSetting = new BooleanSetting("Полёт с износом", "Позволяет взлетать с изношенными элитрами")
             .setValue(false);
 
     public ElytraRecastModule() {
@@ -42,11 +36,14 @@ public class ElytraRecastModule extends Module {
     }
 
     @EventHandler
-    public void onInput(PlayerInputEvent e) {
+    public void onPlayerTick(UpdateEvents.PlayerUpdate e) {
         if (!isElytraUsable()) return;
         if (!MovementUtility.isMoving()) return;
+
         if (mc.player.isOnGround()) {
-            if (runwayAssistSetting.getValue() && jumpWindow.finished(25)) e.setJumping(true);
+            if (runwayAssistSetting.getValue() && jumpWindow.finished(25)) {
+                mc.player.jump();
+            }
         } else if (!mc.player.isGliding()) {
             mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
             mc.player.startGliding();
