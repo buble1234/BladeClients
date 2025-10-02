@@ -22,11 +22,13 @@ import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
+import win.blade.common.utils.player.DirectionalInput;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
 import win.blade.core.event.impl.player.MotionEvent;
 import win.blade.core.event.impl.minecraft.MotionEvents;
 import win.blade.core.event.impl.player.PlayerActionEvents;
+import win.blade.core.event.impl.player.SprintEvent;
 import win.blade.core.event.item.UsingItemEvent;
 import win.blade.core.module.storage.move.AutoSprintModule;
 import win.blade.core.module.storage.move.NoPushModule;
@@ -234,4 +236,24 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         Manager.EVENT_BUS.post(event);
     }
 
+    @ModifyExpressionValue(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/option/KeyBinding;isPressed()Z"))
+    private boolean hookSprintStart(boolean original) {
+        var event = new SprintEvent(new DirectionalInput(input), original, SprintEvent.Source.MOVEMENT);
+        Manager.EVENT_BUS.post(event);
+        return event.getSprint();
+    }
+
+    @ModifyExpressionValue(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;canSprint()Z"))
+    private boolean hookSprintStop(boolean original) {
+        var event = new SprintEvent(new DirectionalInput(input), original, SprintEvent.Source.MOVEMENT);
+        Manager.EVENT_BUS.post(event);
+        return event.getSprint();
+    }
+
+    @ModifyExpressionValue(method = "sendSprintingPacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isSprinting()Z"))
+    private boolean hookNetworkSprint(boolean original) {
+        var event = new SprintEvent(new DirectionalInput(input), original, SprintEvent.Source.NETWORK);
+        Manager.EVENT_BUS.post(event);
+        return event.getSprint();
+    }
 }
