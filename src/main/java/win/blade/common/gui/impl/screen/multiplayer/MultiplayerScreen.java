@@ -60,6 +60,14 @@ public class MultiplayerScreen extends BaseScreen {
     private ServerEntryWidget selectedEntry = null;
     private final TimerUtil timer = new TimerUtil();
 
+    private ServerEntryWidget draggedEntry = null;
+    private ServerEntryWidget clickedEntry = null;
+    private double dragStartMouseY = 0;
+    private long clickTime = 0;
+    private static final long DRAG_THRESHOLD_MS = 150;
+    private int draggedOriginalIndex = -1;
+    private double mouseOffsetY = 0;
+    private boolean isDragging = false;
 
     public MultiplayerScreen() {
         super(Text.translatable("multiplayer.title"));
@@ -68,7 +76,6 @@ public class MultiplayerScreen extends BaseScreen {
     public MultiplayerScreen copyScroll(MultiplayerScreen screen){
         targetScroll = screen.targetScroll;
         scrollAnimation = screen.scrollAnimation;
-
         return this;
     }
 
@@ -111,12 +118,12 @@ public class MultiplayerScreen extends BaseScreen {
 
         this.addDrawableChild(
                 new Button(
-                    windowX + 265,
-                    windowY + 17,
-                    15,
-                    10,
-                    Text.of(""),
-                () -> this.client.setScreen(new MultiplayerScreen().copyScroll(this))
+                        windowX + 265,
+                        windowY + 17,
+                        15,
+                        10,
+                        Text.of(""),
+                        () -> this.client.setScreen(new MultiplayerScreen().copyScroll(this))
                 ).addRender(false, (context, mouseX, mouseY, delta) -> {
                     Builder.texture()
                             .svgTexture(Identifier.of("blade", "textures/svg/refresh.svg"))
@@ -137,7 +144,6 @@ public class MultiplayerScreen extends BaseScreen {
         int listY = windowY + 40;
         int listWidth = 276;
         int listHeight = 249;
-
         int entrySpacing = 52;
         int entryRenderHeight = 46;
 
@@ -145,19 +151,22 @@ public class MultiplayerScreen extends BaseScreen {
             float scrollY = scrollAnimation.get();
             double currentEntryTopY = listY + scrollY;
 
-            for (ServerEntryWidget entry : this.serverEntries) {
+            for (int i = 0; i < this.serverEntries.size(); i++) {
+                ServerEntryWidget entry = this.serverEntries.get(i);
+
                 if (mouseY >= currentEntryTopY && mouseY < currentEntryTopY + entryRenderHeight) {
                     if (entry.mouseClicked(mouseX, mouseY, button, listX, (int) currentEntryTopY)) {
                         return true;
                     }
 
                     if (button == 0) {
-                        if (entry.equals(this.selectedEntry) && timer.getElapsedTime() < 250L) {
-                            this.connect(entry.getServerInfo());
-                        } else {
-                            this.selectedEntry = entry;
-                            this.timer.updateLast();
-                        }
+                        clickTime = System.currentTimeMillis();
+                        clickedEntry = entry;
+                        draggedEntry = entry;
+                        dragStartMouseY = mouseY;
+                        draggedOriginalIndex = i;
+                        mouseOffsetY = mouseY - currentEntryTopY;
+                        isDragging = false;
                         return true;
                     }
                 }
@@ -168,6 +177,64 @@ public class MultiplayerScreen extends BaseScreen {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (clickedEntry != null && !isDragging) {
+            long holdTime = System.currentTimeMillis() - clickTime;
+
+            if (holdTime >= DRAG_THRESHOLD_MS) {
+                isDragging = true;
+            }
+        }
+
+        if (isDragging && draggedEntry != null) {
+            int listY = windowY + 40;
+            float scrollY = scrollAnimation.get();
+            int entrySpacing = 52;
+
+            double currentDragY = mouseY - mouseOffsetY;
+
+            int newIndex = (int) ((currentDragY - listY - scrollY + entrySpacing / 2) / entrySpacing);
+            newIndex = MathHelper.clamp(newIndex, 0, serverEntries.size() - 1);
+
+            if (newIndex != draggedOriginalIndex) {
+                serverEntries.remove(draggedEntry);
+                serverEntries.add(newIndex, draggedEntry);
+                draggedOriginalIndex = newIndex;
+
+                serverList.remove(draggedEntry.getServerInfo());
+                serverList.add(draggedEntry.getServerInfo(), false);
+            }
+
+            return true;
+        }
+
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (clickedEntry != null) {
+            if (isDragging) {
+                serverList.saveFile();
+            } else {
+                if (clickedEntry.equals(this.selectedEntry) && timer.getElapsedTime() < 250L) {
+                    this.connect(clickedEntry.getServerInfo());
+                } else {
+                    this.selectedEntry = clickedEntry;
+                    this.timer.updateLast();
+                }
+            }
+
+            clickedEntry = null;
+            draggedEntry = null;
+            draggedOriginalIndex = -1;
+            isDragging = false;
+            return true;
+        }
+
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
 
     @Override
     public void tick() {
@@ -198,7 +265,6 @@ public class MultiplayerScreen extends BaseScreen {
                 .build()
                 .render(windowX + 25, windowY + 17);
 
-
         context.getMatrices().push();
 
         float iconCenterX = windowX + 28f + FontType.sf_regular.get().getWidth("Multiplayer ", 12);
@@ -227,11 +293,28 @@ public class MultiplayerScreen extends BaseScreen {
 
         float scrollY = scrollAnimation.get();
         double curY = listY;
+
         for (int index = 0; index < serverEntries.size(); index++) {
             ServerEntryWidget entry = serverEntries.get(index);
+
+            if (isDragging && entry == draggedEntry) {
+                curY += entryH;
+                continue;
+            }
+
             boolean isSelected = entry.equals(this.selectedEntry);
             entry.render(context, index, mouseX, mouseY, listX, (int) (curY + scrollY), listWidth, 46, isSelected);
             curY += entryH;
+        }
+
+        if (isDragging && draggedEntry != null) {
+            int dragY = (int) (mouseY - mouseOffsetY);
+            boolean isSelected = draggedEntry.equals(this.selectedEntry);
+
+            context.getMatrices().push();
+            context.getMatrices().translate(0, 0, 100);
+            draggedEntry.render(context, draggedOriginalIndex, mouseX, mouseY, listX, dragY, listWidth, 46, isSelected);
+            context.getMatrices().pop();
         }
 
         context.disableScissor();
@@ -241,16 +324,11 @@ public class MultiplayerScreen extends BaseScreen {
         Builder.rectangle().size(new SizeState(306, 288 - 120)).color(state2).radius(new QuadRadiusState(10)).build().render(windowX, windowY + 125);
     }
 
-
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-
         if (MathUtility.isHovered(mouseX, mouseY, windowX, windowY, 306, 337)) {
             updateScroll(targetScroll + (float) verticalAmount * 10);
-
-
         }
-
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
@@ -265,7 +343,6 @@ public class MultiplayerScreen extends BaseScreen {
         }
         super.close();
     }
-
 
     public void updateScroll(float pTargetScroll) {
         int totalContentHeight = serverEntries.size() * (47 + 5) - 5;

@@ -33,7 +33,6 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Stream;
 
 public class AccountScreen extends BaseScreen {
     public List<Account> accountList = new CopyOnWriteArrayList<>();
@@ -50,6 +49,16 @@ public class AccountScreen extends BaseScreen {
     private int scissorY;
     private int scissorHeight;
     private float maxScroll = 0;
+
+    private Account draggedAccount = null;
+    private Account clickedAccount = null;
+    private double dragStartY = 0;
+    private double dragStartMouseY = 0;
+    private long clickTime = 0;
+    private static final long DRAG_THRESHOLD_MS = 150;
+    private int draggedOriginalIndex = -1;
+    private double mouseOffsetY = 0;
+    private boolean isDragging = false;
 
     public AccountScreen() {
         super(Text.of("Account Management"));
@@ -98,13 +107,11 @@ public class AccountScreen extends BaseScreen {
     @Override
     public void close() {
         super.close();
-//        windowManager.clearWindows();
         AccountSaver.save(accountList);
     }
 
     @Override
     protected void renderContent(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-//        super.render(context, mouseX, mouseY, deltaTicks);
         Color left = new Color(23, 20, 38, 255);
         Color base = new Color(20, 18, 27, 255);
         Color right = new Color(17, 15, 23, 255);
@@ -112,7 +119,6 @@ public class AccountScreen extends BaseScreen {
 
         Builder.rectangle().size(new SizeState(306, 288)).color(state).radius(new QuadRadiusState(10)).build().render(windowX, windowY);
         Builder.text().font(FontType.sf_regular.get()).text("Alt Manager").color(new Color(255, 255, 255)).size(12).build().render(windowX + 25, windowY + 17);
-
 
         context.getMatrices().push();
 
@@ -123,11 +129,9 @@ public class AccountScreen extends BaseScreen {
         context.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees(90));
 
         AbstractTexture arrowdown = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/arrpwl2.png"));
-
-        Builder.texture().size(new SizeState(8,8)).color(new QuadColorState(Color.WHITE)).texture(0f, 0f, 1f, 1f, arrowdown).radius(new QuadRadiusState(0f)).build().render( context.getMatrices().peek().getPositionMatrix(), -8, -8);
+        Builder.texture().size(new SizeState(8,8)).color(new QuadColorState(Color.WHITE)).texture(0f, 0f, 1f, 1f, arrowdown).radius(new QuadRadiusState(0f)).build().render(context.getMatrices().peek().getPositionMatrix(), -8, -8);
 
         context.getMatrices().pop();
-
 
         int startY = windowY + 40;
         int scissorX = windowX + 15;
@@ -152,46 +156,24 @@ public class AccountScreen extends BaseScreen {
         int scrollY = (int) scrollAnimation.get();
 
         for (int i = 0; i < accountList.size(); i++) {
+            var account = accountList.get(i);
+
+            if (isDragging && account == draggedAccount) {
+                continue;
+            }
+
             int entryY = startY + (i * (entryH + gap)) + scrollY;
 
             if (entryY + entryH < scissorY || entryY > scissorY + scissorHeight) {
                 continue;
             }
 
-            var account = accountList.get(i);
-            String accountName = account.getUsername();
-            LocalDateTime dateTime = account.getCreationDateTime();
-            boolean selected = accountName.equals(this.selected.getUsername());
+            renderAccountEntry(context, account, entryY, mouseX, mouseY, false);
+        }
 
-            Color d = new Color(20,18,27,255);
-            if(selected){
-                d = d.darker().brighter();
-            }
-
-            Builder.rectangle().size(new SizeState(276, entryH)).color(new QuadColorState(d)).radius(new QuadRadiusState(10)).smoothness(1.0f).build().render( windowX + 15, entryY);
-
-            BuiltBorder border = Builder.border().size(new SizeState(276, entryH)).color(new QuadColorState(new Color(255, 255, 255, 10))).radius(new QuadRadiusState(10)).thickness(0.6f).build();
-            border.render(windowX + 15, entryY);
-
-            AbstractTexture customTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/steve.png"));
-            BuiltTexture customIcon = Builder.texture().size(new SizeState(25, 25)).texture(0.0f, 0.0f, 1.0f, 1.0f, customTexture).radius(new QuadRadiusState(4)).build();
-            customIcon.render( windowX + 25, entryY + 12.5f);
-
-            Builder.text().font(FontType.sf_regular.get()).text(accountName).color(new Color(255, 255, 255)).size(10).build().render(windowX + 60, entryY + 15);
-            Builder.text().font(FontType.sf_regular.get()).text(dateTime.format(DateTimeFormatter.ISO_DATE)).color(new Color(150, 150, 150)).size(7).build().render(windowX + 60, entryY + 29);
-
-            AbstractTexture setting = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/settings.png"));
-            BuiltTexture settings = Builder.texture().size(new SizeState(7, 7)).texture(0.0f, 0.0f, 1.0f, 1.0f, setting).radius(new QuadRadiusState(0)).build();
-            settings.render( windowX + 260, entryY + 15.7f);
-
-            boolean hovered = MathUtility.isHovered(mouseX, mouseY, windowX + 270, entryY + 15, 8.5f, 8.5f);
-            AbstractTexture trash = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/" + (hovered ? "trash" : "trashing") + ".png"));
-            BuiltTexture trashing =
-                    Builder.texture().size(new SizeState(8.5f, 8.5f)).texture(0.0f, 0.0f, 1.0f, 1.0f, trash)
-                            .radius(new QuadRadiusState(0))
-                            .build();
-
-            trashing.render( windowX + 270, entryY + 15);
+        if (isDragging && draggedAccount != null) {
+            int dragY = (int) (mouseY - mouseOffsetY);
+            renderAccountEntry(context, draggedAccount, dragY, mouseX, mouseY, true);
         }
 
         RenderSystem.disableScissor();
@@ -200,16 +182,46 @@ public class AccountScreen extends BaseScreen {
         Builder.rectangle().size(new SizeState(306, 288 - 125)).color(state2).radius(new QuadRadiusState(10)).build().render(windowX, windowY + 125);
     }
 
+    private void renderAccountEntry(DrawContext context, Account account, int entryY, int mouseX, int mouseY, boolean isDragging) {
+        String accountName = account.getUsername();
+        LocalDateTime dateTime = account.getCreationDateTime();
+        boolean selected = accountName.equals(this.selected.getUsername());
+
+        Color d = new Color(20, 18, 27, 255);
+        if (selected) {
+            d = d.darker().brighter();
+        }
+
+        Builder.rectangle().size(new SizeState(276, entryH)).color(new QuadColorState(d)).radius(new QuadRadiusState(10)).smoothness(1.0f).build().render(windowX + 15, entryY);
+
+        BuiltBorder border = Builder.border().size(new SizeState(276, entryH)).color(new QuadColorState(new Color(255, 255, 255, 10))).radius(new QuadRadiusState(10)).thickness(0.6f).build();
+        border.render(windowX + 15, entryY);
+
+        AbstractTexture customTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/steve.png"));
+        BuiltTexture customIcon = Builder.texture().size(new SizeState(25, 25)).texture(0.0f, 0.0f, 1.0f, 1.0f, customTexture).radius(new QuadRadiusState(4)).build();
+        customIcon.render(windowX + 25, entryY + 12.5f);
+
+        Builder.text().font(FontType.sf_regular.get()).text(accountName).color(new Color(255, 255, 255)).size(10).build().render(windowX + 60, entryY + 15);
+        Builder.text().font(FontType.sf_regular.get()).text(dateTime.format(DateTimeFormatter.ISO_DATE)).color(new Color(150, 150, 150)).size(7).build().render(windowX + 60, entryY + 29);
+
+        AbstractTexture setting = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/settings.png"));
+        BuiltTexture settings = Builder.texture().size(new SizeState(7, 7)).texture(0.0f, 0.0f, 1.0f, 1.0f, setting).radius(new QuadRadiusState(0)).build();
+        settings.render(windowX + 260, entryY + 15.7f);
+
+        boolean hovered = MathUtility.isHovered(mouseX, mouseY, windowX + 270, entryY + 15, 8.5f, 8.5f);
+        AbstractTexture trash = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/" + (hovered ? "trash" : "trashing") + ".png"));
+        BuiltTexture trashing = Builder.texture().size(new SizeState(8.5f, 8.5f)).texture(0.0f, 0.0f, 1.0f, 1.0f, trash).radius(new QuadRadiusState(0)).build();
+        trashing.render(windowX + 270, entryY + 15);
+    }
+
     @Override
     protected void renderLast(DrawContext context, int mouseX, int mouseY, float delta) {
-//        super.renderLast(context, mouseX, mouseY, delta);
-
         windowManager.render(context, mouseX, mouseY, delta);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if(windowManager.mouseClicked(mouseX, mouseY, button)) return true;//super.mouseClicked(mouseX, mouseY, button);
+        if(windowManager.mouseClicked(mouseX, mouseY, button)) return true;
 
         if (MathUtility.isHovered(mouseX, mouseY, windowX + 15, scissorY, 276, scissorHeight)) {
             int startY = windowY + 40;
@@ -222,13 +234,19 @@ public class AccountScreen extends BaseScreen {
                 if (MathUtility.isHovered(mouseX, mouseY, windowX + 15, entryY, 276, entryH)) {
                     if (MathUtility.isHovered(mouseX, mouseY, windowX + 270, entryY + 15, 8.5f, 8.5f)) {
                         delete(account);
-                        //mouseScrolled(0, 0, 0, 0);
                         return true;
                     } else if (MathUtility.isHovered(mouseX, mouseY, windowX + 260, entryY + 15.7f, 7, 7)) {
                         openSettingWindow(account, windowX + 280, entryY + 15);
                         return true;
                     } else {
-                        changeAccount(account);
+                        clickTime = System.currentTimeMillis();
+                        clickedAccount = account;
+                        draggedAccount = account;
+                        dragStartY = entryY;
+                        dragStartMouseY = mouseY;
+                        draggedOriginalIndex = i;
+                        mouseOffsetY = mouseY - entryY;
+                        isDragging = false;
                         return true;
                     }
                 }
@@ -237,11 +255,61 @@ public class AccountScreen extends BaseScreen {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (clickedAccount != null && !isDragging) {
+            long holdTime = System.currentTimeMillis() - clickTime;
+
+            if (holdTime >= DRAG_THRESHOLD_MS) {
+                isDragging = true;
+            }
+        }
+
+        if (isDragging && draggedAccount != null) {
+            int scrollY = (int) scrollAnimation.get();
+            int startY = windowY + 40;
+            int currentDragY = (int) (mouseY - mouseOffsetY);
+
+            int newIndex = (currentDragY - startY - scrollY + (entryH + gap) / 2) / (entryH + gap);
+            newIndex = MathHelper.clamp(newIndex, 0, accountList.size() - 1);
+
+            if (newIndex != draggedOriginalIndex) {
+                accountList.remove(draggedAccount);
+                accountList.add(newIndex, draggedAccount);
+                draggedOriginalIndex = newIndex;
+            }
+
+            return true;
+        }
+
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if(windowManager.mouseReleased(mouseX, mouseY, button)) return true;
+
+        if (clickedAccount != null) {
+            if (isDragging) {
+                AccountSaver.save(accountList);
+            } else {
+                changeAccount(clickedAccount);
+            }
+
+            clickedAccount = null;
+            draggedAccount = null;
+            draggedOriginalIndex = -1;
+            isDragging = false;
+            return true;
+        }
+
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
     public void delete(Account account){
         accountList.remove(account);
         accountList.sort(Comparator.comparing(Account::getCreationDateTime));
         AccountSaver.save(accountList);
-
         updateScroll(targetScroll - (entryH - gap));
     }
 
@@ -264,12 +332,6 @@ public class AccountScreen extends BaseScreen {
     public boolean charTyped(char chr, int modifiers) {
         if(windowManager.charTyped(chr, modifiers)) return true;
         return super.charTyped(chr, modifiers);
-    }
-
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if(windowManager.mouseReleased(mouseX, mouseY, button)) return true;
-        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @SuppressWarnings("all")
@@ -299,15 +361,12 @@ public class AccountScreen extends BaseScreen {
 
     private void addAccount(Account account){
         accountList.add(account);
-
         accountList.sort(Comparator.comparing(Account::getCreationDateTime));
     }
 
     private void addAccounts(List<Account> accounts){
-//        addAccount(accounts.toArray(new Account[] {}));
         accountList.addAll(accounts);
         accountList.sort(Comparator.comparing(Account::getCreationDateTime));
-//        accountList = accountList.stream().sorted(Comparator.comparing(Account::getCreationDateTime)).toList();
     }
 
     public void replace(Account account, String text){
