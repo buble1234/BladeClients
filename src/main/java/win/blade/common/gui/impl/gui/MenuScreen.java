@@ -38,6 +38,12 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
     private boolean closing = false;
 
+    private boolean dragging = false;
+    private double dragStartX;
+    private double dragStartY;
+    private int dragOffsetX;
+    private int dragOffsetY;
+
     public MenuScreen() {
         super(Text.of("Delta"));
 
@@ -92,8 +98,11 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
         Window gameWindow = this.client.getWindow();
 
-        this.x = gameWindow.getScaledWidth() / 2 - 200;
-        this.y = gameWindow.getScaledHeight() / 2 - 125;
+        if (!dragging && dragOffsetX == 0 && dragOffsetY == 0) {
+            this.x = gameWindow.getScaledWidth() / 2 - 200;
+            this.y = gameWindow.getScaledHeight() / 2 - 125;
+        }
+
         this.width = 400;
         this.height = 250;
 
@@ -147,6 +156,21 @@ public class MenuScreen extends Screen implements MinecraftInstance {
         }
     }
 
+    private boolean isMouseOverComponent(double mouseX, double mouseY) {
+        for (AbstractComponent component : components) {
+            if (component.isHover(mouseX, mouseY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isMouseOverBackground(double mouseX, double mouseY) {
+        boolean inBounds = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+
+        return inBounds && !isMouseOverComponent(mouseX, mouseY);
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (windowManager.mouseClicked(mouseX, mouseY, button)) {
@@ -165,7 +189,7 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
         if (openDropdown != null) {
             if (openDropdown.mouseClicked(mouseX, mouseY, button)) {
-                return true; 
+                return true;
             }
 
             closeAllDropdowns();
@@ -178,11 +202,24 @@ public class MenuScreen extends Screen implements MinecraftInstance {
             }
         }
 
+        if (button == 0 && isMouseOverBackground(mouseX, mouseY)) {
+            dragging = true;
+            dragStartX = mouseX;
+            dragStartY = mouseY;
+            dragOffsetX = x - (int) mouseX;
+            dragOffsetY = y - (int) mouseY;
+            return true;
+        }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0 && dragging) {
+            dragging = false;
+        }
+
         components.forEach(component -> component.mouseReleased(mouseX, mouseY, button));
         windowManager.mouseReleased(mouseX, mouseY, button);
         return super.mouseReleased(mouseX, mouseY, button);
@@ -190,6 +227,19 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (dragging && button == 0) {
+            x = (int) mouseX + dragOffsetX;
+            y = (int) mouseY + dragOffsetY;
+
+            if (this.client != null && this.client.getWindow() != null) {
+                Window gameWindow = this.client.getWindow();
+                x = Math.max(0, Math.min(x, gameWindow.getScaledWidth() - width));
+                y = Math.max(0, Math.min(y, gameWindow.getScaledHeight() - height));
+            }
+
+            return true;
+        }
+
         if (!windowManager.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
             components.forEach(component -> component.mouseDragged(mouseX, mouseY, button, deltaX, deltaY));
         }
@@ -198,11 +248,9 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        // Проверяем, есть ли открытые выпадающие списки
         List<SelectComponent> selectComponents = getAllSelectComponents();
         for (SelectComponent selectComponent : selectComponents) {
             if (selectComponent.isDropdownOpen()) {
-                // Если список открыт, блокируем скролл для остальных компонентов
                 return true;
             }
         }
@@ -240,7 +288,6 @@ public class MenuScreen extends Screen implements MinecraftInstance {
     @Override
     public void close() {
         if (closing) {
-
             List<CategoryComponent> components = categoryContainerComponent.categoryComponents;
 
             for (int i = 0; i < components.size(); i++) {
@@ -250,7 +297,11 @@ public class MenuScreen extends Screen implements MinecraftInstance {
             }
 
             savedSearchText = searchComponent.getText();
-//            windowManager.clearWindows();
+
+//            dragOffsetX = 0; не особо надо по идеи то можно потом ресет какой то добнуть
+//            dragOffsetY = 0;
+            dragging = false;
+
             super.close();
         }
     }
