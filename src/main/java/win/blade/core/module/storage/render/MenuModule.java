@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.glfw.GLFW;
 
 import win.blade.common.gui.impl.gui.MenuScreen;
+import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.utils.aim.mode.WebScreen;
 import win.blade.core.module.api.Category;
 import win.blade.core.module.api.Module;
@@ -16,6 +17,13 @@ import win.blade.core.module.api.ModuleInfo;
         bind = GLFW.GLFW_KEY_RIGHT_SHIFT
 )
 public class MenuModule extends Module {
+
+    public final BooleanSetting savedragging = new BooleanSetting("Сохранять позиции", "Сохраняет позицию меню после закрытия.")
+            .setValue(false);
+
+    public MenuModule() {
+        addSettings(savedragging);
+    }
 
     @Override
     public void onEnable() {

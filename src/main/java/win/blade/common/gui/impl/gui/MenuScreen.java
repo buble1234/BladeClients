@@ -13,7 +13,10 @@ import win.blade.common.gui.impl.gui.components.implement.settings.select.Select
 import win.blade.common.gui.impl.gui.components.implement.window.implement.settings.PopUpWindow;
 import win.blade.common.gui.impl.gui.setting.Setting;
 import win.blade.common.utils.minecraft.MinecraftInstance;
+import win.blade.core.Manager;
 import win.blade.core.module.api.Category;
+import win.blade.core.module.api.Module;
+import win.blade.core.module.storage.render.MenuModule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +38,10 @@ public class MenuScreen extends Screen implements MinecraftInstance {
     private static List<Double> scroll = new ArrayList<>(6);
     private static List<Double> smoothedScroll = new ArrayList<>(6);
     private static String savedSearchText = "";
+
+    private static int savedX = 0;
+    private static int savedY = 0;
+    private static boolean hasSavedPosition = false;
 
     private boolean closing = false;
 
@@ -98,9 +105,17 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
         Window gameWindow = this.client.getWindow();
 
+        MenuModule menuModule = Manager.getModuleManagement().get(MenuModule.class);
+        boolean shouldSavePosition = menuModule != null && menuModule.savedragging.getValue();
+
         if (!dragging && dragOffsetX == 0 && dragOffsetY == 0) {
-            this.x = gameWindow.getScaledWidth() / 2 - 200;
-            this.y = gameWindow.getScaledHeight() / 2 - 125;
+            if (shouldSavePosition && hasSavedPosition) {
+                this.x = savedX;
+                this.y = savedY;
+            } else {
+                this.x = gameWindow.getScaledWidth() / 2 - 200;
+                this.y = gameWindow.getScaledHeight() / 2 - 125;
+            }
         }
 
         this.width = 400;
@@ -166,7 +181,8 @@ public class MenuScreen extends Screen implements MinecraftInstance {
     }
 
     private boolean isMouseOverBackground(double mouseX, double mouseY) {
-        boolean inBounds = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+        boolean inBounds = mouseX >= x && mouseX <= x + width &&
+                mouseY >= y && mouseY <= y + height;
 
         return inBounds && !isMouseOverComponent(mouseX, mouseY);
     }
@@ -298,8 +314,19 @@ public class MenuScreen extends Screen implements MinecraftInstance {
 
             savedSearchText = searchComponent.getText();
 
-//            dragOffsetX = 0; не особо надо по идеи то можно потом ресет какой то добнуть
-//            dragOffsetY = 0;
+            MenuModule menuModule = Manager.getModuleManagement().get(MenuModule.class);
+            boolean shouldSavePosition = menuModule != null && menuModule.savedragging.getValue();
+
+            if (shouldSavePosition) {
+                savedX = x;
+                savedY = y;
+                hasSavedPosition = true;
+            } else {
+                dragOffsetX = 0;
+                dragOffsetY = 0;
+                hasSavedPosition = false;
+            }
+
             dragging = false;
 
             super.close();
