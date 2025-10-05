@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import win.blade.Blade;
+import win.blade.common.utils.ignore.IgnoreManager;
 import win.blade.core.Manager;
 import win.blade.core.module.storage.misc.BetterMinecraftModule;
 
@@ -26,17 +27,24 @@ public abstract class MixinChatHud {
 
     @Shadow @Final private List<ChatHudLine> messages;
     @Shadow private void refresh() {}
-    
+
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), cancellable = true)
     private void onAddMessage(Text message, CallbackInfo ci) {
+        String messageText = message.getString();
+
+        if (IgnoreManager.instance != null) {
+            if (IgnoreManager.instance.shouldHideMessage(messageText)) {
+                ci.cancel();
+                return;
+            }
+        }
+
         BetterMinecraftModule betterMinecraft = Manager.getModuleManagement().get(BetterMinecraftModule.class);
         if (!betterMinecraft.isEnabled() || !betterMinecraft.antiSpam.getValue()) {
             last = null;
             repeatC = 1;
             return;
         }
-
-        String messageText = message.getString();
 
         if (last != null && last.equals(messageText)) {
             ci.cancel();

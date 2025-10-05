@@ -2,17 +2,23 @@ package win.blade.mixin.minecraft.client;
 
 import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.RaycastContext;
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.core.Manager;
+import win.blade.core.event.impl.render.CameraClipEvent;
 import win.blade.core.module.storage.player.FreeCam;
 
 import java.util.Optional;
@@ -65,5 +71,46 @@ public abstract class MixinCamera implements MinecraftInstance {
         if (freeCamOpt.isPresent() && freeCamOpt.get().isEnabled()) {
             freeCamOpt.get().applyCameraPosition((Camera) (Object) this, focusedEntity, tickDelta);
         }
+    }
+
+    @Shadow
+    private Vec3d pos;
+    @Shadow
+    private BlockView area;
+    @Shadow
+    private Entity focusedEntity;
+    @Shadow
+    private Vector3f horizontalPlane;
+
+    @Inject(method = "clipToSpace", at = @At("HEAD"), cancellable = true)
+    private void clipToSpace(float cameraDist, CallbackInfoReturnable<Float> cir) {
+        CameraClipEvent e = new CameraClipEvent(cameraDist, true);
+        Manager.EVENT_BUS.post(e);
+
+        if (!e.getRaytrace()) {
+            cir.setReturnValue(e.getDistance());
+            return;
+        }
+
+        float distance = e.getDistance();
+
+        for(int i = 0; i < 8; ++i) {
+            float h = (float)((i & 1) * 2 - 1);
+            float j = (float)((i >> 1 & 1) * 2 - 1);
+            float k = (float)((i >> 2 & 1) * 2 - 1);
+
+            Vec3d vec3d = this.pos.add((double)(h * 0.1F), (double)(j * 0.1F), (double)(k * 0.1F));
+            Vec3d vec3d2 = vec3d.add((new Vec3d(this.horizontalPlane)).multiply((double)(-distance)));
+            HitResult hitResult = this.area.raycast(new RaycastContext(vec3d, vec3d2, RaycastContext.ShapeType.VISUAL, RaycastContext.FluidHandling.NONE, this.focusedEntity));
+
+            if (hitResult.getType() != HitResult.Type.MISS) {
+                float l = (float)hitResult.getPos().squaredDistanceTo(this.pos);
+                if (l < MathHelper.square(distance)) {
+                    distance = MathHelper.sqrt(l);
+                }
+            }
+        }
+
+        cir.setReturnValue(distance);
     }
 }

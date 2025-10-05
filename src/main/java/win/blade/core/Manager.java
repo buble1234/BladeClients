@@ -7,6 +7,7 @@ import win.blade.common.ui.NotificationManager;
 import win.blade.common.utils.browser.BrowserManager;
 import win.blade.common.utils.config.ConfigManager;
 import win.blade.common.utils.friends.FriendManager;
+import win.blade.common.utils.ignore.IgnoreManager;
 import win.blade.common.utils.keyboard.KeyOptions;
 import win.blade.core.commands.CommandManager;
 import win.blade.core.event.controllers.EventBus;
@@ -54,6 +55,7 @@ public class Manager implements MinecraftInstance {
         KeyOptions.initialize();
         ConfigManager.instance = new ConfigManager();
         FriendManager.instance = new FriendManager();
+        IgnoreManager.instance = new IgnoreManager();
         commandManager = new CommandManager();
 
         EVENT_BUS.subscribe(this);

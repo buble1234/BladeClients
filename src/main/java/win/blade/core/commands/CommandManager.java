@@ -31,6 +31,7 @@ public class CommandManager implements MinecraftInstance {
         add(new ToggleCommand());
         add(new BindCommand());
         add(new ReconnectCommand());
+        add(new IgnoreCommand());
     }
 
 
