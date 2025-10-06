@@ -41,7 +41,7 @@ public class FreeLookModule extends Module {
     @Override
     protected void onDisable() {
         super.onDisable();
-        AimManager.INSTANCE.disableWithSmooth();
+        AimManager.INSTANCE.disableWithSmooth(2);
         if(mc.options != null){
             mc.options.setPerspective(prev);
         }
