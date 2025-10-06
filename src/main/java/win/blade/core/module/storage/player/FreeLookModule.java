@@ -1,5 +1,6 @@
 package win.blade.core.module.storage.player;
 
+import net.minecraft.client.option.Perspective;
 import win.blade.common.gui.impl.gui.setting.implement.BooleanSetting;
 import win.blade.common.utils.aim.core.AimSettings;
 import win.blade.common.utils.aim.core.ViewDirection;
@@ -21,6 +22,7 @@ import win.blade.core.module.api.ModuleInfo;
 public class FreeLookModule extends Module {
     BooleanSetting blockSideWays = new BooleanSetting("Блокировать ходьбу в бок", "Блокирует движение вбок при активации.").setValue(true);
     public float startYaw = 0, startPitch = 0;
+    private Perspective prev = Perspective.FIRST_PERSON;
 
     public FreeLookModule(){
         addSettings(blockSideWays);
@@ -31,6 +33,8 @@ public class FreeLookModule extends Module {
         if(mc.player != null){
             startYaw = mc.player.getYaw();
             startPitch = mc.player.getPitch();
+            prev = mc.options.getPerspective();
+            mc.options.setPerspective(Perspective.THIRD_PERSON_BACK);
         }
     }
 
@@ -38,6 +42,9 @@ public class FreeLookModule extends Module {
     protected void onDisable() {
         super.onDisable();
         AimManager.INSTANCE.disableWithSmooth();
+        if(mc.options != null){
+            mc.options.setPerspective(prev);
+        }
     }
 
     @EventHandler

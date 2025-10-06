@@ -241,11 +241,13 @@ public class AccountScreen extends BaseScreen {
                     } else {
                         clickTime = System.currentTimeMillis();
                         clickedAccount = account;
-                        draggedAccount = account;
-                        dragStartY = entryY;
-                        dragStartMouseY = mouseY;
-                        draggedOriginalIndex = i;
-                        mouseOffsetY = mouseY - entryY;
+                        if (accountList.size() > 1) {
+                            draggedAccount = account;
+                            dragStartY = entryY;
+                            dragStartMouseY = mouseY;
+                            draggedOriginalIndex = i;
+                            mouseOffsetY = mouseY - entryY;
+                        }
                         isDragging = false;
                         return true;
                     }

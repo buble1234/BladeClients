@@ -162,10 +162,12 @@ public class MultiplayerScreen extends BaseScreen {
                     if (button == 0) {
                         clickTime = System.currentTimeMillis();
                         clickedEntry = entry;
-                        draggedEntry = entry;
-                        dragStartMouseY = mouseY;
-                        draggedOriginalIndex = i;
-                        mouseOffsetY = mouseY - currentEntryTopY;
+                        if (serverEntries.size() > 1) {
+                            draggedEntry = entry;
+                            dragStartMouseY = mouseY;
+                            draggedOriginalIndex = i;
+                            mouseOffsetY = mouseY - currentEntryTopY;
+                        }
                         isDragging = false;
                         return true;
                     }

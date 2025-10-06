@@ -50,6 +50,7 @@
     "minecraft.gui.MixinTitleScreen",
     "minecraft.gui.widgets.MixinPressableWidget",
     "minecraft.gui.widgets.MixinSliderWidget",
+    "minecraft.input.MixinGameOptions",
     "minecraft.input.MixinInput",
     "minecraft.input.MixinKeyboard",
     "minecraft.input.MixinKeyboardInput",
