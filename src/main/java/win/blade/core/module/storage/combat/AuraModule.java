@@ -9,8 +9,10 @@ import win.blade.common.utils.aim.manager.AimManager;
 import win.blade.common.utils.aim.manager.TargetTask;
 import win.blade.common.utils.aim.base.AimCalculator;
 import win.blade.common.utils.aim.core.AimSettings;
+import win.blade.common.utils.aim.core.SmoothTransition;
 import win.blade.common.utils.aim.core.ViewDirection;
 import win.blade.common.utils.aim.mode.AdaptiveSmooth;
+import win.blade.common.utils.aim.mode.MouseSmooth;
 import win.blade.common.utils.aim.point.PointMode;
 import win.blade.common.utils.attack.AttackSettings;
 import win.blade.common.utils.attack.AttackManager;
@@ -33,11 +35,14 @@ import java.util.Random;
 @ModuleInfo(name = "Aura", category = Category.COMBAT, desc = "Автоматически находит и атакует цели.")
 public class AuraModule extends Module {
 
+    private final SelectSetting smoothMode = new SelectSetting("Обход", "Режим обхода ротации.")
+            .value("Обычный", "Мышь");
+
     private final SelectSetting aimModeSetting = new SelectSetting("Режим", "Когда активировать прицеливание.")
             .value("Постоянный", "Во время удара");
 
     public final GroupSetting aimGroup = new GroupSetting("Прицеливание", "Настройки наведения на цель.")
-            .settings(aimModeSetting);
+            .settings(smoothMode, aimModeSetting);
 
     private final ValueSetting attackRange = new ValueSetting("Дистанция атаки", "Максимальное расстояние для атаки.")
             .setValue(3.0f).range(1.0f, 6.0f);
@@ -120,6 +125,8 @@ public class AuraModule extends Module {
     private float aimTicks;
     private static final Random RANDOM = new Random();
 
+    private final MouseSmooth mouseSmooth = new MouseSmooth();
+
     public AuraModule() {
         addSettings(
                 aimGroup, attackRange, aimRange, rotateTick,
@@ -138,6 +145,7 @@ public class AuraModule extends Module {
     public void onEnable() {
         currentTarget = null;
         aimTicks = 0;
+        mouseSmooth.reset();
         super.onEnable();
     }
 
@@ -266,14 +274,13 @@ public class AuraModule extends Module {
     }
 
     private void aimAtTarget() {
-        PointMode selectedPointMode;
-        switch (pointMode.getSelected()) {
-            case "Голова" -> selectedPointMode = PointMode.HEAD;
-            case "Тело" -> selectedPointMode = PointMode.BODY;
-            case "Ноги" -> selectedPointMode = PointMode.FEET;
-            case "Умные" -> selectedPointMode = PointMode.SMART;
-            default -> selectedPointMode = PointMode.CENTER;
-        }
+        PointMode selectedPointMode = switch (pointMode.getSelected()) {
+            case "Голова" -> PointMode.HEAD;
+            case "Тело" -> PointMode.BODY;
+            case "Ноги" -> PointMode.FEET;
+            case "Умные" -> PointMode.SMART;
+            default -> PointMode.CENTER;
+        };
 
         ViewDirection targetDirection = AimCalculator.calculateToEntity(currentTarget, selectedPointMode);
 
@@ -281,8 +288,14 @@ public class AuraModule extends Module {
         boolean enableMovementCorrection = moveCorrectionGroup.getValue();
         boolean enableSilent = moveCorrectionGroup.getValue() && moveCorrectionMode.isSelected("Слабая");
 
+        SmoothTransition smoothTransition = switch (smoothMode.getSelected()) {
+            case "Обычный" -> new AdaptiveSmooth(25);
+            case "Мышь" -> mouseSmooth;
+            default -> new AdaptiveSmooth(25);
+        };
+
         AimSettings aimSettings = new AimSettings(
-                new AdaptiveSmooth(25),
+                smoothTransition,
                 enableViewSync,
                 enableMovementCorrection,
                 enableSilent
