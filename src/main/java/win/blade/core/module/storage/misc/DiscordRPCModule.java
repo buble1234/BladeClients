@@ -33,7 +33,6 @@ public class DiscordRPCModule extends Module {
     private static final long APPLICATION_ID = 1384850624776245399L;
 
     public DiscordRPCModule() {
-        setEnabled(true);
     }
 
     @Override

@@ -1,8 +1,11 @@
 package win.blade.core.module.api;
 
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
 import win.blade.common.utils.minecraft.ChatUtility;
+import win.blade.core.module.storage.combat.*;
+import win.blade.core.module.storage.move.*;
+import win.blade.core.module.storage.render.*;
+import win.blade.core.module.storage.player.*;
+import win.blade.core.module.storage.misc.*;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -26,10 +29,63 @@ public final class ModuleManager extends HashMap<String,Module> {
     }
 
     public void initialize() {
-        Reflections reflections = new Reflections("win.blade.core.module.storage", Scanners.SubTypes);
-        Set<Class<? extends Module>> foundClasses = reflections.getSubTypesOf(Module.class);
+        List<Class<? extends Module>> moduleClasses = Arrays.asList(
+                AntiBotModule.class,
+                AutoLeaveModule.class,
+                BlockESPModule.class,
+                FullbrightModule.class,
+                AutoAcceptModule.class,
+                ChunkAnimator.class,
+                CustomWorld.class,
+                TorusModule.class,
+                FastBowModule.class,
+                AspectRatioModule.class,
+                BetterMinecraftModule.class,
+                AntiAFKModule.class,
+                NoPushModule.class,
+                InvWalkModule.class,
+                ProjectileHelper.class,
+                TargetESP.class,
+                PanicModule.class,
+                AutoSprintModule.class,
+                Projectiles.class,
+                InterfaceModule.class,
+                FireFly.class,
+                ElytraRecastModule.class,
+                FogBlur.class,
+                AutoTotemModule.class,
+                NoRenderModule.class,
+                FreeCam.class,
+                AuraModule.class,
+                DiscordRPCModule.class,
+                CameraClipModule.class,
+                SwingAnimation.class,
+                ScaffoldModule.class,
+                MenuModule.class,
+                CriticalsModule.class,
+                ShaderESP.class,
+                JumpCirclesModule.class,
+                AutoMystModule.class,
+                Arrows.class,
+                Kagune.class,
+                HandsModule.class,
+                NoDelayModule.class,
+                ChinaHat.class,
+                ClickActionsModule.class,
+                NameProtectModule.class,
+                AutoToolModule.class,
+                ShulkerPreview.class,
+                ItemScrollerModule.class,
+                SeeInvisiblesModule.class,
+                ServerTweaksModule.class,
+                FreeLookModule.class,
+                FunTimeHelperModule.class,
+                Esp.class,
+                AutoRespawnModule.class,
+                Particles.class
+        );
 
-        for (Class<? extends Module> moduleClass : foundClasses) {
+        for (Class<? extends Module> moduleClass : moduleClasses) {
             if (Modifier.isAbstract(moduleClass.getModifiers()) || moduleClass.isInterface()) {
                 continue;
             }
@@ -42,12 +98,12 @@ public final class ModuleManager extends HashMap<String,Module> {
             try {
                 Module moduleInstance = moduleClass.getConstructor().newInstance();
 
-                if(!(moduleInstance instanceof NonRegistrable))
+                if(!(moduleInstance instanceof NonRegistrable)) {
                     register(moduleInstance);
-                else
-                    System.out.println("skipped non registrable module %S".formatted(moduleInstance.name()));
+                } else {
+                }
             } catch (Exception e) {
-                System.err.println("Ошибка при регистрации модуля!");
+                e.printStackTrace();
             }
         }
     }
