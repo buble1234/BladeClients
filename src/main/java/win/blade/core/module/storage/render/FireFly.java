@@ -6,7 +6,6 @@ import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
@@ -29,38 +28,36 @@ import win.blade.core.module.api.Module;
 import win.blade.core.module.api.ModuleInfo;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 @ModuleInfo(name = "FireFly", category = Category.RENDER, desc = "Создает частицы-светлячки вокруг игрока.")
 public class FireFly extends Module {
 
-    private final ValueSetting count = new ValueSetting("Кол-во", "Количество частиц.").setValue(5f).range(1f, 25f);
+    private final ValueSetting count = new ValueSetting("Кол-во", "Общее количество частиц.").setValue(15f).range(1f, 100f);
     private final ValueSetting size = new ValueSetting("Размер", "Размер частиц.").setValue(0.5F).range(0.0F, 1F);
     private final ValueSetting range = new ValueSetting("Дистанция", "Дистанция спавна частиц.").setValue(16f).range(4f, 32f);
-    private final ValueSetting duration = new ValueSetting("Время жизни", "Как долго живут частицы.").setValue(3500f).range(500f, 5000f);
-    private final ValueSetting strength = new ValueSetting("Сила движения", "Скорость движения частиц.").setValue(1.0F).range(0.1F, 2.0F);
+    private final ValueSetting duration = new ValueSetting("Время жизни", "Как долго живут частицы.").setValue(3500f).range(500f, 10000f);
+    private final ValueSetting strength = new ValueSetting("Сила движения", "Начальная скорость движения частиц.").setValue(1.0F).range(0.1F, 2.0F);
     private final ValueSetting opacity = new ValueSetting("Прозрачность", "Прозрачность частиц.").setValue(1.0F).range(0.1F, 1.0F);
     private final BooleanSetting glowing = new BooleanSetting("Свечение", "Добавляет свечение частицам.").setValue(true);
     private final BooleanSetting onlyMove = new BooleanSetting("Только в движении", "Создавать частицы только в движении.").setValue(false);
     private final BooleanSetting ground = new BooleanSetting("Спавнить на земле", "Создавать частицы на земле.").setValue(false);
-    private final BooleanSetting physic = new BooleanSetting("Физика", "Включает физику для частиц (отскоки).").setValue(false);
     private final SelectSetting colorMode = new SelectSetting("Режим цвета", "Цветовая схема частиц.").value("Клиентский", "Радужный");
     private final SelectSetting particleMode = new SelectSetting("Тип частиц", "Форма частиц.")
             .value("Bloom", "Random", "Amongus", "Circle", "Crown", "Dollar", "Heart",
                     "Polygon", "Quad", "Skull", "Star", "Cross", "Triangle");
 
-    private final List<Particle> particles = new ArrayList<>();
+    private final List<Particle> particles = new CopyOnWriteArrayList<>();
 
     public FireFly() {
         addSettings(
                 count, size, range, duration, strength, opacity,
-                glowing, onlyMove, ground, physic,
+                glowing, onlyMove, ground,
                 colorMode, particleMode
         );
     }
-
 
     @Override
     public void onEnable() {
@@ -81,21 +78,24 @@ public class FireFly extends Module {
     @EventHandler
     public void onUpdate(UpdateEvents.Update event) {
         if (mc.player == null || mc.world == null) return;
+
+        double lifetime = this.duration.getValue();
+        double fadeInDuration = 500;
+        removeExpiredParticles(lifetime + fadeInDuration);
+
+        for (Particle particle : particles) {
+            particle.update();
+        }
+
         if (onlyMove.getValue() && !MovementUtility.isMoving()) return;
 
-        int rangeValue = (int) this.range.getValue();
-        for (int i = 0; i < (int) count.getValue(); i++) {
-            Vec3d playerPos = mc.player.getPos();
-            double randX = playerPos.x + randomValue(-rangeValue, rangeValue);
-            double randZ = playerPos.z + randomValue(-rangeValue, rangeValue);
+        int requiredParticles = (int) count.getValue();
+        int particlesToSpawn = requiredParticles - particles.size();
 
-            BlockPos topPos = mc.world.getTopPosition(Heightmap.Type.MOTION_BLOCKING, BlockPos.ofFloored(randX, playerPos.y, randZ));
-
-            double spawnY = ground.getValue() ? topPos.getY() : mc.player.getY() + randomValue(mc.player.getHeight(), rangeValue);
-            Vec3d position = new Vec3d(topPos.getX() + randomValue(0, 1), spawnY, topPos.getZ() + randomValue(0, 1));
-            Vec3d velocity = new Vec3d(0, randomValue(0.0, strength.getValue()) * (ground.getValue() ? 1 : -1), 0);
-
-            spawnParticle(position, velocity);
+        if (particlesToSpawn > 0) {
+            for (int i = 0; i < particlesToSpawn; i++) {
+                spawnParticle();
+            }
         }
     }
 
@@ -118,16 +118,10 @@ public class FireFly extends Module {
     }
 
     private void renderParticles(MatrixStack matrixStack) {
-
         double lifetime = this.duration.getValue();
         double fadeInDuration = 500;
 
-        removeExpiredParticles(lifetime + fadeInDuration);
-        if (particles.isEmpty()) return;
-
-        for (Particle particle : new ArrayList<>(particles)) {
-            particle.update(physic.getValue());
-
+        for (Particle particle : particles) {
             Animation animation = particle.animation();
             animation.update();
             float animationAlpha = (float) animation.get();
@@ -141,9 +135,7 @@ public class FireFly extends Module {
                 animation.run(0.0F, animTime, Easing.EASE_OUT_CUBIC, true);
             }
 
-            float pulsate = (float) ((Math.sin((System.currentTimeMillis() - particle.spawnTime()) / 200.0) + 1.0) / 2.0);
-            int colorWithAnimationAlpha = ColorUtility.applyAlpha(particle.color(), animationAlpha);
-            int finalColor = multAlpha(colorWithAnimationAlpha, pulsate);
+            int finalColor = ColorUtility.applyAlpha(particle.color(), animationAlpha);
 
             renderParticle(matrixStack, particle, finalColor);
         }
@@ -223,11 +215,31 @@ public class FireFly extends Module {
         RenderSystem.defaultBlendFunc();
     }
 
-    private void spawnParticle(Vec3d position, Vec3d velocity) {
+    private void spawnParticle() {
+        if (mc.player == null) return;
+
+        int rangeValue = (int) this.range.getValue();
+        Vec3d playerPos = mc.player.getPos();
+
+        double randX = playerPos.x + randomValue(-rangeValue, rangeValue);
+        double randZ = playerPos.z + randomValue(-rangeValue, rangeValue);
+        double spawnY = playerPos.y + randomValue(0, rangeValue);
+
+        Vec3d position = new Vec3d(randX, spawnY, randZ);
+
+        if (ground.getValue()) {
+            if (mc.world != null) {
+                position = new Vec3d(position.x, mc.world.getTopY(Heightmap.Type.WORLD_SURFACE, (int) position.x, (int) position.z), position.z);
+            }
+        }
+
         float size = 0.05F + (this.size.getValue() * 0.2F);
 
         int particleColor = switch (this.colorMode.getSelected()) {
-            case "Клиентский" -> Color.WHITE.getRGB();
+            case "Клиентский" -> ColorUtility.applyAlpha(
+                    new Color(102, 60, 255).getRGB(),
+                    255
+            );
             case "Радужный" -> Color.HSBtoRGB((System.currentTimeMillis() + particles.size() * 100) % 2000L / 2000.0f, 0.7f, 1.0f);
             default -> Color.WHITE.getRGB();
         };
@@ -250,12 +262,19 @@ public class FireFly extends Module {
 
         int rotation = (int) (Math.floor(randomValue(0, 360) / 15) * 15);
 
+        double initialSpeed = strength.getValue() * 0.01;
+        Vec3d velocity = new Vec3d(
+                randomValue(-initialSpeed, initialSpeed),
+                randomValue(-initialSpeed, initialSpeed),
+                randomValue(-initialSpeed, initialSpeed)
+        );
+
         particles.add(new Particle(type, position.add(0, size, 0), velocity, particleColor, size, rotation));
     }
 
     private double randomValue(double min, double max) {
         if (min >= max) return min;
-        return min + (max - min) * ThreadLocalRandom.current().nextDouble();
+        return ThreadLocalRandom.current().nextDouble(min, max);
     }
 
     public enum ParticleType {
@@ -303,7 +322,6 @@ public class FireFly extends Module {
         private final int rotate;
         private final int color;
         private final float size;
-
         private final TimerUtil time = new TimerUtil();
         private final Animation animation = new Animation();
 
@@ -311,43 +329,61 @@ public class FireFly extends Module {
             this.type = type;
             this.rotate = rotate;
             this.position = position;
-            this.velocity = velocity.multiply(0.01F);
+            this.velocity = velocity;
             this.color = color;
             this.size = size;
             this.box = new Box(position, position).expand(size);
         }
 
-        public void update(boolean physic) {
-            if (physic && mc.world != null) {
-                if (isBlockSolid(this.position.add(0, 0, this.velocity.z))) {
-                    this.velocity = this.velocity.multiply(1, 1, -0.8);
-                }
-                if (isBlockSolid(this.position.add(0, this.velocity.y, 0))) {
-                    this.velocity = this.velocity.multiply(0.999, -0.6, 0.999);
-                }
-                if (isBlockSolid(this.position.add(this.velocity.x, 0, 0))) {
-                    this.velocity = this.velocity.multiply(-0.8, 1, 1);
-                }
-                this.velocity = this.velocity.multiply(0.999999).subtract(0, 0.00005, 0);
-            }
-            this.position = this.position.add(this.velocity);
+        public void update() {
+            this.velocity = this.velocity.multiply(0.985);
+            this.velocity = this.velocity.subtract(0, 0.00005, 0);
+
+            double jitterStrength = 0.0002;
+            Vec3d jitter = new Vec3d(
+                    (ThreadLocalRandom.current().nextDouble() - 0.5) * jitterStrength,
+                    (ThreadLocalRandom.current().nextDouble() - 0.5) * jitterStrength,
+                    (ThreadLocalRandom.current().nextDouble() - 0.5) * jitterStrength
+            );
+
+            this.position = this.position.add(this.velocity).add(jitter);
             this.box = new Box(position, position).expand(this.size);
         }
 
-        private boolean isBlockSolid(Vec3d pos) {
-            if (mc.world == null) return false;
-            BlockPos blockPos = BlockPos.ofFloored(pos);
-            return !mc.world.getBlockState(blockPos).getCollisionShape(mc.world, blockPos).isEmpty();
+        public Box getBox() {
+            return box;
         }
 
-        public Box getBox() { return box; }
-        public long spawnTime() { return spawnTime; }
-        public ParticleType type() { return type; }
-        public Vec3d position() { return position; }
-        public int rotate() { return rotate; }
-        public int color() { return color; }
-        public float size() { return size; }
-        public TimerUtil time() { return time; }
-        public Animation animation() { return animation; }
+        public long spawnTime() {
+            return spawnTime;
+        }
+
+        public ParticleType type() {
+            return type;
+        }
+
+        public Vec3d position() {
+            return position;
+        }
+
+        public int rotate() {
+            return rotate;
+        }
+
+        public int color() {
+            return color;
+        }
+
+        public float size() {
+            return size;
+        }
+
+        public TimerUtil time() {
+            return time;
+        }
+
+        public Animation animation() {
+            return animation;
+        }
     }
 }

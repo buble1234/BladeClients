@@ -44,6 +44,8 @@ public class ReflectionShader extends Shader implements MinecraftInstance {
         if (useDepth) {
             torusFbo.copyDepthFrom(mc.getFramebuffer());
             RenderSystem.enableDepthTest();
+        } else {
+            RenderSystem.disableDepthTest();
         }
         torusFbo.beginWrite(false);
     }
@@ -113,12 +115,14 @@ public class ReflectionShader extends Shader implements MinecraftInstance {
     }
 
     public static void endTorusRender(boolean useDepth) {
-        if (useDepth) RenderSystem.disableDepthTest();
-
         SimpleFramebuffer torusFbo = ShaderHelper.getReflectionFbo();
         Shader passThroughShader = ShaderHelper.getPassThroughShader();
 
         mc.getFramebuffer().beginWrite(false);
+
+        RenderSystem.depthMask(false);
+        RenderSystem.disableDepthTest();
+
         passThroughShader.bind();
         passThroughShader.setUniform1i("Tex0", 0);
         passThroughShader.setUniformBool("Alpha", true);
@@ -130,6 +134,9 @@ public class ReflectionShader extends Shader implements MinecraftInstance {
         RenderSystem.disableBlend();
 
         passThroughShader.unbind();
+
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
     }
 
     public void setupHandUniforms(float opacity, float refraction) {
@@ -140,5 +147,4 @@ public class ReflectionShader extends Shader implements MinecraftInstance {
         setUniform1f("opacity", opacity);
         setUniform1f("refractionStrength", refraction);
     }
-
 }
