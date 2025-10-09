@@ -164,12 +164,6 @@ public class ResourcePackListWidget implements Drawable, Element, Selectable {
     @Override
     public void appendNarrations(net.minecraft.client.gui.screen.narration.NarrationMessageBuilder builder) {}
 
-//    @Nullable
-//    @Override
-//    public NavigationPath getNavigationPath(net.minecraft.client.gui.navigation.GuiNavigation navigation) {
-//        return null;
-//    }
-
     public static class ResourcePackEntry {
         private final MinecraftClient client;
         private final ResourcePackOrganizer.Pack pack;

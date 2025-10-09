@@ -35,7 +35,6 @@ public class SingleplayerScreen extends BaseScreen {
     private int windowX;
     private int windowY;
 
-    // Переменные для скролла
     public float targetScroll = 0;
     public float maxScroll = 0;
     public Animation scrollAnimation = new Animation();
@@ -56,7 +55,6 @@ public class SingleplayerScreen extends BaseScreen {
         loadWorldList();
     }
 
-    // --- НОВЫЙ МЕТОД ДЛЯ УДОБСТВА ---
     private void loadWorldList() {
         try {
             LevelStorage.LevelList worldList = this.client.getLevelStorage().getLevelList();
@@ -141,7 +139,6 @@ public class SingleplayerScreen extends BaseScreen {
 
             for (WorldEntryWidget entry : this.worldEntries) {
                 if (mouseY >= currentEntryTopY && mouseY < currentEntryTopY + entryRenderHeight) {
-                    // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
                     if (entry.mouseClicked(mouseX, mouseY, button, listX, (int) currentEntryTopY)) {
                         return true;
                     }

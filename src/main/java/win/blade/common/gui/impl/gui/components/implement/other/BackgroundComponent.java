@@ -40,29 +40,9 @@ public class BackgroundComponent extends AbstractComponent {
 
         AbstractTexture back = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/backgr.png"));
 
-//        Builder.texture()
-//                .size(new SizeState(350, 350))
-//                .color(new QuadColorState(Color.BLACK))
-//                .svgTexture(Identifier.of("blade", "textures/svg/gui/ellipse.svg"))
-//                .build();
-//                .render(x - 175, y - 170);
-
-//        Builder.border()
-//                .size(new SizeState(398, 248))
-//                .radius(new QuadRadiusState(6))
-//                .color(new QuadColorState(
-//                        new Color(255, 255, 255, 15),
-//                        new Color(255, 255, 255, 15),
-//                        new Color(255, 255, 255, 45),
-//                        new Color(255, 255, 255, 30)
-//                ))
-//                .thickness(1f)
-//                .build()
-//                .render(x, y);
 
         Builder.texture()
                 .size(new SizeState(398.5, 248.5))
-//                .svgTexture(Identifier.of("blade", "textures/svg/gui/background.svg"))
                 .texture(0f, 0f, 1f, 1f, back)
                 .smoothness(1.5f)
                 .radius(new QuadRadiusState(8.5f))
@@ -87,10 +67,6 @@ public class BackgroundComponent extends AbstractComponent {
                 .color(ColorUtility.fromHex("EEEEEE"))
                 .build()
                 .render( x + 95, y + 9.5f);
-//
-
-
-//
 
         var matrixStack = new MatrixStack();
         matrixStack.push();

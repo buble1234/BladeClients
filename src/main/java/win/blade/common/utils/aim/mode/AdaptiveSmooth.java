@@ -27,7 +27,6 @@ public record AdaptiveSmooth(float baseSpeed, float acceleration) implements Smo
 
         float newPitch = current.pitch() + MathHelper.clamp(deltaPitch, -interpolationStepPitch, interpolationStepPitch);
 
-//        newYaw = MathHelper.wrapDegrees(newYaw);
         newPitch = MathHelper.clamp(newPitch, -90.0f, 90.0f);
 
         return new ViewDirection(newYaw, newPitch);

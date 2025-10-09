@@ -80,7 +80,6 @@ public class Arrows extends Module {
         Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
         DrawContext context = e.getDrawContext();
 
-        // Настройка рендера для эффекта свечения (аддитивное смешивание)
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(
                 GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE,
@@ -118,10 +117,8 @@ public class Arrows extends Module {
     private void drawArrow(DrawContext context, double x, double y, double angle) {
         float alpha = (float) openAnimation.get();
 
-        // Ваш код для цвета
         int top = ColorUtility.applyAlpha(new Color(102, 60, 255).getRGB(), (ColorUtility.getAlpha(new Color(196, 24, 24).getRGB()) / 255.0f) * alpha);
         int back = ColorUtility.applyAlpha(top, 0);
-        // Цвет для свечения, основанный на том же фиолетовом цвете
         int glowColor = ColorUtility.applyAlpha(new Color(102, 60, 255).getRGB(), alpha * 0.3f);
 
         context.getMatrices().push();
@@ -131,7 +128,6 @@ public class Arrows extends Module {
         AbstractTexture bloomTexture = MinecraftClient.getInstance().getTextureManager().getTexture(bloomTextureId);
         AbstractTexture arrowTexture = MinecraftClient.getInstance().getTextureManager().getTexture(arrowTextureId);
 
-        // Рендер свечения (размер больше, чем у стрелки)
         Builder.texture()
                 .size(new SizeState(32, 32))
                 .color(new QuadColorState(glowColor))
@@ -140,7 +136,6 @@ public class Arrows extends Module {
                 .build()
                 .render(context.getMatrices().peek().getPositionMatrix(), -16, -16);
 
-        // Рендер самой стрелки
         Builder.texture()
                 .size(new SizeState(16, 16))
                 .color(new QuadColorState(top, back, back, top))

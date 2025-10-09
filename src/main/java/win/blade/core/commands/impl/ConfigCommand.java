@@ -75,7 +75,6 @@ public class ConfigCommand extends Command {
 
         builder.then(LiteralArgumentBuilder.<CommandSource>literal("list")
                 .executes(context -> {
-//                    CONFIG_MANAGER.update();
                     ChatUtility.add(Text.literal("Доступные конфигурации:")
                             .formatted(Formatting.RED));
                     configManager.getAllConfigs().forEach(name -> {
@@ -99,7 +98,6 @@ public class ConfigCommand extends Command {
                     } catch (Exception e) {
                         ChatUtility.add(Text.literal("Не удалось открыть папку: " + e.getMessage())
                                 .formatted(Formatting.RED));
-                        // e.printStackTrace(); // Or log
                     }
                     return SINGLE_SUCCESS;
                 }));

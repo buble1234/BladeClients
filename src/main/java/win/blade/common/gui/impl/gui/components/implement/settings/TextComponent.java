@@ -180,9 +180,8 @@ public class TextComponent extends AbstractSettingComponent implements Minecraft
                 selectionStart = cursorPosition;
                 selectionEnd = cursorPosition;
             }
-            return true; // Возвращаем true после обработки клика
+            return true;
         } else {
-//            typing = false;
             handleTextModification(GLFW.GLFW_KEY_ENTER);
 
             clearSelection();

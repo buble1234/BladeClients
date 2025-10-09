@@ -138,7 +138,6 @@ public abstract class AbstractBindWindow extends AbstractWindow {
 
         if (binding) {
 
-            //DELETE
             if(keyCode == 261){
                 setKey(-1);
                 binding = false;

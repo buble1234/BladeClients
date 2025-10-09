@@ -30,7 +30,6 @@ public class AccountSaver {
         try {
             file.getParentFile().mkdirs();
 
-            // try-with-resources автоматически закроет writer
             try (FileWriter writer = new FileWriter(file)) {
                 gson.toJson(accounts, writer);
             }

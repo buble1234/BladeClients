@@ -2,8 +2,6 @@ package win.blade.common.gui.impl;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.world.SelectWorldScreen;
-import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -14,14 +12,10 @@ import win.blade.common.gui.impl.screen.account.AccountScreen;
 import win.blade.common.gui.impl.screen.multiplayer.MultiplayerScreen;
 import win.blade.common.gui.impl.screen.options.OptionsScreen;
 import win.blade.common.gui.impl.screen.singleplayer.SingleplayerScreen;
-import win.blade.common.utils.math.MathUtility; // Убедись, что импорт правильный
+import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.render.builders.Builder;
 import win.blade.common.utils.render.builders.states.QuadColorState;
-import win.blade.common.utils.render.builders.states.QuadRadiusState;
 import win.blade.common.utils.render.builders.states.SizeState;
-import win.blade.common.utils.render.msdf.FontType;
-import win.blade.common.utils.render.renderers.impl.BuiltText;
-import win.blade.core.Manager;
 
 import java.awt.*;
 

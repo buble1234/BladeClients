@@ -79,27 +79,22 @@ public class SelectComponent extends AbstractSettingComponent {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
-            // Клик на сам селектор
             if (MathUtility.isHovered(mouseX, mouseY, x + width - 75, y + 4, 66, 14)) {
                 open = !open;
                 return true;
             }
 
-            // Если список открыт
             if (open) {
-                // Клик внутри списка
                 if (isHoveredList(mouseX, mouseY)) {
                     for (SelectedButton selectedButton : selectedButtons) {
                         if (selectedButton.mouseClicked(mouseX, mouseY, button)) {
-                            open = false; // Закрываем список после выбора
+                            open = false;
                             return true;
                         }
                     }
-                    return true; // Клик был внутри списка, но не на кнопке
+                    return true;
                 } else {
-                    // Клик вне списка - закрываем его и НЕ блокируем событие
                     open = false;
-                    // Возвращаем false, чтобы позволить другим элементам обработать клик
                     return false;
                 }
             }
@@ -109,20 +104,16 @@ public class SelectComponent extends AbstractSettingComponent {
 
     @Override
     public boolean isHover(double mouseX, double mouseY) {
-        // Считаем что мышь "над" компонентом только если список открыт И мышь над списком
-        // или если мышь над основным селектором
         if (open && isHoveredList(mouseX, mouseY)) {
             return true;
         }
         return MathUtility.isHovered(mouseX, mouseY, x + width - 75, y + 4, 66, 14);
     }
 
-    // Метод для принудительного закрытия списка (можно вызывать из родительского контейнера)
     public void closeDropdown() {
         open = false;
     }
 
-    // Метод для проверки, открыт ли список
     public boolean isDropdownOpen() {
         return open;
     }

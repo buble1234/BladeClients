@@ -105,14 +105,12 @@ public class TorusModule extends Module {
         private final Animation outerRadAnim = new Animation();
         private final Animation innerRadAnim = new Animation();
 
-        // --- ИЗМЕНЕНО: Конструктор теперь принимает размер ---
         public TorusRenderer(Vec3d pos, Vec2f rotation, double lifetime, float size) {
             this.pos = pos;
             this.rotation = rotation;
             this.lifetime = lifetime;
             this.spawnTime = System.currentTimeMillis();
 
-            // --- ИЗМЕНЕНО: Применяем множитель размера к радиусам ---
             outerRadAnim.set(0.6 * size);
             innerRadAnim.set(0.4 * size);
 

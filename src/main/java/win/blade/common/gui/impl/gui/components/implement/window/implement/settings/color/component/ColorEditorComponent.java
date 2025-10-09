@@ -48,7 +48,7 @@ public class ColorEditorComponent extends AbstractComponent {
         Builder.rectangle().size(new SizeState(40.5f, H)).color(new QuadColorState(ColorUtility.fromHex("1C1A25"))).radius(new QuadRadiusState(3, 3, 0, 0)).build()
                 .render(X + 27.5f, Y);
         Builder.text().font(fontRegular).text(Integer.toHexString(setting.getColor())).size(3.5f).color(Color.WHITE).build().render(X + 30.5f, Y + 2.7f);
-//
+
         Builder.rectangle().size(new SizeState(19.5F, H)).color(new QuadColorState(ColorUtility.fromHex("1C1A25"))).radius(new QuadRadiusState(0, 0, 3, 3)).build()
                 .render(X + 67.8F, Y);
 

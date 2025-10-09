@@ -148,7 +148,6 @@ public class ResourcePackScreen extends BaseScreen {
                 .build()
                 .render(context.getMatrices().peek().getPositionMatrix(), (this.width - FontType.popins_medium.get().getWidth(titleText, size)) / 2f, 80 - 36.5f);
 
-//        super.render(context, mouseX, mouseY, delta);
     }
 
     @Override
@@ -169,7 +168,6 @@ public class ResourcePackScreen extends BaseScreen {
     public void resize(MinecraftClient client, int width, int height) {
         super.resize(client, width, height);
         listsUpdated = true;
-//        this.updatePackLists();
     }
 
     public void movePack(ResourcePackOrganizer.Pack pack) {
