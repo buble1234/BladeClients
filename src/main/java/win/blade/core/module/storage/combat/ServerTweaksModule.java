@@ -37,7 +37,7 @@ public class ServerTweaksModule extends Module {
             new BooleanSetting("Серверный поворот", "Блокирует принудительный поворот камеры.").setValue(true),
             new BooleanSetting("Серверный свап слотов", "Игнорирует смену активного слота сервером.").setValue(false),
             new BooleanSetting("Урон по друзьям", "Блокирует атаку по друзьям.").setValue(false)
-    );
+    ).setToggleable();
 
     public ServerTweaksModule() {
         addSettings(tweaks);

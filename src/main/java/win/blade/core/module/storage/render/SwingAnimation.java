@@ -20,36 +20,36 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(name = "SwingAnimation", category = Category.RENDER, desc = "Анимация, оффсеты рук")
 public class SwingAnimation extends Module {
 
+    SelectSetting swingType = new SelectSetting("Тип взмаха", "Тип анимации взмаха.")
+            .value("Взмах", "Вниз", "Плавный", "Мощный", "Пир");
 
-    SelectSetting swingType = new SelectSetting("Swing Type", "Select the type of swing")
-            .value("Swipe", "Down", "Smooth", "Power", "Feast");
-
-    ValueSetting mainHandXSetting = new ValueSetting("Main Hand X", "Main Hand X value setting")
+    ValueSetting mainHandXSetting = new ValueSetting("Основная рука X", "Настройка значения X основной руки.")
             .setValue(0.0F).range(-1.0F, 1.0F);
 
-    ValueSetting mainHandYSetting = new ValueSetting("Main Hand Y", "Main Hand Y value setting")
+    ValueSetting mainHandYSetting = new ValueSetting("Основная рука Y", "Настройка значения Y основной руки.")
             .setValue(0.0F).range(-1.0F, 1.0F);
 
-    ValueSetting mainHandZSetting = new ValueSetting("Main Hand Z", "Main Hand Z value setting")
+    ValueSetting mainHandZSetting = new ValueSetting("Основная рука Z", "Настройка значения Z основной руки.")
             .setValue(0.0F).range(-2.5F, 2.5F);
 
-    ValueSetting offHandXSetting = new ValueSetting("Off Hand X", "Off Hand X value setting")
+    ValueSetting offHandXSetting = new ValueSetting("Вторая рука X", "Настройка значения X второй руки.")
             .setValue(0.0F).range(-1.0F, 1.0F);
 
-    ValueSetting offHandYSetting = new ValueSetting("Off Hand Y", "Off Hand Y value setting")
+    ValueSetting offHandYSetting = new ValueSetting("Вторая рука Y", "Настройка значения Y второй руки.")
             .setValue(0.0F).range(-1.0F, 1.0F);
 
-    ValueSetting offHandZSetting = new ValueSetting("Off Hand Z", "Off Hand Z value setting")
+    ValueSetting offHandZSetting = new ValueSetting("Вторая рука Z", "Настройка значения Z второй руки.")
             .setValue(0.0F).range(-2.5F, 2.5F);
 
-    GroupSetting swingGroup = new GroupSetting("Animation", "Custom Swing")
+    GroupSetting swingGroup = new GroupSetting("Анимация", "Настройка взмаха.")
             .settings(swingType).setValue(true);
 
-    GroupSetting offsetGroup = new GroupSetting("Offsets", "Custom Hands offset")
+    GroupSetting offsetGroup = new GroupSetting("Оффсеты", "Настройка оффсетов рук")
             .settings(mainHandXSetting, mainHandYSetting, mainHandZSetting, offHandXSetting, offHandYSetting, offHandZSetting).setValue(true);
 
-    ValueSetting swingSpeedSetting = new ValueSetting("Swing Duration",  "Duration of the hit animation")
+    ValueSetting swingSpeedSetting = new ValueSetting("Длительность взмаха",  "Длительность анимации удара")
             .setValue(1.0F).range(0.5F, 2.0F);
+
     public SwingAnimation () {
         addSettings(swingGroup, offsetGroup, swingSpeedSetting);
     }
@@ -71,7 +71,7 @@ public class SwingAnimation extends Module {
             float sin2 = MathHelper.sin(MathHelper.sqrt(swingProgress) * (float) Math.PI);
             float sinSmooth = (float) (Math.sin(swingProgress * Math.PI) * 0.5F);
             switch (swingType.getSelected()) {
-                case "Swipe" -> {
+                case "Взмах" -> {
                     matrix.translate(0.56F * i, -0.32F, -0.72F);
                     matrix.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(60 * i));
                     matrix.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-60 * i));
@@ -79,7 +79,7 @@ public class SwingAnimation extends Module {
                     matrix.multiply(RotationAxis.POSITIVE_X.rotationDegrees((sin2 * sin1) * -120));
                     matrix.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-60));
                 }
-                case "Down" -> {
+                case "Вниз" -> {
                     matrix.translate(i * 0.56F, -0.32F, -0.72F);
                     matrix.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(76 * i));
                     matrix.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(sin2 * -5));
@@ -87,7 +87,7 @@ public class SwingAnimation extends Module {
                     matrix.multiply(RotationAxis.POSITIVE_X.rotationDegrees(sin2 * -155));
                     matrix.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-100));
                 }
-                case "Smooth" -> {
+                case "Плавный" -> {
                     matrix.translate(i * 0.56F, -0.42F, -0.72F);
                     matrix.multiply(RotationAxis.POSITIVE_Y.rotationDegrees((float) i * (45.0F + sin1 * -20.0F)));
                     matrix.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float) i * sin2 * -20.0F));
@@ -95,7 +95,7 @@ public class SwingAnimation extends Module {
                     matrix.multiply(RotationAxis.POSITIVE_Y.rotationDegrees((float) i * -45.0F));
                     matrix.translate(0, -0.1, 0);
                 }
-                case "Power" -> {
+                case "Мощный" -> {
                     matrix.translate(i * 0.56F, -0.32F, -0.72F);
                     matrix.translate((-sinSmooth * sinSmooth * sin1) * i, 0, 0);
                     matrix.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(61 * i));
@@ -105,7 +105,7 @@ public class SwingAnimation extends Module {
                     matrix.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-60));
                     matrix.multiply(RotationAxis.POSITIVE_X.rotationDegrees(sinSmooth * -60));
                 }
-                case "Feast" -> {
+                case "Пир" -> {
                     matrix.translate(i * 0.56F, -0.32F, -0.72F);
                     matrix.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(30 * i));
                     matrix.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(sin2 * 75 * i));

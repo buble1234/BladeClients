@@ -103,6 +103,24 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
             this.timer.reset();
         }
 
+        @Override
+        public void setPosition(float x, float y) {
+            super.setPosition(x, y);
+            this.savedX = x;
+            this.savedY = y;
+        }
+
+        @Override
+        public void setPositionInstantly(float x, float y) {
+            super.setPositionInstantly(x, y);
+            InterfaceModule interfaceModule = getInterfaceModule();
+            boolean projectOnTarget = interfaceModule != null && interfaceModule.getTargetHudSettings().getValue();
+            if (!projectOnTarget || target == null || target == mc.player) {
+                this.savedX = x;
+                this.savedY = y;
+            }
+        }
+
         private InterfaceModule getInterfaceModule() {
             return Manager.getModuleManagement().get(InterfaceModule.class);
         }
@@ -295,7 +313,7 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
                 if (screenPos != null && screenPos.z > 0 && screenPos.z < 1) {
                     float newX = (float) (screenPos.x - getWidth() / 2);
                     float newY = (float) (screenPos.y - getHeight() - 10);
-                    setPositionInstantly(newX, newY);
+                    super.setPositionInstantly(newX, newY);
                 }
 
                 if (!isTargetInWorld(target) || timer.hasReached(1000)) {
@@ -303,7 +321,7 @@ public class TargetHud extends Module implements MinecraftInstance, NonRegistrab
                 }
             } else {
                 if (!isBeingDragged()) {
-                    setPositionInstantly(savedX, savedY);
+                    super.setPositionInstantly(savedX, savedY);
                 }
             }
         }

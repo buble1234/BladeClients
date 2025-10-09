@@ -14,7 +14,7 @@ import win.blade.core.module.api.ModuleInfo;
 @ModuleInfo(name = "AutoRespawn", category = Category.PLAYER, desc = "Автоматический")
 public class AutoRespawnModule extends Module {
 
-    SelectSetting modeSetting = new SelectSetting("Mode", "Choose what will be used").value("FunTime Back", "Default");
+    SelectSetting modeSetting = new SelectSetting("Режим", "Режим авто-возраждения").value("FunTime Back", "Default");
 
 
     public AutoRespawnModule() {
