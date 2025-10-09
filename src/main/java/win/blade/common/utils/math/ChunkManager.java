@@ -7,7 +7,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import win.blade.common.utils.minecraft.MinecraftInstance;
-import win.blade.core.event.impl.render.ChunkRenderEvent; // Импортируем наш ивент
+import win.blade.core.event.impl.render.ChunkRenderEvent;
 import win.blade.core.module.storage.render.ChunkAnimator;
 
 import java.util.WeakHashMap;

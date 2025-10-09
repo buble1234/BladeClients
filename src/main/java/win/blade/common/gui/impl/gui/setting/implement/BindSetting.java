@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 public class BindSetting extends Setting {
     private int key = GLFW.GLFW_KEY_UNKNOWN;
-    private int type = 1; // 0 - hold, 1 - toggle
+    private int type = 1;
 
     public BindSetting(String name, String description) {
         super(name, description);

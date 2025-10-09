@@ -126,13 +126,13 @@ public class InGameOptionsScreen extends Screen {
             this.lockButton.active = ! isDifficultyLocked;
             this.addDrawableChild(this.lockButton);
         } else {
-            this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.accessibility"), () -> this.client.setScreen(new AccessibilityOptionsScreen(this, this.client.options))));
+            this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.accessibility"), () -> this.client.setScreen(new AccessibilityOptionsScreen(this, this.client.options, false))));
         }
 
         currentY += buttonHeight + initialRowGap;
 
         this.addDrawableChild(new Button(col1X, currentY, buttonWidth, buttonHeight, Text.translatable("options.skinCustomization"), () -> this.client.setScreen(new SkinOptionsScreen(this, this.client.options))));
-        this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.sounds"), () -> this.client.setScreen(new SoundOptionsScreen(this, this.client.options))));
+        this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.sounds"), () -> this.client.setScreen(new SoundOptionsScreen(this, this.client.options, false))));
 
         currentY += buttonHeight + subsequentRowGap;
 
@@ -142,7 +142,7 @@ public class InGameOptionsScreen extends Screen {
         currentY += buttonHeight + subsequentRowGap;
 
         this.addDrawableChild(new Button(col1X, currentY, buttonWidth, buttonHeight, Text.translatable("options.language"), () -> this.client.setScreen(new LanguageOptionsScreen(this, this.client.options, this.client.getLanguageManager()))));
-        this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.chat"), () -> this.client.setScreen(new ChatOptionsScreen(this, this.client.options))));
+        this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.chat"), () -> this.client.setScreen(new ChatOptionsScreen(this, this.client.options, false))));
 
         currentY += buttonHeight + subsequentRowGap;
 
@@ -156,7 +156,7 @@ public class InGameOptionsScreen extends Screen {
                 ))
         );
         if(showDifficultyOptions) {
-            this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.accessibility"), () -> this.client.setScreen(new AccessibilityOptionsScreen(this, this.client.options))));
+            this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.translatable("options.accessibility"), () -> this.client.setScreen(new AccessibilityOptionsScreen(this, this.client.options, false))));
         } else {
             this.addDrawableChild(new Button(col2X, currentY, buttonWidth, buttonHeight, Text.of("Special features"), () -> {}));
         }

@@ -36,22 +36,16 @@ public class LineRenderer {
         float r = color.getRed() / 255.0f;
         float g = color.getGreen() / 255.0f;
         float b = color.getBlue() / 255.0f;
-        // ИСПРАВЛЕНО: Теперь используется альфа-канал из объекта Color
         float a = color.getAlpha() / 255.0f;
 
         Vec3d lineDir = end.subtract(start);
         if (lineDir.lengthSquared() == 0) return;
 
-        // Вектор от камеры (в относительных координатах это 0,0,0) до середины линии
         Vec3d camToMidpoint = start.add(end).multiply(0.5);
 
-        // Находим вектор, перпендикулярный и линии, и направлению взгляда. Это дает "ширину" линии.
         Vec3d sideDir = lineDir.crossProduct(camToMidpoint).normalize();
 
-        // Защита от случая, когда камера смотрит ровно вдоль линии.
-        // В этом случае crossProduct равен нулю, и линия "схлопывается".
         if (sideDir.lengthSquared() == 0) {
-            // Просто берем любой другой перпендикулярный вектор
             sideDir = lineDir.crossProduct(new Vec3d(0, 1, 0)).normalize();
             if(sideDir.lengthSquared() == 0) {
                 sideDir = lineDir.crossProduct(new Vec3d(1, 0, 0)).normalize();

@@ -25,11 +25,11 @@ public abstract class MixinPressableWidget extends ClickableWidget implements Mi
 
     private final Color normalColor = new Color(30, 30, 30);
     private final Color hoverColor = new Color(50, 50, 50);
-//
+
     public MixinPressableWidget(int x, int y, int width, int height, Text message) {
         super(x, y, width, height, message);
     }
-//
+
     @Inject(method = "renderWidget", at = @At("HEAD"), cancellable = true)
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
     }

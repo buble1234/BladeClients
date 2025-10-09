@@ -26,7 +26,6 @@ public class GroupComponent extends AbstractSettingComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-//        if(false) {
             String wrapped = StringUtil.wrap(setting.getDescription(), 100, 6);
             height = (int) (18 + fontRegular.getFontHeight(fontRegular, 6) * (wrapped.split("\n").length - 1));
 
@@ -61,7 +60,6 @@ public class GroupComponent extends AbstractSettingComponent {
                         .setRunnable(() -> spawnWindow(mouseX, mouseY))
                         .render(context, mouseX, mouseY, delta);
             }
-//        }
     }
 
     @Override

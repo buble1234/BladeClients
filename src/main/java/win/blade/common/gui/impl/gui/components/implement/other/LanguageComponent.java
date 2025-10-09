@@ -49,7 +49,7 @@ public class LanguageComponent extends AbstractComponent {
 
         Builder.text()
                 .font(fontRegular)
-                .text("eng") // сделать получение
+                .text("eng")
                 .size(6)
                 .color(new Color(0xFF878894))
                 .build()
@@ -59,7 +59,6 @@ public class LanguageComponent extends AbstractComponent {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (MathUtility.isHovered(mouseX, mouseY, x, y, width, height) && button == 0) {
-//            Expensive.getInstance().toggleLanguage();
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }

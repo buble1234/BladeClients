@@ -82,7 +82,7 @@ public class BindComponent extends AbstractSettingComponent {
         if (button == 0) {
             if (MathUtility.isHovered(mouseX, mouseY, x, y, width, height)) {
                 binding = !binding;
-                return true; // Возвращаем true после обработки клика
+                return true;
             } else {
                 binding = false;
             }
@@ -91,7 +91,7 @@ public class BindComponent extends AbstractSettingComponent {
         if (binding && button > 1) {
             setting.setKey(button);
             binding = false;
-            return true; // Возвращаем true после обработки клика
+            return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }

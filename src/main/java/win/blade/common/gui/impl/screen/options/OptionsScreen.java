@@ -56,11 +56,11 @@ public class OptionsScreen extends BaseScreen {
                 value -> this.gameOptions.getFov().setValue((int) (value * 80 + 30))
         );
         this.addDrawableChild(fovSlider);
-        this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.accessibility"), () -> this.client.setScreen(new AccessibilityOptionsScreen(this, this.gameOptions))));
+        this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.accessibility"), () -> this.client.setScreen(new AccessibilityOptionsScreen(this, this.gameOptions, true))));
         row++;
 
         this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.skinCustomization"), () -> this.client.setScreen(new SkinOptionsScreen(this, this.gameOptions))));
-        this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.sounds"), () -> this.client.setScreen(new SoundOptionsScreen(this, this.gameOptions))));
+        this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.sounds"), () -> this.client.setScreen(new SoundOptionsScreen(this, this.gameOptions, true))));
         row++;
 
         this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.video"), () -> this.client.setScreen(new VideoOptionsScreen(this, this.gameOptions, true))));
@@ -68,7 +68,7 @@ public class OptionsScreen extends BaseScreen {
         row++;
 
         this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.language"), () -> this.client.setScreen(new LanguageOptionsScreen(this, this.gameOptions, this.client.getLanguageManager()))));
-        this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.chat"), () -> this.client.setScreen(new ChatOptionsScreen(this, this.gameOptions))));
+        this.addDrawableChild(new Button(col2X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.chat"), () -> this.client.setScreen(new ChatOptionsScreen(this, this.gameOptions, true))));
         row++;
 
         this.addDrawableChild(new Button(col1X, buttonsTopY + row * rowH, buttonWidth, buttonHeight, Text.translatable("options.resourcepack"),

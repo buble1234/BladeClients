@@ -61,7 +61,6 @@ public class MixinWorldRenderer implements WorldRendererAccessor {
         return instance.isSleeping();
     }
 
-    // НОВЫЙ, ИСПРАВЛЕННЫЙ ХУК ДЛЯ РЕНДЕРА СКВОЗЬ СТЕНЫ
     @Redirect(method = "setupTerrain", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/ChunkRenderingDataPreparer;updateSectionOcclusionGraph(ZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/Frustum;Ljava/util/List;Lit/unimi/dsi/fastutil/longs/LongOpenHashSet;)V"))
     private void hookFreeCamForceNoCulling(ChunkRenderingDataPreparer instance, boolean chunkCulling, Camera camera, Frustum frustum, List<ChunkBuilder.BuiltChunk> builtChunks, LongOpenHashSet activeSections) {
         Optional<FreeCam> freeCamOpt = Manager.getModuleManagement().find(FreeCam.class);

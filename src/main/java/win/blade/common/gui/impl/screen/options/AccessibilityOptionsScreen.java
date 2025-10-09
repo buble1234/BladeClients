@@ -1,17 +1,22 @@
 package win.blade.common.gui.impl.screen.options;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.option.GameOptions;
+import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import win.blade.common.gui.button.Button;
 import win.blade.common.gui.button.Slider;
 import win.blade.common.utils.render.builders.Builder;
+import win.blade.common.utils.render.builders.states.SizeState;
 import win.blade.common.utils.render.msdf.FontType;
 import win.blade.common.utils.render.msdf.MsdfFont;
+import win.blade.common.utils.render.renderers.impl.BuiltTexture;
 
 import java.awt.*;
 
@@ -40,11 +45,13 @@ public class AccessibilityOptionsScreen extends Screen {
     private Slider glintStrengthSlider;
     private Slider notificationTimeSlider;
     private Slider panoramaSpeedSlider;
+    private boolean bg;
 
-    public AccessibilityOptionsScreen(Screen parent, GameOptions options) {
+    public AccessibilityOptionsScreen(Screen parent, GameOptions options, boolean bg) {
         super(Text.translatable("options.accessibility.title"));
         this.parent = parent;
         this.options = options;
+        this.bg = bg;
     }
 
     @Override
@@ -164,6 +171,17 @@ public class AccessibilityOptionsScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (bg == true) {
+            Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
+
+            AbstractTexture customTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/mainmenu.png"));
+            BuiltTexture customIcon = Builder.texture()
+                    .size(new SizeState(this.width, this.height))
+                    .texture(0.0f, 0.0f, 1.0f, 1.0f, customTexture)
+                    .smoothness(3.0f)
+                    .build();
+            customIcon.render(matrix, 0, 0);
+        }
         Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
         MsdfFont font = FontType.sf_regular.get();
         float fontSize = 16f;

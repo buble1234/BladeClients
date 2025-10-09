@@ -29,7 +29,6 @@ public record BuiltTexture(
     @Override
     public void render(Matrix4f matrix, float x, float y, float z) {
         RenderSystem.enableBlend();
-//        RenderSystem
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
 

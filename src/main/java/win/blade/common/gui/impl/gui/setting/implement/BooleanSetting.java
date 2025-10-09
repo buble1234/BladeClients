@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 public class BooleanSetting extends Setting {
     private boolean value;
     private int key = GLFW.GLFW_KEY_UNKNOWN;
-    private int type = 1; // 0 - hold, 1 - toggle
+    private int type = 1;
     private long holdDuration = 50;
 
     public BooleanSetting(String name, String description) {

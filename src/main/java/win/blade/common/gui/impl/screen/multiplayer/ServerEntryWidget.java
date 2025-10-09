@@ -147,14 +147,6 @@ public class ServerEntryWidget implements MinecraftInstance {
         int i = info.getKey();
         int k = info.getValue();
 
-//        System.out.println(i + " " + k);
-
-//        System.out.println(pingTexture == null);
-
-
-//        context.drawTexture()
-
-
         byte[] currentFavicon = sInfo.getFavicon();
         if (!Arrays.equals(currentFavicon, this.lastFaviconBytes)) {
             syncIcon();
@@ -202,9 +194,6 @@ public class ServerEntryWidget implements MinecraftInstance {
         String finalMotd = fullMotd.toString().trim().replaceAll("\\s+", " ");
         TextBuilder.renderWrapped(FontType.sf_regular.get(), finalMotd, " ", x + 50, y + 25, 185.0f, new Color(150, 150, 150).getRGB(), 6.5f);
 
-//        System.out.println(sInfo.name);
-//        System.out.println(sInfo.name + " ");
-//        System.out.println(sInfo.players != null);
         var fontSize = 6.5f;
         if (sInfo.players != null) {
             String now = String.valueOf(sInfo.players.online());

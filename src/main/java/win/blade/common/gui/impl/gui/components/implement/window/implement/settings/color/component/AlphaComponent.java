@@ -29,11 +29,6 @@ public class AlphaComponent extends AbstractComponent {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-//        X = x + 6;
-//        Y = y + 91.5f;
-//        W = 138;
-//        H = 4;
-
         X = x + 9f;
         Y = y + 91.5F;
         W = 88;
@@ -42,27 +37,12 @@ public class AlphaComponent extends AbstractComponent {
         float clampedX = X + W * setting.getAlpha();
         float min = clamp((mouseX - X) / W, 0, 1);
 
-//        AbstractTexture alphaTexture = MinecraftClient.getInstance().getTextureManager().getTexture(Identifier.of("blade", "textures/alpha.png"));
-//            Builder.texture()
-//                    .size(new SizeState(W, H))
-//                    .color(new QuadColorState(Color.WHITE))
-//                    .texture(0f, 0f, 1f, 1f, alphaTexture)
-//                    .radius(new QuadRadiusState(0f))
-//                    .build()
-//                    .render(X, Y);
         Builder.rectangle()
                 .size(new SizeState(W + 0.5f, 3.8f))
                 .color(new QuadColorState(-1,-1,setting.getColorWithAlpha(),setting.getColorWithAlpha()))
                 .radius(new QuadRadiusState(1))
                 .build()
                 .render(X, Y);
-
-//        Builder.rectangle()
-//                .size(new SizeState(W + 0.5f, 3.8f))
-//                .color(new QuadColorState(0x80000000,0x80000000,setting.getColorWithAlpha(),setting.getColorWithAlpha()))
-//                .radius(new QuadRadiusState(0.5f))
-//                .build()
-//                .render(X, Y);
 
         Builder.border()
                 .size(new SizeState(6, 6))

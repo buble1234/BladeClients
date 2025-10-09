@@ -140,22 +140,19 @@ public class CategoryComponent extends AbstractComponent {
         if (menuScreen.category == this.category || !menuScreen.getSearchComponent().getText().isEmpty()) {
             if (MathUtility.isHovered(mouseX, mouseY, menuScreen.x + 95, menuScreen.y + 29, menuScreen.width - 95, menuScreen.height - 30)) {
 
-                // Сначала проверяем открытые выпадающие списки
                 List<SelectComponent> selectComponents = getAllSelectComponents();
                 for (SelectComponent selectComponent : selectComponents) {
                     if (selectComponent.isDropdownOpen()) {
-                        // Если есть открытый список, передаем ему клик в приоритетном порядке
                         return selectComponent.mouseClicked(mouseX, mouseY, button);
                     }
                 }
 
-                // Если нет открытых списков, обрабатываем обычные клики
                 for (ModuleComponent moduleComponent : moduleComponents) {
                     if (shouldRenderComponent(moduleComponent) && moduleComponent.isHover(mouseX, mouseY)) {
                         if (moduleComponent.mouseClicked(mouseX, mouseY, button)) {
                             return true;
                         }
-                        break; // Прерываем цикл после первого найденного компонента
+                        break;
                     }
                 }
             }
@@ -168,7 +165,6 @@ public class CategoryComponent extends AbstractComponent {
         if (menuScreen.category == this.category || !menuScreen.getSearchComponent().getText().isEmpty()) {
             if (MathUtility.isHovered(mouseX, mouseY, menuScreen.x + 95, menuScreen.y + 29, menuScreen.width - 95, menuScreen.height - 30)) {
 
-                // Проверяем открытые выпадающие списки первыми
                 List<SelectComponent> selectComponents = getAllSelectComponents();
                 for (SelectComponent selectComponent : selectComponents) {
                     if (selectComponent.isDropdownOpen() && selectComponent.isHover(mouseX, mouseY)) {
@@ -176,7 +172,6 @@ public class CategoryComponent extends AbstractComponent {
                     }
                 }
 
-                // Затем проверяем обычные компоненты
                 for (ModuleComponent moduleComponent : moduleComponents) {
                     if (shouldRenderComponent(moduleComponent) && moduleComponent.isHover(mouseX, mouseY)) {
                         return true;
@@ -204,11 +199,9 @@ public class CategoryComponent extends AbstractComponent {
         if (menuScreen.category == this.category || !menuScreen.getSearchComponent().getText().isEmpty()) {
             if (MathUtility.isHovered(mouseX, mouseY, menuScreen.x + 95, menuScreen.y + 29, menuScreen.width - 95, menuScreen.height - 30)) {
 
-                // Проверяем, есть ли открытые выпадающие списки
                 List<SelectComponent> selectComponents = getAllSelectComponents();
                 for (SelectComponent selectComponent : selectComponents) {
                     if (selectComponent.isDropdownOpen()) {
-                        // Если список открыт, блокируем скролл категории
                         return true;
                     }
                 }

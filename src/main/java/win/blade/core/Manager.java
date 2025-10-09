@@ -128,8 +128,6 @@ public class Manager implements MinecraftInstance {
         }
     }
 
-    // No periodic autosave to match Excellent behavior exactly
-
     public static MenuScreen getMenuScreen() {
         return menuScreen == null  ? menuScreen = new MenuScreen() : menuScreen;
     }
