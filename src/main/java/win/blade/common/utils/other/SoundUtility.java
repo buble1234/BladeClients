@@ -32,17 +32,26 @@ public class SoundUtility implements MinecraftInstance {
     }
 
     private static final Map<SoundType, SoundEvent> REGISTERED_SOUND_EVENTS = new EnumMap<>(SoundType.class);
+    private static boolean initialized = false;
 
-    static {
-        registerSounds();
-    }
-
-    public static void registerSounds() {
-        for (SoundType type : SoundType.values()) {
-            SoundEvent soundEvent = SoundEvent.of(type.getIdentifier());
-            Registry.register(Registries.SOUND_EVENT, type.getIdentifier(), soundEvent);
-            REGISTERED_SOUND_EVENTS.put(type, soundEvent);
+    public static void initialize() {
+        if (initialized) {
+            return;
         }
+
+        System.out.println("Регистрация звуков...");
+        for (SoundType type : SoundType.values()) {
+            try {
+                SoundEvent soundEvent = SoundEvent.of(type.getIdentifier());
+                Registry.register(Registries.SOUND_EVENT, type.getIdentifier(), soundEvent);
+                REGISTERED_SOUND_EVENTS.put(type, soundEvent);
+                System.out.println("Зарегистрирован звук: " + type.getIdentifier());
+            } catch (Exception e) {
+                System.err.println("Ошибка регистрации звука: " + type.getIdentifier());
+                e.printStackTrace();
+            }
+        }
+        initialized = true;
     }
 
     public static void playSound(SoundType type) {
@@ -50,6 +59,10 @@ public class SoundUtility implements MinecraftInstance {
     }
 
     public static void playSound(SoundType type, float volume, float pitch) {
+        if (!initialized) {
+            return;
+        }
+
         SoundEvent sound = REGISTERED_SOUND_EVENTS.get(type);
         if (sound != null && mc.player != null && mc.world != null) {
             mc.world.playSound(mc.player, mc.player.getBlockPos(), sound, SoundCategory.MASTER, volume, pitch);
