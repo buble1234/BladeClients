@@ -9,7 +9,6 @@ import win.blade.common.utils.config.ConfigManager;
 import win.blade.common.utils.friends.FriendManager;
 import win.blade.common.utils.ignore.IgnoreManager;
 import win.blade.common.utils.keyboard.KeyOptions;
-import win.blade.common.utils.other.SoundUtility;
 import win.blade.core.commands.CommandManager;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
@@ -52,7 +51,6 @@ public class Manager implements MinecraftInstance {
         EVENT_BUS.registerLambdaFactory("win.blade",
                 (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
 
-        SoundUtility.initialize();
         BrowserManager.INSTANCE.initializeBrowser();
         KeyOptions.initialize();
         ConfigManager.instance = new ConfigManager();
@@ -67,11 +65,13 @@ public class Manager implements MinecraftInstance {
 
         moduleManager.initialize();
 
+        // Load default config (Excellent-like boot behavior)
         try {
             ConfigManager.instance.loadConfig("default");
         } catch (Throwable ignored) {
         }
 
+        // Auto-save on JVM shutdown/crash
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
@@ -82,6 +82,8 @@ public class Manager implements MinecraftInstance {
         } catch (Throwable ignored) {
         }
     }
+
+
 
     @EventHandler
     public void onRender(RenderEvents.Screen.POST e) {
