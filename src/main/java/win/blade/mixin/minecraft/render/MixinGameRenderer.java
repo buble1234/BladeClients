@@ -4,9 +4,13 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.hud.InGameOverlayRenderer;
 import net.minecraft.client.render.*;
+import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.GameMode;
 import org.joml.Matrix4f;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -20,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.render.shader.ShaderHelper;
+import win.blade.common.utils.shader.framebuffers.GlowFramebuffer;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
 import win.blade.core.event.impl.render.FovEvent;
@@ -37,21 +42,91 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
 
     @Shadow public abstract float getFarPlaneDistance();
 
-    @Redirect(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;renderHand(Lnet/minecraft/client/render/Camera;FLorg/joml/Matrix4f;)V"))
-    private void redirectRenderHand(GameRenderer gameRenderer, Camera camera, float tickDelta, Matrix4f matrix4f) {
-        if (Manager.getModuleManagement().get(HandsModule.class).isEnabled()) {
-            RenderSystem.colorMask(false, false, false, false);
+//    @Redirect(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;renderHand(Lnet/minecraft/client/render/Camera;FLorg/joml/Matrix4f;)V"))
+//    private void redirectRenderHand(GameRenderer gameRenderer, Camera camera, float tickDelta, Matrix4f matrix4f) {
+//        if (Manager.getModuleManagement().get(HandsModule.class).isEnabled()) {
+//            RenderSystem.colorMask(false, false, false, false);
+//
+//            gameRenderer.renderHand(camera, tickDelta, matrix4f);
+//
+//            RenderSystem.colorMask(true, true, true, true);
+//
+//            HandsModule.render(getFarPlaneDistance());
+//        } else {
+//            gameRenderer.renderHand(camera, tickDelta, matrix4f);
+//        }
+//    }
 
-            gameRenderer.renderHand(camera, tickDelta, matrix4f);
+    @Shadow
+    private boolean renderHand;
+    @Shadow
+    private boolean renderingPanorama;
+    @Shadow
+    protected Matrix4f getBasicProjectionMatrix(double fov) { return null; }
+    @Shadow
+    protected void loadProjectionMatrix(Matrix4f matrix) {}
+    @Shadow
+    protected void bobViewWhenHurt(MatrixStack matrices, float tickDelta) {}
+    @Shadow
+    protected void bobView(MatrixStack matrices, float tickDelta) {}
+    @Shadow
+    protected double getFov(Camera camera, float tickDelta, boolean advanced) { return 0.0; }
+    @Shadow
+    private MinecraftClient client;
+    @Shadow
+    private LightmapTextureManager lightmapTextureManager;
+    @Shadow
+    private HeldItemRenderer firstPersonRenderer;
+    @Shadow
+    private BufferBuilderStorage buffers;
 
-            RenderSystem.colorMask(true, true, true, true);
-
-            HandsModule.render(getFarPlaneDistance());
-        } else {
-            gameRenderer.renderHand(camera, tickDelta, matrix4f);
+    private void setRenderHand(MatrixStack matrices, Camera camera, float tickDelta) {
+        boolean bl = this.client.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.client.getCameraEntity()).isSleeping();
+        this.loadProjectionMatrix(this.getBasicProjectionMatrix(this.getFov(camera, tickDelta, false)));
+        matrices.loadIdentity();
+        matrices.push();
+        this.bobViewWhenHurt(matrices, tickDelta);
+        if ((Boolean)this.client.options.getBobView().getValue()) {
+            this.bobView(matrices, tickDelta);
         }
+
+        if (this.client.options.getPerspective().isFirstPerson() && !bl && !this.client.options.hudHidden && this.client.interactionManager.getCurrentGameMode() != GameMode.SPECTATOR) {
+            this.lightmapTextureManager.enable();
+            this.firstPersonRenderer.renderItem(tickDelta, matrices, this.buffers.getEntityVertexConsumers(), this.client.player, this.client.getEntityRenderDispatcher().getLight(this.client.player, tickDelta));
+            this.lightmapTextureManager.disable();
+        }
+
+        matrices.pop();
     }
 
+    @Inject(at = @At("HEAD"), method = "renderHand", cancellable = true)
+    private void renderHand(Camera camera, float tickDelta, Matrix4f matrix4f, CallbackInfo ci) {
+        if (!this.renderingPanorama) {
+            boolean bl = this.client.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.client.getCameraEntity()).isSleeping();
+//            BlurMaskFramebuffer.use(() -> {
+            GlowFramebuffer.use(() -> {
+                setRenderHand(matrices, camera, tickDelta);
+            });
+
+            GlowFramebuffer.draw(55);
+//            BlurMaskFramebuffer.draw(5.0f, 1.0f, 0.0f, 0.0f, 1.0f);
+
+            setRenderHand(matrices, camera, tickDelta);
+
+            this.loadProjectionMatrix(this.getBasicProjectionMatrix(this.getFov(camera, tickDelta, false)));
+            matrices.loadIdentity();
+
+            if (this.client.options.getPerspective().isFirstPerson() && !bl) {
+                InGameOverlayRenderer.renderOverlays(this.client, matrices);
+                this.bobViewWhenHurt(matrices, tickDelta);
+            }
+
+            if ((Boolean)this.client.options.getBobView().getValue()) {
+                this.bobView(matrices, tickDelta);
+            }
+        }
+        ci.cancel();
+    }
     @Inject(method = "renderWorld", at = @At(value = "FIELD", target = "Lnet/minecraft/client/render/GameRenderer;renderHand:Z", opcode = Opcodes.GETFIELD, ordinal = 0))
     public void hookWorldRender(RenderTickCounter tickCounter, CallbackInfo ci, @Local(ordinal = 2) Matrix4f matrix4f2) {
         // TODO: Исправить это

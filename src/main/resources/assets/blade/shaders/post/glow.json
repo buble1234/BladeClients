@@ -1,0 +1,76 @@
+{
+  "targets": [
+    "swap",
+    "glowFbo"
+  ],
+  "passes": [
+    {
+      "name": "blade:glow",
+      "intarget": "glowFbo",
+      "outtarget": "swap",
+      "uniforms": [
+        {
+          "name": "BlurDir",
+          "values": [ 1.0, 0.0 ]
+        },
+        {
+          "name": "doFinal",
+          "values": [0]
+        }
+      ]
+    },
+    {
+      "name": "blade:glow",
+      "intarget": "swap",
+      "outtarget": "glowFbo",
+      "uniforms": [
+        {
+          "name": "BlurDir",
+          "values": [ 0.0, 1.0 ]
+        },
+        {
+          "name": "doFinal",
+          "values": [0]
+        }
+      ]
+    },
+    {
+      "name": "blade:glow",
+      "intarget": "glowFbo",
+      "outtarget": "swap",
+      "uniforms": [
+        {
+          "name": "BlurDir",
+          "values": [ 1.0, 0.0 ]
+        },
+        {
+          "name": "doFinal",
+          "values": [0]
+        }
+      ]
+    },
+    {
+      "name": "blade:glow",
+      "intarget": "swap",
+      "outtarget": "glowFbo",
+      "uniforms": [
+        {
+          "name": "BlurDir",
+          "values": [ 0.0, 1.0 ]
+        },
+        {
+          "name": "doFinal",
+          "values": [1]
+        }
+      ]
+    },
+    {
+      "name": "blit",
+      "intarget": "glowFbo",
+      "outtarget": "minecraft:main",
+      "uniforms": [
+
+      ]
+    }
+  ]
+}

@@ -31,7 +31,8 @@
     "minecraft.render.BackGroundRendererMixin",
     "minecraft.render.MixinChunkBuilderBuiltChunk",
     "minecraft.render.MixinEntityRenderer",
-    "minecraft.render.MixinHeadFeatureRenderer"
+    "minecraft.render.MixinHeadFeatureRenderer",
+    "minecraft.shader.MixinJsonEffectGlShader"
   ],
   "client": [
     "MixinMinecraftClient",
@@ -63,7 +64,8 @@
     "minecraft.render.MixinLightmapTextureManager",
     "minecraft.render.MixinLivingEntityRenderer",
     "minecraft.render.MixinWindow",
-    "minecraft.render.MixinWorldRenderer"
+    "minecraft.render.MixinWorldRenderer",
+    "minecraft.shader.MixinShaderEffect"
   ],
   "injectors": {
     "defaultRequire": 1

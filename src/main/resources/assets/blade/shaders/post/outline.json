@@ -1,0 +1,18 @@
+{
+  "targets": [
+    "swap",
+    "outlineFbo"
+  ],
+  "passes": [
+    {
+      "name": "blade:outline",
+      "intarget": "outlineFbo",
+      "outtarget": "swap"
+    },
+    {
+      "name": "blit",
+      "intarget": "swap",
+      "outtarget": "minecraft:main"
+    }
+  ]
+}
