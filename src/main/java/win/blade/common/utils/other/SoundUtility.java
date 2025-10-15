@@ -33,10 +33,6 @@ public class SoundUtility implements MinecraftInstance {
 
     private static final Map<SoundType, SoundEvent> REGISTERED_SOUND_EVENTS = new EnumMap<>(SoundType.class);
 
-    static {
-        registerSounds();
-    }
-
     public static void registerSounds() {
         for (SoundType type : SoundType.values()) {
             SoundEvent soundEvent = SoundEvent.of(type.getIdentifier());

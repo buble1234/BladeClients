@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import win.blade.core.Manager;
 
 @Mixin(InventoryScreen.class)
 public abstract class MixinInventoryScreen extends HandledScreen<PlayerScreenHandler> {
@@ -21,16 +22,18 @@ public abstract class MixinInventoryScreen extends HandledScreen<PlayerScreenHan
 
     @Inject(method = "init", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
-        String dropText = "Выбросить всё";
-        int textWidth = this.textRenderer.getWidth(dropText);
-        int buttonWidth = textWidth + 20;
+        if (!Manager.isPanic()) {
+            String dropText = "Выбросить всё";
+            int textWidth = this.textRenderer.getWidth(dropText);
+            int buttonWidth = textWidth + 20;
 
-        this.addDrawableChild(ButtonWidget.builder(Text.literal(dropText), button -> {
-                    dropAllItems();
-                })
-                .position(this.x + (this.backgroundWidth / 2) - (buttonWidth / 2), this.y - 25)
-                .size(buttonWidth, 20)
-                .build());
+            this.addDrawableChild(ButtonWidget.builder(Text.literal(dropText), button -> {
+                        dropAllItems();
+                    })
+                    .position(this.x + (this.backgroundWidth / 2) - (buttonWidth / 2), this.y - 25)
+                    .size(buttonWidth, 20)
+                    .build());
+        }
     }
 
     private void dropAllItems() {

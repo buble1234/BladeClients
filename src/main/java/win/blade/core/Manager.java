@@ -9,6 +9,7 @@ import win.blade.common.utils.config.ConfigManager;
 import win.blade.common.utils.friends.FriendManager;
 import win.blade.common.utils.ignore.IgnoreManager;
 import win.blade.common.utils.keyboard.KeyOptions;
+import win.blade.common.utils.other.SoundUtility;
 import win.blade.core.commands.CommandManager;
 import win.blade.core.event.controllers.EventBus;
 import win.blade.core.event.controllers.EventHandler;
@@ -42,6 +43,7 @@ public class Manager implements MinecraftInstance {
 
     public static ExitScreen screen = new ExitScreen();
     public static MenuScreen menuScreen;
+    public static SoundUtility soundUtility;
 
 
     public static final Map<String, Boolean> wasKeyPressed = new HashMap<>();
@@ -51,6 +53,8 @@ public class Manager implements MinecraftInstance {
         EVENT_BUS.registerLambdaFactory("win.blade",
                 (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
 
+        soundUtility = new SoundUtility();
+        soundUtility.registerSounds();
         BrowserManager.INSTANCE.initializeBrowser();
         KeyOptions.initialize();
         ConfigManager.instance = new ConfigManager();

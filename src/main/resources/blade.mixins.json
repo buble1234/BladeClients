@@ -35,8 +35,6 @@
   ],
   "client": [
     "MixinMinecraftClient",
-    "accessor.GameRendererAccessor",
-    "accessor.PostEffectProcessorAccessor",
     "minecraft.client.MixinCamera",
     "minecraft.client.MixinChatScreen",
     "minecraft.client.MixinClientPlayerEntity",
