@@ -84,18 +84,12 @@ public abstract class Module implements MinecraftInstance {
 
         if (enabled) {
             Manager.EVENT_BUS.subscribe(this);
-            try {
-                SoundUtility.playSound(SoundUtility.SoundType.MODULE_ENABLE);
-            } catch (Exception ignored) {
-            }
+            SoundUtility.playSound(SoundUtility.SoundType.MODULE_ENABLE);
             onEnable();
         } else {
             Manager.EVENT_BUS.unsubscribe(this);
             onDisable();
-            try {
-                SoundUtility.playSound(SoundUtility.SoundType.MODULE_DISABLE);
-            } catch (Exception ignored) {
-            }
+            SoundUtility.playSound(SoundUtility.SoundType.MODULE_DISABLE);
         }
 
         status(enabled);
