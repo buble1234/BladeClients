@@ -1,45 +1,38 @@
 #version 330
 
-uniform sampler2D DiffuseSampler;
-uniform sampler2D vanilla;
+uniform sampler2D InSampler;
+uniform sampler2D MaskSampler;
 
 in vec2 texCoord;
 in vec2 oneTexel;
 
 uniform vec2 InSize;
-uniform float thickness;
-uniform vec4 outlineColor;
+uniform float Radius;
+uniform vec4 OutlineColor;
+uniform vec4 InnerColor;
 
 out vec4 fragColor;
 
 void main() {
-    vec4 center = texture(DiffuseSampler, texCoord);
+    vec4 current = texture(MaskSampler, texCoord);
+    vec4 currentNormal = texture(InSampler, texCoord);
 
-    if (center.a > 0.01) {
-        fragColor = center;
+    if (current.a != 0) {
+        fragColor = vec4(mix(currentNormal.rgb, InnerColor.rgb, InnerColor.a), 1);
         return;
     }
 
-    float outline = 0.0;
-    float steps = thickness * 2.0;
-
-    for (float x = -thickness; x <= thickness; x += 1.0) {
-        for (float y = -thickness; y <= thickness; y += 1.0) {
-            vec2 offset = vec2(x, y) * oneTexel;
-            vec4 sample = texture(DiffuseSampler, texCoord + offset);
-            if (sample.a > 0.01) {
-                outline = 1.0;
-                break;
-            }
+    bool seenSelect = false;
+    bool seenNonSelect = false;
+    for(float x = -Radius; x <= Radius; x++) {
+        for(float y = -Radius; y <= Radius; y++) {
+            vec2 offset = vec2(x, y);
+            vec2 coord = texCoord + offset * oneTexel;
+            vec4 t = texture(MaskSampler, coord);
+            if (t.a == 1) seenSelect = true;
+            else if (t.a == 0) seenNonSelect = true;
         }
-        if (outline > 0.0) break;
     }
-
-    vec4 vanillaColor = texture(vanilla, texCoord);
-
-    if (outline > 0.0) {
-        fragColor = vec4(mix(vanillaColor.rgb, outlineColor.rgb, outlineColor.a), 1.0);
-    } else {
-        fragColor = vanillaColor;
-    }
+    if (seenSelect && seenNonSelect) fragColor = vec4(mix(currentNormal.rgb, OutlineColor.rgb, OutlineColor.a), 1);
+    else fragColor = currentNormal;
 }

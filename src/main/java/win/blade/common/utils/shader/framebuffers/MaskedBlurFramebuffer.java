@@ -10,23 +10,21 @@ import win.blade.common.utils.shader.ShaderManager;
 import win.blade.mixin.accessor.GameRendererAccessor;
 import win.blade.mixin.accessor.PostEffectProcessorAccessor;
 
-import java.awt.*;
 import java.util.List;
 
-@Deprecated(since = "1.2.4")
-public class OutlineFramebuffer extends Framebuffer {
-	private static OutlineFramebuffer instance;
+public class MaskedBlurFramebuffer extends Framebuffer {
+	private static MaskedBlurFramebuffer instance;
 
-	private OutlineFramebuffer(int width, int height) {
+	private MaskedBlurFramebuffer(int width, int height) {
 		super(false);
 		RenderSystem.assertOnRenderThreadOrInit();
 		this.resize(width, height);
 		this.setClearColor(0f, 0f, 0f, 0f);
 	}
 
-	private static OutlineFramebuffer obtain() {
+	private static MaskedBlurFramebuffer obtain() {
 		if (instance == null) {
-			instance = new OutlineFramebuffer(MinecraftClient.getInstance().getFramebuffer().textureWidth, MinecraftClient.getInstance().getFramebuffer().textureHeight);
+			instance = new MaskedBlurFramebuffer(MinecraftClient.getInstance().getFramebuffer().textureWidth, MinecraftClient.getInstance().getFramebuffer().textureHeight);
 		}
 		return instance;
 	}
@@ -34,7 +32,7 @@ public class OutlineFramebuffer extends Framebuffer {
 	public static void use(Runnable r) {
 		Framebuffer mainBuffer = MinecraftClient.getInstance().getFramebuffer();
 		RenderSystem.assertOnRenderThreadOrInit();
-		OutlineFramebuffer buffer = obtain();
+		MaskedBlurFramebuffer buffer = obtain();
 		if (buffer.textureWidth != mainBuffer.textureWidth || buffer.textureHeight != mainBuffer.textureHeight) {
 			buffer.resize(mainBuffer.textureWidth, mainBuffer.textureHeight);
 		}
@@ -46,31 +44,24 @@ public class OutlineFramebuffer extends Framebuffer {
 		mainBuffer.beginWrite(false);
 	}
 
-	public static void draw(float radius, Color outlineColor, Color innerColor) {
+	public static void draw(int kernelSizePx, float sigma) {
 		Framebuffer mainBuffer = MinecraftClient.getInstance().getFramebuffer();
-		OutlineFramebuffer buffer = obtain();
+		MaskedBlurFramebuffer buffer = obtain();
 
-		PostEffectProcessor outlineShader = ShaderManager.getOutlineShader();
-		List<PostEffectPass> allPasses = ((PostEffectProcessorAccessor) outlineShader).getPasses();
+		PostEffectProcessor gaussianShader = ShaderManager.getGaussianShader();
+		List<PostEffectPass> allPasses = ((PostEffectProcessorAccessor) gaussianShader).getPasses();
 		PostEffectPass firstPass = allPasses.getFirst();
 		ShaderProgram firstPassProgram = firstPass.getProgram();
 
+		firstPassProgram.getUniform("sigma").set(sigma);
+		firstPassProgram.getUniform("width").set(((float) kernelSizePx));
 		firstPassProgram.addSamplerTexture("MaskSampler", buffer.colorAttachment);
-		firstPassProgram.getUniform("Radius").set(radius);
-		firstPassProgram.getUniform("OutlineColor").set(outlineColor.getRed() / 255f, outlineColor.getGreen() / 255f, outlineColor.getBlue() / 255f, outlineColor.getAlpha() / 255f);
-		firstPassProgram.getUniform("InnerColor").set(innerColor.getRed() / 255f, innerColor.getGreen() / 255f, innerColor.getBlue() / 255f, innerColor.getAlpha() / 255f);
 
-		RenderSystem.depthMask(false);
-		outlineShader.render(mainBuffer, ((GameRendererAccessor) MinecraftClient.getInstance().gameRenderer).getPool());
-		RenderSystem.depthMask(true);
+
+		gaussianShader.render(mainBuffer, ((GameRendererAccessor) MinecraftClient.getInstance().gameRenderer).getPool());
 
 		buffer.clear();
 
 		mainBuffer.beginWrite(false);
-	}
-
-	public static void useAndDraw(Runnable r, float radius, Color outline, Color inner) {
-		use(r);
-		draw(radius, outline, inner);
 	}
 }

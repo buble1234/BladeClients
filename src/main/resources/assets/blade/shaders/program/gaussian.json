@@ -1,14 +1,15 @@
 {
 
   "vertex": "minecraft:post/sobel",
-  "fragment": "blade:program/outline",
+  "fragment": "blade:program/gaussian",
   "attributes": [
     "Position"
   ],
   "samplers": [
     {
       "name": "InSampler"
-    },{
+    },
+    {
       "name": "MaskSampler"
     }
   ],
@@ -28,31 +29,37 @@
       "name": "InSize",
       "type": "float",
       "count": 2,
-      "values": [ 1.0, 1.0 ]
+      "values": [
+        1.0,
+        1.0
+      ]
     },
     {
       "name": "OutSize",
       "type": "float",
       "count": 2,
-      "values": [ 1.0, 1.0 ]
+      "values": [
+        1.0,
+        1.0
+      ]
     },
     {
-      "name": "Radius",
+      "name": "width",
       "type": "float",
       "count": 1,
       "values": [ 1 ]
     },
     {
-      "name": "OutlineColor",
+      "name": "sigma",
       "type": "float",
-      "count": 4,
-      "values": [ 1, 1, 1, 1 ]
+      "count": 1,
+      "values": [ 1.0 ]
     },
     {
-      "name": "InnerColor",
+      "name": "direction",
       "type": "float",
-      "count": 4,
-      "values": [ 0, 0, 0, 1 ]
+      "count": 2,
+      "values": [ 0, 0 ]
     }
   ]
 }

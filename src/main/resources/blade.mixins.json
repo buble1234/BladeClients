@@ -31,11 +31,12 @@
     "minecraft.render.BackGroundRendererMixin",
     "minecraft.render.MixinChunkBuilderBuiltChunk",
     "minecraft.render.MixinEntityRenderer",
-    "minecraft.render.MixinHeadFeatureRenderer",
-    "minecraft.shader.MixinJsonEffectGlShader"
+    "minecraft.render.MixinHeadFeatureRenderer"
   ],
   "client": [
     "MixinMinecraftClient",
+    "accessor.GameRendererAccessor",
+    "accessor.PostEffectProcessorAccessor",
     "minecraft.client.MixinCamera",
     "minecraft.client.MixinChatScreen",
     "minecraft.client.MixinClientPlayerEntity",
@@ -64,8 +65,7 @@
     "minecraft.render.MixinLightmapTextureManager",
     "minecraft.render.MixinLivingEntityRenderer",
     "minecraft.render.MixinWindow",
-    "minecraft.render.MixinWorldRenderer",
-    "minecraft.shader.MixinShaderEffect"
+    "minecraft.render.MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

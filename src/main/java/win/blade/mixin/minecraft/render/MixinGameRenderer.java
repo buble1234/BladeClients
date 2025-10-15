@@ -1,6 +1,7 @@
 package win.blade.mixin.minecraft.render;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.systems.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -9,22 +10,29 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.profiler.Profiler;
+import net.minecraft.util.profiler.Profilers;
 import net.minecraft.world.GameMode;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import win.blade.common.utils.math.MathUtility;
 import win.blade.common.utils.minecraft.MinecraftInstance;
 import win.blade.common.utils.render.shader.ShaderHelper;
-import win.blade.common.utils.shader.framebuffers.GlowFramebuffer;
+import win.blade.common.utils.shader.framebuffers.MaskedBlurFramebuffer;
 import win.blade.core.Manager;
 import win.blade.core.event.controllers.EventHolder;
 import win.blade.core.event.impl.render.FovEvent;
@@ -57,79 +65,72 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
 //        }
 //    }
 
-    @Shadow
-    private boolean renderHand;
-    @Shadow
-    private boolean renderingPanorama;
-    @Shadow
-    protected Matrix4f getBasicProjectionMatrix(double fov) { return null; }
-    @Shadow
-    protected void loadProjectionMatrix(Matrix4f matrix) {}
-    @Shadow
-    protected void bobViewWhenHurt(MatrixStack matrices, float tickDelta) {}
-    @Shadow
-    protected void bobView(MatrixStack matrices, float tickDelta) {}
-    @Shadow
-    protected double getFov(Camera camera, float tickDelta, boolean advanced) { return 0.0; }
-    @Shadow
-    private MinecraftClient client;
-    @Shadow
-    private LightmapTextureManager lightmapTextureManager;
-    @Shadow
-    private HeldItemRenderer firstPersonRenderer;
-    @Shadow
-    private BufferBuilderStorage buffers;
+    @Shadow private LightmapTextureManager lightmapTextureManager;
+    @Shadow @Final private MinecraftClient client;
+    @Shadow @Final private HeldItemRenderer firstPersonRenderer;
+    @Shadow @Final private BufferBuilderStorage buffers;
 
-    private void setRenderHand(MatrixStack matrices, Camera camera, float tickDelta) {
+    @Shadow private boolean renderingPanorama;
+    @Shadow private float zoom;
+    @Shadow private float zoomX;
+    @Shadow private float zoomY;
+
+    @Shadow public abstract Matrix4f getBasicProjectionMatrix(float fovDegrees);
+    @Shadow public abstract float getFov(Camera camera, float tickDelta, boolean changingFov);
+
+    @Shadow abstract void tiltViewWhenHurt(MatrixStack matrices, float tickDelta);
+    @Shadow abstract void bobView(MatrixStack matrices, float tickDelta);
+
+    @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
+    public void renderHandWithBlur(Camera camera, float tickDelta, Matrix4f matrix4f, CallbackInfo ci) {
+        if (this.renderingPanorama) {
+            return;
+        }
+
+        ci.cancel();
+
         boolean bl = this.client.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.client.getCameraEntity()).isSleeping();
-        this.loadProjectionMatrix(this.getBasicProjectionMatrix(this.getFov(camera, tickDelta, false)));
-        matrices.loadIdentity();
-        matrices.push();
-        this.bobViewWhenHurt(matrices, tickDelta);
-        if ((Boolean)this.client.options.getBobView().getValue()) {
-            this.bobView(matrices, tickDelta);
-        }
-
         if (this.client.options.getPerspective().isFirstPerson() && !bl && !this.client.options.hudHidden && this.client.interactionManager.getCurrentGameMode() != GameMode.SPECTATOR) {
-            this.lightmapTextureManager.enable();
-            this.firstPersonRenderer.renderItem(tickDelta, matrices, this.buffers.getEntityVertexConsumers(), this.client.player, this.client.getEntityRenderDispatcher().getLight(this.client.player, tickDelta));
-            this.lightmapTextureManager.disable();
-        }
+            MaskedBlurFramebuffer.use(() -> {
+                Matrix4f matrix4f2 = this.getBasicProjectionMatrix(this.getFov(camera, tickDelta, false));
+                RenderSystem.setProjectionMatrix(matrix4f2, ProjectionType.PERSPECTIVE);
 
-        matrices.pop();
-    }
+                MatrixStack matrixStack = new MatrixStack();
+                matrixStack.push();
+                matrixStack.multiplyPositionMatrix(matrix4f.invert(new Matrix4f()));
 
-    @Inject(at = @At("HEAD"), method = "renderHand", cancellable = true)
-    private void renderHand(Camera camera, float tickDelta, Matrix4f matrix4f, CallbackInfo ci) {
-        if (!this.renderingPanorama) {
-            boolean bl = this.client.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.client.getCameraEntity()).isSleeping();
-//            BlurMaskFramebuffer.use(() -> {
-            GlowFramebuffer.use(() -> {
-                setRenderHand(matrices, camera, tickDelta);
+                Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
+                matrix4fStack.pushMatrix().mul(matrix4f);
+
+                this.tiltViewWhenHurt(matrixStack, tickDelta);
+                if ((Boolean)this.client.options.getBobView().getValue()) {
+                    this.bobView(matrixStack, tickDelta);
+                }
+
+                this.lightmapTextureManager.enable();
+                this.firstPersonRenderer.renderItem(tickDelta, matrixStack, this.buffers.getEntityVertexConsumers(), this.client.player, this.client.getEntityRenderDispatcher().getLight(this.client.player, tickDelta));
+                this.lightmapTextureManager.disable();
+
+                matrix4fStack.popMatrix();
+                matrixStack.pop();
             });
 
-            GlowFramebuffer.draw(55);
-//            BlurMaskFramebuffer.draw(5.0f, 1.0f, 0.0f, 0.0f, 1.0f);
+            MaskedBlurFramebuffer.draw(15, 15.0f);
 
-            setRenderHand(matrices, camera, tickDelta);
-
-            this.loadProjectionMatrix(this.getBasicProjectionMatrix(this.getFov(camera, tickDelta, false)));
-            matrices.loadIdentity();
+            Matrix4f mainMatrix4f2 = this.getBasicProjectionMatrix(this.getFov(camera, tickDelta, false));
+            RenderSystem.setProjectionMatrix(mainMatrix4f2, ProjectionType.PERSPECTIVE);
 
             if (this.client.options.getPerspective().isFirstPerson() && !bl) {
-                InGameOverlayRenderer.renderOverlays(this.client, matrices);
-                this.bobViewWhenHurt(matrices, tickDelta);
-            }
-
-            if ((Boolean)this.client.options.getBobView().getValue()) {
-                this.bobView(matrices, tickDelta);
+                MatrixStack overlayStack = new MatrixStack();
+                VertexConsumerProvider.Immediate immediate = this.buffers.getEntityVertexConsumers();
+                InGameOverlayRenderer.renderOverlays(this.client, overlayStack, immediate);
+                immediate.draw();
             }
         }
-        ci.cancel();
     }
+
     @Inject(method = "renderWorld", at = @At(value = "FIELD", target = "Lnet/minecraft/client/render/GameRenderer;renderHand:Z", opcode = Opcodes.GETFIELD, ordinal = 0))
     public void hookWorldRender(RenderTickCounter tickCounter, CallbackInfo ci, @Local(ordinal = 2) Matrix4f matrix4f2) {
-        // TODO: Исправить это
         var newMatStack = new MatrixStack();
 
         newMatStack.multiplyPositionMatrix(matrix4f2);
@@ -156,8 +157,6 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
         }
     }
 
-    @Shadow @Final private MinecraftClient client;
-
     private ClientWorld lastWorld = null;
 
     @Inject(method = "render", at = @At("HEAD"))
@@ -178,10 +177,6 @@ public abstract class MixinGameRenderer implements MinecraftInstance {
         Manager.EVENT_BUS.post(event);
         cir.setReturnValue(event.getFov());
     }
-
-    @Shadow private float zoom;
-    @Shadow private float zoomX;
-    @Shadow private float zoomY;
 
     @Inject(method = "getBasicProjectionMatrix(F)Lorg/joml/Matrix4f;", at = @At("TAIL"), cancellable = true)
     private void onGetBasicProjectionMatrix(float fov, CallbackInfoReturnable<Matrix4f> cir) {
